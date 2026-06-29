@@ -42,3 +42,10 @@ out-tsc
 testem.log
 tmp
 yarn-error.log
+
+/generated/prisma
+
+# Prisma
+.env
+*.db
+*.db-journal
