@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# nx
+.nx/cache
+.nx/workspace-data
+dist/
+tmp/
+out-tsc/
+
+# env
+.env
+.env.local
+*.local
+
+# database (SQLite)
+*.sqlite
+*.sqlite3
+*.db
+prisma/*.db
+
+# logs
+*.log
+npm-debug.log*
+
+# editor / os
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
