@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 @Injectable()
 export class PrismaService
@@ -9,8 +9,10 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   constructor() {
-    const url = process.env.DATABASE_URL ?? 'file:./dev.db';
-    super({ adapter: new PrismaBetterSqlite3({ url }) });
+    const url =
+      process.env.DATABASE_URL ??
+      'postgresql://postgres:postgres@localhost:5432/moongatracker';
+    super({ adapter: new PrismaPg({ connectionString: url }) });
   }
 
   async onModuleInit() {

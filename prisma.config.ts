@@ -2,9 +2,11 @@
 // npm install --save-dev prisma dotenv
 import 'dotenv/config';
 import { defineConfig } from 'prisma/config';
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+import { PrismaPg } from '@prisma/adapter-pg';
 
-const url = process.env['DATABASE_URL'] ?? 'file:./dev.db';
+const url =
+  process.env['DATABASE_URL'] ??
+  'postgresql://postgres:postgres@localhost:5432/moongatracker';
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',
@@ -14,6 +16,6 @@ export default defineConfig({
   },
   datasource: {
     url,
-    adapter: () => new PrismaBetterSqlite3({ url }),
+    adapter: () => new PrismaPg({ connectionString: url }),
   },
 });

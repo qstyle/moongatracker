@@ -5,9 +5,8 @@ services:
     ports:
       - '3020:3020'
     environment:
-      - DATABASE_URL=file:/data/moongatracker.db
-    volumes:
-      - mgt-data:/data
-
-volumes:
-  mgt-data:
+      # Connects to an EXISTING Postgres on the host (not managed by this compose).
+      # host.docker.internal resolves to the host; the host must publish Postgres on :5432.
+      - DATABASE_URL=postgresql://postgres:postgres@host.docker.internal:5432/moongatracker
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
