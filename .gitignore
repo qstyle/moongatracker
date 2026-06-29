@@ -1,4 +1,3 @@
-
 !.vscode/extensions.json
 !.vscode/launch.json
 !.vscode/settings.json
@@ -51,3 +50,6 @@ yarn-error.log
 *.db-journal
 
 test-output
+
+vite.config.*.timestamp*
+vitest.config.*.timestamp*
