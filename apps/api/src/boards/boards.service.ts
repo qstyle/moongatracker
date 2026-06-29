@@ -8,7 +8,10 @@ export class BoardsService {
 
   async listBoards(): Promise<BoardDto[]> {
     const boards = await this.prisma.board.findMany({
-      include: { columns: { orderBy: { order: 'asc' } } },
+      include: {
+        columns: { orderBy: { order: 'asc' } },
+        cards: { orderBy: { order: 'asc' } },
+      },
       orderBy: { createdAt: 'asc' },
     });
     return boards.map((b) => ({
@@ -20,6 +23,15 @@ export class BoardsService {
         key: c.key as ColumnKey,
         title: c.title,
         order: c.order,
+        cards: b.cards
+          .filter((card) => card.columnKey === c.key)
+          .map((card) => ({
+            id: card.id,
+            title: card.title,
+            body: card.body,
+            priority: card.priority,
+            order: card.order,
+          })),
       })),
     }));
   }

@@ -19,18 +19,45 @@ export function App() {
   return (
     <main style={{ padding: 16 }}>
       <h1>{board.name}</h1>
-      <div style={{ display: 'flex', gap: 12 }}>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
         {board.columns.map((c) => (
           <section
             key={c.id}
             style={{
-              minWidth: 200,
+              minWidth: 220,
               border: '1px solid #ddd',
               borderRadius: 8,
               padding: 8,
+              background: '#fafafa',
             }}
           >
-            <h2 style={{ fontSize: 14 }}>{c.title}</h2>
+            <h2 style={{ fontSize: 14, margin: '0 0 8px' }}>
+              {c.title}{' '}
+              <span style={{ color: '#999', fontWeight: 400 }}>
+                ({c.cards.length})
+              </span>
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {c.cards.map((card) => (
+                <article
+                  key={card.id}
+                  style={{
+                    border: '1px solid #e5e5e5',
+                    borderRadius: 6,
+                    padding: 8,
+                    background: '#fff',
+                    fontSize: 13,
+                  }}
+                >
+                  <div style={{ fontWeight: 600 }}>{card.title}</div>
+                  {card.body && (
+                    <div style={{ color: '#666', marginTop: 4 }}>
+                      {card.body}
+                    </div>
+                  )}
+                </article>
+              ))}
+            </div>
           </section>
         ))}
       </div>
