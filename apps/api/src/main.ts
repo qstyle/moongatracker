@@ -4,6 +4,7 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 import { AppModule } from './app/app.module';
 
 async function bootstrap() {
@@ -11,6 +12,7 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter(),
   );
+  app.useWebSocketAdapter(new IoAdapter(app));
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({

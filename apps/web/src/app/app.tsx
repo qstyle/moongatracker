@@ -2,11 +2,13 @@ import { useSyncExternalStore } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getToken, onAuthChange } from '../api/client';
 import { fetchBoards } from '../api/boards';
+import { useBoardSocket } from '../api/socket';
 import { Board } from '../components/board/board';
 import { Login } from '../components/auth/login';
 
 function BoardScreen() {
   const queryClient = useQueryClient();
+  useBoardSocket(queryClient);
   const {
     data: boards,
     error,
