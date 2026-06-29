@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { BoardDto } from '@moongatracker/shared-types';
 import { fetchBoards } from '../api/boards';
 import { Board } from '../components/board/board';
@@ -7,11 +7,15 @@ export function App() {
   const [boards, setBoards] = useState<BoardDto[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     fetchBoards()
       .then(setBoards)
       .catch((e) => setError(String(e)));
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   if (error) {
     return (
@@ -42,7 +46,7 @@ export function App() {
     );
   }
 
-  return <Board board={board} />;
+  return <Board board={board} onChanged={load} />;
 }
 
 export default App;

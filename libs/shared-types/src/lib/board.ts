@@ -22,3 +22,26 @@ export interface BoardDto {
   createdAt: string;
   columns: ColumnDto[];
 }
+
+export interface CreateCardInput {
+  boardId: string;
+  columnKey: ColumnKey;
+  title: string;
+  body?: string | null;
+}
+
+export interface UpdateCardInput {
+  title?: string;
+  body?: string | null;
+  columnKey?: ColumnKey;
+  order?: number;
+  priority?: number;
+}
+
+export const COLUMN_KEYS: ColumnKey[] = [
+  'idea',
+  'triage',
+  'backlog',
+  'in_dev',
+  'done',
+];

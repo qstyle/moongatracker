@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@moongatracker/data-access';
 import { BoardDto, ColumnKey } from '@moongatracker/shared-types';
+import { toCardDto } from '../cards/card.mapper';
 
 @Injectable()
 export class BoardsService {
@@ -25,13 +26,7 @@ export class BoardsService {
         order: c.order,
         cards: b.cards
           .filter((card) => card.columnKey === c.key)
-          .map((card) => ({
-            id: card.id,
-            title: card.title,
-            body: card.body,
-            priority: card.priority,
-            order: card.order,
-          })),
+          .map(toCardDto),
       })),
     }));
   }

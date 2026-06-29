@@ -1,9 +1,18 @@
 import { CardDto } from '@moongatracker/shared-types';
 import { RiDraggable } from '@remixicon/react';
 
-export function CardTile({ card }: { card: CardDto }) {
+export function CardTile({
+  card,
+  onClick,
+}: {
+  card: CardDto;
+  onClick: () => void;
+}) {
   return (
-    <article className="group relative cursor-default border border-border bg-card px-3 py-2.5 transition-colors hover:border-foreground/30">
+    <article
+      onClick={onClick}
+      className="group relative cursor-pointer border border-border bg-card px-3 py-2.5 transition-colors hover:border-foreground/30"
+    >
       {/* hover accent rail */}
       <span className="absolute inset-y-0 left-0 w-[2px] bg-transparent transition-colors group-hover:bg-primary" />
 

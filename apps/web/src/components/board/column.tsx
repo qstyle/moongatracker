@@ -1,13 +1,20 @@
-import { ColumnDto } from '@moongatracker/shared-types';
+import { CardDto, ColumnDto } from '@moongatracker/shared-types';
 import { RiCheckboxBlankCircleLine } from '@remixicon/react';
 import { CardTile } from './card-tile';
+import { CardComposer } from './card-composer';
 
 export function Column({
   column,
   index,
+  boardId,
+  onChanged,
+  onSelectCard,
 }: {
   column: ColumnDto;
   index: number;
+  boardId: string;
+  onChanged: () => void;
+  onSelectCard: (card: CardDto) => void;
 }) {
   const count = column.cards.length;
 
@@ -34,8 +41,20 @@ export function Column({
             пусто
           </div>
         ) : (
-          column.cards.map((card) => <CardTile key={card.id} card={card} />)
+          column.cards.map((card) => (
+            <CardTile
+              key={card.id}
+              card={card}
+              onClick={() => onSelectCard(card)}
+            />
+          ))
         )}
+
+        <CardComposer
+          boardId={boardId}
+          columnKey={column.key}
+          onAdded={onChanged}
+        />
       </div>
     </section>
   );

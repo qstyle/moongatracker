@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { BoardDto } from '@moongatracker/shared-types';
+import { BoardDto, CardDto } from '@moongatracker/shared-types';
 import { RiTBoxLine } from '@remixicon/react';
 import { VIEWS, ViewId } from '../../lib/views';
 import { Column } from './column';
 import { ViewSwitch } from './view-switch';
+import { CardDialog } from './card-dialog';
 
 const GRID_BG: React.CSSProperties = {
   backgroundImage:
@@ -13,8 +14,15 @@ const GRID_BG: React.CSSProperties = {
   backgroundPosition: '-1px -1px',
 };
 
-export function Board({ board }: { board: BoardDto }) {
+export function Board({
+  board,
+  onChanged,
+}: {
+  board: BoardDto;
+  onChanged: () => void;
+}) {
   const [view, setView] = useState<ViewId>('all');
+  const [selected, setSelected] = useState<CardDto | null>(null);
 
   const def = VIEWS.find((v) => v.id === view) ?? VIEWS[0];
   const columns = def.columns
@@ -53,9 +61,24 @@ export function Board({ board }: { board: BoardDto }) {
         style={GRID_BG}
       >
         {columns.map((column, i) => (
-          <Column key={column.id} column={column} index={i} />
+          <Column
+            key={column.id}
+            column={column}
+            index={i}
+            boardId={board.id}
+            onChanged={onChanged}
+            onSelectCard={setSelected}
+          />
         ))}
       </main>
+
+      {selected && (
+        <CardDialog
+          card={selected}
+          onClose={() => setSelected(null)}
+          onChanged={onChanged}
+        />
+      )}
     </div>
   );
 }
