@@ -1,4 +1,6 @@
 import { CardDto } from '@moongatracker/shared-types';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { RiDraggable } from '@remixicon/react';
 
 export function CardTile({
@@ -8,12 +10,30 @@ export function CardTile({
   card: CardDto;
   onClick: () => void;
 }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: card.id });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.35 : 1,
+  };
+
   return (
     <article
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
       onClick={onClick}
-      className="group relative cursor-pointer border border-border bg-card px-3 py-2.5 transition-colors hover:border-foreground/30"
+      className="group relative cursor-grab touch-none border border-border bg-card px-3 py-2.5 transition-colors hover:border-foreground/30 active:cursor-grabbing"
     >
-      {/* hover accent rail */}
       <span className="absolute inset-y-0 left-0 w-[2px] bg-transparent transition-colors group-hover:bg-primary" />
 
       <div className="flex items-start gap-2">

@@ -1,4 +1,9 @@
 import { CardDto, ColumnDto } from '@moongatracker/shared-types';
+import { useDroppable } from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import { RiCheckboxBlankCircleLine } from '@remixicon/react';
 import { CardTile } from './card-tile';
 import { CardComposer } from './card-composer';
@@ -17,6 +22,7 @@ export function Column({
   onSelectCard: (card: CardDto) => void;
 }) {
   const count = column.cards.length;
+  const { setNodeRef, isOver } = useDroppable({ id: column.key });
 
   return (
     <section className="flex w-[280px] shrink-0 flex-col">
@@ -34,21 +40,32 @@ export function Column({
         </span>
       </header>
 
-      <div className="flex flex-col gap-2">
-        {count === 0 ? (
-          <div className="flex items-center justify-center gap-1.5 border border-dashed border-border/70 py-6 text-[10px] uppercase tracking-wider text-muted-foreground/40">
-            <RiCheckboxBlankCircleLine className="size-3" />
-            пусто
-          </div>
-        ) : (
-          column.cards.map((card) => (
-            <CardTile
-              key={card.id}
-              card={card}
-              onClick={() => onSelectCard(card)}
-            />
-          ))
-        )}
+      <div
+        ref={setNodeRef}
+        className={
+          'flex min-h-16 flex-col gap-2 transition-colors ' +
+          (isOver ? 'bg-accent/40' : '')
+        }
+      >
+        <SortableContext
+          items={column.cards.map((c) => c.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {count === 0 ? (
+            <div className="flex items-center justify-center gap-1.5 border border-dashed border-border/70 py-6 text-[10px] uppercase tracking-wider text-muted-foreground/40">
+              <RiCheckboxBlankCircleLine className="size-3" />
+              пусто
+            </div>
+          ) : (
+            column.cards.map((card) => (
+              <CardTile
+                key={card.id}
+                card={card}
+                onClick={() => onSelectCard(card)}
+              />
+            ))
+          )}
+        </SortableContext>
 
         <CardComposer
           boardId={boardId}
