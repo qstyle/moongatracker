@@ -77,3 +77,13 @@ model CardLabel {
 
   @@id([cardId, labelId])
 }
+
+model ApiToken {
+  id         String    @id @default(cuid())
+  userId     String
+  name       String
+  tokenHash  String    @unique
+  scope      String[]
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+}
