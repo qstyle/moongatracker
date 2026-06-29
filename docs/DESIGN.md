@@ -43,6 +43,9 @@ Self-hosted канбан, в котором **AI-агент — первокла
   бизнес-логика (жизненный цикл карточки, запись Activity), раздача статики `web`.
 - **apps/web** — Vite + React SPA. Канбан, drag&drop, карточка с тредом комментариев,
   переключение view «Идеи» / «Разработка». Подписка на Socket.IO.
+  - **UI-кит: shadcn/ui.** Стартовый пресет — `b6GNZujOi`:
+    - инициализация: `--preset b6GNZujOi`
+    - ссылка: https://ui.shadcn.com/create?preset=b6GNZujOi
 - **apps/mcp** — отдельный MCP-сервер (Node). Тонкая обёртка над REST API: выставляет
   агенту инструменты (см. AGENT_INTEGRATION.md). Может работать в том же контейнере.
 - **libs/shared-types** — TS-типы и DTO, общие для api / web / mcp. Один источник правды.
