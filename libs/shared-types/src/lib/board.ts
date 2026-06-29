@@ -16,6 +16,7 @@ export interface CommentDto {
 
 export interface CardDto {
   id: string;
+  columnKey: ColumnKey;
   title: string;
   body: string | null;
   priority: number;
