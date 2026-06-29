@@ -2,6 +2,7 @@ import { CardDto } from '@moongatracker/shared-types';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { RiDraggable } from '@remixicon/react';
+import { LabelChip } from './label-chip';
 
 export function CardTile({
   card,
@@ -35,6 +36,14 @@ export function CardTile({
       className="group relative cursor-grab touch-none border border-border bg-card px-3 py-2.5 transition-colors hover:border-foreground/30 active:cursor-grabbing"
     >
       <span className="absolute inset-y-0 left-0 w-[2px] bg-transparent transition-colors group-hover:bg-primary" />
+
+      {card.labels.length > 0 && (
+        <div className="mb-1.5 flex flex-wrap gap-1">
+          {card.labels.map((l) => (
+            <LabelChip key={l.id} name={l.name} color={l.color} />
+          ))}
+        </div>
+      )}
 
       <div className="flex items-start gap-2">
         <p className="flex-1 text-[13px] font-medium leading-snug text-card-foreground">

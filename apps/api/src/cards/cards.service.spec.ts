@@ -38,6 +38,7 @@ describe('CardsService', () => {
       body: null,
       priority: 0,
       order: 3,
+      labels: [],
     });
   });
 

@@ -11,7 +11,10 @@ export class BoardsService {
     const boards = await this.prisma.board.findMany({
       include: {
         columns: { orderBy: { order: 'asc' } },
-        cards: { orderBy: { order: 'asc' } },
+        cards: {
+          orderBy: { order: 'asc' },
+          include: { labels: { include: { label: true } } },
+        },
       },
       orderBy: { createdAt: 'asc' },
     });

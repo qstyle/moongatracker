@@ -6,6 +6,7 @@ export interface PrismaCardLike {
   body: string | null;
   priority: number;
   order: number;
+  labels?: { label: { id: string; name: string; color: string } }[];
 }
 
 export function toCardDto(card: PrismaCardLike): CardDto {
@@ -15,5 +16,10 @@ export function toCardDto(card: PrismaCardLike): CardDto {
     body: card.body,
     priority: card.priority,
     order: card.order,
+    labels: (card.labels ?? []).map((cl) => ({
+      id: cl.label.id,
+      name: cl.label.name,
+      color: cl.label.color,
+    })),
   };
 }

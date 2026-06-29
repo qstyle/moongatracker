@@ -1,11 +1,26 @@
 export type ColumnKey = 'idea' | 'triage' | 'backlog' | 'in_dev' | 'done';
 
+export interface LabelDto {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export interface CommentDto {
+  id: string;
+  authorType: 'human' | 'agent';
+  authorId: string | null;
+  body: string;
+  createdAt: string;
+}
+
 export interface CardDto {
   id: string;
   title: string;
   body: string | null;
   priority: number;
   order: number;
+  labels: LabelDto[];
 }
 
 export interface ColumnDto {

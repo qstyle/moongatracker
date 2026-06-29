@@ -21,6 +21,7 @@ model Board {
   createdAt DateTime @default(now())
   columns   Column[]
   cards     Card[]
+  labels    Label[]
 }
 
 model Column {
@@ -35,14 +36,44 @@ model Column {
 }
 
 model Card {
-  id         String   @id @default(cuid())
+  id         String      @id @default(cuid())
   boardId    String
   columnKey  String
   title      String
   body       String?
-  priority   Int      @default(0)
-  order      Int      @default(0)
+  priority   Int         @default(0)
+  order      Int         @default(0)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  board      Board       @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  comments   Comment[]
+  labels     CardLabel[]
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  cardId     String
+  authorType String   @default("human") // human | agent
+  authorId   String?
+  body       String
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  board      Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  card       Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+}
+
+model Label {
+  id      String      @id @default(cuid())
+  boardId String
+  name    String
+  color   String
+  board   Board       @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards   CardLabel[]
+}
+
+model CardLabel {
+  cardId  String
+  labelId String
+  card    Card  @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  label   Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([cardId, labelId])
 }

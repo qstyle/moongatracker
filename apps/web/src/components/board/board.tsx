@@ -208,6 +208,7 @@ export function Board({
       {selected && (
         <CardDialog
           card={selected}
+          boardId={board.id}
           onClose={() => setSelected(null)}
           onChanged={onChanged}
         />

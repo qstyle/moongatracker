@@ -49,6 +49,7 @@ describe('BoardsService', () => {
                 body: 'описание',
                 priority: 0,
                 order: 0,
+                labels: [],
               },
             ],
           },
