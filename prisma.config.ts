@@ -4,7 +4,7 @@ import 'dotenv/config';
 import { defineConfig } from 'prisma/config';
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
 
-const url = process.env['DATABASE_URL'] ?? 'file:./prisma/dev.db';
+const url = process.env['DATABASE_URL'] ?? 'file:./dev.db';
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',
