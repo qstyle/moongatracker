@@ -1,33 +1,29 @@
-import { useCallback, useEffect, useState } from 'react';
-import { BoardDto } from '@moongatracker/shared-types';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchBoards } from '../api/boards';
 import { Board } from '../components/board/board';
 
 export function App() {
-  const [boards, setBoards] = useState<BoardDto[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const {
+    data: boards,
+    error,
+    isLoading,
+  } = useQuery({ queryKey: ['boards'], queryFn: fetchBoards });
 
-  const load = useCallback(() => {
-    fetchBoards()
-      .then(setBoards)
-      .catch((e) => setError(String(e)));
-  }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+  const onChanged = () =>
+    queryClient.invalidateQueries({ queryKey: ['boards'] });
 
   if (error) {
     return (
       <div className="flex h-dvh items-center justify-center bg-background">
         <div className="border border-destructive/50 bg-card px-4 py-3 text-[12px] text-destructive">
-          Ошибка загрузки: {error}
+          Ошибка загрузки: {String(error)}
         </div>
       </div>
     );
   }
 
-  if (!boards) {
+  if (isLoading || !boards) {
     return (
       <div className="flex h-dvh items-center justify-center bg-background">
         <div className="animate-pulse text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
@@ -46,7 +42,7 @@ export function App() {
     );
   }
 
-  return <Board board={board} onChanged={load} />;
+  return <Board board={board} onChanged={onChanged} />;
 }
 
 export default App;
