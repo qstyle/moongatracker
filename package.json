@@ -29,7 +29,8 @@
   },
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/*",
+    "libs/*"
   ],
   "prisma": {
     "seed": "tsx prisma/seed.ts"
