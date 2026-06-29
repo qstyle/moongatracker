@@ -1,8 +1,11 @@
+import { useSyncExternalStore } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { getToken, onAuthChange } from '../api/client';
 import { fetchBoards } from '../api/boards';
 import { Board } from '../components/board/board';
+import { Login } from '../components/auth/login';
 
-export function App() {
+function BoardScreen() {
   const queryClient = useQueryClient();
   const {
     data: boards,
@@ -43,6 +46,12 @@ export function App() {
   }
 
   return <Board board={board} onChanged={onChanged} />;
+}
+
+export function App() {
+  const token = useSyncExternalStore(onAuthChange, getToken, getToken);
+  if (!token) return <Login />;
+  return <BoardScreen />;
 }
 
 export default App;

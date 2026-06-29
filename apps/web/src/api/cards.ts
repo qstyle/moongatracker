@@ -3,14 +3,10 @@ import {
   CreateCardInput,
   UpdateCardInput,
 } from '@moongatracker/shared-types';
-
-async function asJson<T>(res: Response): Promise<T> {
-  if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
-  return res.json();
-}
+import { apiFetch, asJson } from './client';
 
 export function createCard(input: CreateCardInput): Promise<CardDto> {
-  return fetch('/api/cards', {
+  return apiFetch('/api/cards', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
@@ -21,7 +17,7 @@ export function updateCard(
   id: string,
   input: UpdateCardInput,
 ): Promise<CardDto> {
-  return fetch(`/api/cards/${id}`, {
+  return apiFetch(`/api/cards/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
@@ -29,6 +25,6 @@ export function updateCard(
 }
 
 export async function deleteCard(id: string): Promise<void> {
-  const res = await fetch(`/api/cards/${id}`, { method: 'DELETE' });
+  const res = await apiFetch(`/api/cards/${id}`, { method: 'DELETE' });
   if (!res.ok) throw new Error(`${res.status}`);
 }

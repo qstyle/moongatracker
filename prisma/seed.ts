@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import * as bcrypt from 'bcryptjs';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 
@@ -55,10 +56,23 @@ const CARDS = [
   },
 ];
 
+async function seedUser() {
+  const email = 'admin@moongatracker.local';
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) return;
+  const passwordHash = await bcrypt.hash('moonga', 10);
+  await prisma.user.create({
+    data: { email, passwordHash, name: 'Admin', role: 'admin' },
+  });
+  console.log(`Seeded user ${email} (password: moonga).`);
+}
+
 async function main() {
+  await seedUser();
+
   const existing = await prisma.board.findFirst();
   if (existing) {
-    console.log('Seed skipped: data already present.');
+    console.log('Seed skipped: board already present.');
     return;
   }
 

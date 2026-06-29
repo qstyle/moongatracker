@@ -1,0 +1,20 @@
+import { AuthResponse } from '@moongatracker/shared-types';
+import { apiFetch, asJson, setToken } from './client';
+
+export async function login(
+  email: string,
+  password: string,
+): Promise<AuthResponse> {
+  const res = await apiFetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  const data = await asJson<AuthResponse>(res);
+  setToken(data.accessToken);
+  return data;
+}
+
+export function logout(): void {
+  setToken(null);
+}

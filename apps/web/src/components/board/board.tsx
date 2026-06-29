@@ -11,9 +11,10 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
-import { RiTBoxLine } from '@remixicon/react';
+import { RiLogoutBoxRLine, RiTBoxLine } from '@remixicon/react';
 import { VIEWS, ViewId } from '../../lib/views';
 import { updateCard } from '../../api/cards';
+import { logout } from '../../api/auth';
 import { Column } from './column';
 import { ViewSwitch } from './view-switch';
 import { CardDialog } from './card-dialog';
@@ -169,6 +170,14 @@ export function Board({
             {total} задач
           </span>
           <ViewSwitch value={view} onChange={setView} />
+          <button
+            type="button"
+            onClick={() => logout()}
+            title="Выйти"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <RiLogoutBoxRLine className="size-4" />
+          </button>
         </div>
       </header>
 
