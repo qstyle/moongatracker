@@ -10,19 +10,21 @@ Self-hosted канбан, спроектированный под **совмес
 
 ## Статус
 
-🟡 **Дизайн.** Реализация ещё не начата. Документация в [`docs/`](docs/) — источник правды.
+🟢 **Phase 0 — каркас готов.** Nx-монорепо, api (NestJS+Fastify), web (Vite+React+shadcn),
+SQLite через Prisma, эндпоинт `GET /api/boards`, Docker-контейнер. Дальше — Phase 1 (MVP-доска).
+Документация в [`docs/`](docs/) — источник правды.
 
 ## Стек (максимальная экономия ресурсов)
 
-| Слой | Технология | Почему |
-|------|-----------|--------|
-| Backend | **NestJS (Fastify-адаптер)** | Привычный стек, типобезопасно, легче Express |
-| БД | **SQLite + Prisma** | Встроена в процесс — нет отдельного демона; бэкап = один файл |
-| Frontend | **Vite + React (SPA)** + shadcn/ui | Статическая сборка, без SSR-процесса; пресет UI `b6GNZujOi` |
-| Realtime | **Socket.IO** (Nest gateway) | Живое обновление доски |
-| Агент-слой | **REST API + MCP-сервер** | Агент рулит доской как инструментом |
-| Монорепо | **Nx** | Общие TS-типы фронт ↔ бэк ↔ mcp |
-| Деплой | **Docker Compose**, self-hosted | Один контейнер, ~120–180 МБ RAM |
+| Слой       | Технология                         | Почему                                                        |
+| ---------- | ---------------------------------- | ------------------------------------------------------------- |
+| Backend    | **NestJS (Fastify-адаптер)**       | Привычный стек, типобезопасно, легче Express                  |
+| БД         | **SQLite + Prisma**                | Встроена в процесс — нет отдельного демона; бэкап = один файл |
+| Frontend   | **Vite + React (SPA)** + shadcn/ui | Статическая сборка, без SSR-процесса; пресет UI `b6GNZujOi`   |
+| Realtime   | **Socket.IO** (Nest gateway)       | Живое обновление доски                                        |
+| Агент-слой | **REST API + MCP-сервер**          | Агент рулит доской как инструментом                           |
+| Монорепо   | **Nx**                             | Общие TS-типы фронт ↔ бэк ↔ mcp                               |
+| Деплой     | **Docker Compose**, self-hosted    | Один контейнер, ~120–180 МБ RAM                               |
 
 Рантайм: **один Node-процесс + файл SQLite**. SPA вшивается в раздачу API — отдельного
 nginx/Node на фронт нет.
@@ -49,6 +51,25 @@ moongatracker/
 - [docs/AGENT_INTEGRATION.md](docs/AGENT_INTEGRATION.md) — MCP-инструменты, API-токены, трейс и откат
 - [docs/ROADMAP.md](docs/ROADMAP.md) — поэтапный план реализации
 
+## Локальная разработка
+
+```bash
+npm install
+npx prisma migrate dev && npx prisma db seed   # SQLite + демо-доска «Главная»
+npx nx serve api    # http://localhost:3020/api  (GET /api/boards)
+npx nx serve web    # http://localhost:4200      (проксирует /api на api)
+```
+
+## Docker (self-hosted)
+
+```bash
+docker compose up -d --build   # api на :3020, SQLite в volume mgt-data
+```
+
+Контейнер применяет миграции (`prisma migrate deploy`) при старте; данные БД — в
+именованном томе `mgt-data` (`/data/moongatracker.db`).
+
 ## Дальше
 
-Дизайн зафиксирован → следующий шаг — детальный план реализации (Phase 1 / MVP).
+Phase 0 готов → следующий шаг — Phase 1 (MVP-доска): CRUD карточек, drag&drop,
+комментарии, auth, Socket.IO. План — в [docs/ROADMAP.md](docs/ROADMAP.md).
