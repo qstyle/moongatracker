@@ -1,0 +1,13 @@
+services:
+  moongatracker:
+    build: .
+    container_name: moongatracker
+    ports:
+      - '3020:3020'
+    environment:
+      - DATABASE_URL=file:/data/moongatracker.db
+    volumes:
+      - mgt-data:/data
+
+volumes:
+  mgt-data:

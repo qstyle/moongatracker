@@ -13,6 +13,7 @@ export default defineConfig({
     seed: 'tsx prisma/seed.ts',
   },
   datasource: {
+    url,
     adapter: () => new PrismaBetterSqlite3({ url }),
   },
 });
