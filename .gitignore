@@ -1,32 +1,44 @@
-# dependencies
-node_modules/
-.pnp
-.pnp.js
 
-# nx
-.nx/cache
-.nx/workspace-data
-dist/
-tmp/
-out-tsc/
-
-# env
-.env
-.env.local
-*.local
-
-# database (SQLite)
-*.sqlite
-*.sqlite3
-*.db
-prisma/*.db
-
-# logs
-*.log
-npm-debug.log*
-
-# editor / os
-.DS_Store
-.idea/
-.vscode/*
 !.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/tasks.json
+# IDE - VSCode
+# IDEs and editors
+# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+# System Files
+# compiled output
+# dependencies
+# misc
+*.launch
+*.sublime-workspace
+.DS_Store
+.c9/
+.classpath
+.claude/settings.local.json
+.claude/worktrees
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
+.nx/cache
+.nx/migrate-runs
+.nx/migrate-runs# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+.nx/polygraph
+.nx/self-healing
+.nx/workspace-data
+.project
+.settings/
+.vscode/*
+/.idea
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+/typings
+Thumbs.db
+dist
+node_modules
+npm-debug.log
+out-tsc
+testem.log
+tmp
+yarn-error.log
