@@ -212,10 +212,159 @@ export function SettingsPage() {
 
       {/* Tab: AI-agents */}
       {tab === 'tokens' && (
-        <div className="max-w-md">
-          <p className="text-[11px] text-muted-foreground">
-            Управление AI-агентами будет доступно в Phase 4.
-          </p>
+        <div className="max-w-lg space-y-6">
+          {/* One-time token display */}
+          {createdToken && (
+            <div className="rounded border border-amber-500/40 bg-amber-500/10 p-4 space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-amber-400">
+                Скопируйте токен — больше не будет показан
+              </p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 break-all rounded bg-muted px-2 py-1.5 text-[11px] text-foreground">
+                  {createdToken}
+                </code>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(createdToken);
+                  }}
+                  className="shrink-0 rounded border border-border px-3 py-1.5 text-[11px] text-muted-foreground hover:text-foreground"
+                >
+                  Копировать
+                </button>
+              </div>
+              <button
+                onClick={() => setCreatedToken(null)}
+                className="text-[10px] text-muted-foreground hover:text-foreground"
+              >
+                Закрыть
+              </button>
+            </div>
+          )}
+
+          {/* Create token form */}
+          <div className="space-y-3">
+            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Новый токен
+            </h2>
+            <input
+              className="w-full rounded border border-border bg-muted px-3 py-2 text-[12px] text-foreground outline-none"
+              placeholder="Имя токена (например: claude-mcp)"
+              value={newTokenName}
+              onChange={(e) => setNewTokenName(e.target.value)}
+            />
+            <div className="flex flex-wrap gap-2">
+              {(['cards:read', 'cards:write', 'comments:write'] as const).map(
+                (scope) => (
+                  <label
+                    key={scope}
+                    className="flex cursor-pointer items-center gap-1.5"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={newTokenScopes.includes(scope)}
+                      onChange={(e) =>
+                        setNewTokenScopes(
+                          e.target.checked
+                            ? [...newTokenScopes, scope]
+                            : newTokenScopes.filter((s) => s !== scope),
+                        )
+                      }
+                    />
+                    <span className="text-[11px] text-muted-foreground">
+                      {scope}
+                    </span>
+                  </label>
+                ),
+              )}
+            </div>
+            <button
+              disabled={
+                creatingToken ||
+                !newTokenName.trim() ||
+                newTokenScopes.length === 0
+              }
+              onClick={async () => {
+                if (!activeOrg) return;
+                setCreatingToken(true);
+                try {
+                  const resp = await createToken(
+                    activeOrg.id,
+                    newTokenName.trim(),
+                    newTokenScopes,
+                  );
+                  setCreatedToken(resp.token);
+                  setNewTokenName('');
+                  await refetchTokens();
+                } finally {
+                  setCreatingToken(false);
+                }
+              }}
+              className="rounded bg-foreground px-4 py-2 text-[11px] text-background hover:opacity-80 disabled:opacity-40"
+            >
+              {creatingToken ? 'Создание…' : 'Создать токен'}
+            </button>
+          </div>
+
+          {/* Tokens list */}
+          {tokens.length > 0 && (
+            <div className="space-y-2">
+              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Токены
+              </h2>
+              <table className="w-full text-[12px]">
+                <thead>
+                  <tr className="border-b border-border text-left text-muted-foreground">
+                    <th className="pb-2 font-normal">Имя</th>
+                    <th className="pb-2 font-normal">Скоупы</th>
+                    <th className="pb-2 font-normal">
+                      Последнее использование
+                    </th>
+                    <th className="pb-2 font-normal"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tokens.map((t: ApiTokenDto) => (
+                    <tr
+                      key={t.id}
+                      className={cn(
+                        'border-b border-border/50',
+                        t.revokedAt ? 'opacity-40' : '',
+                      )}
+                    >
+                      <td className="py-2">{t.name}</td>
+                      <td className="py-2 text-[10px] text-muted-foreground">
+                        {t.scopes.join(', ')}
+                      </td>
+                      <td className="py-2 text-muted-foreground">
+                        {t.lastUsedAt
+                          ? new Date(t.lastUsedAt).toLocaleDateString('ru')
+                          : '—'}
+                      </td>
+                      <td className="py-2">
+                        {!t.revokedAt && (
+                          <button
+                            onClick={async () => {
+                              if (!activeOrg) return;
+                              await revokeToken(activeOrg.id, t.id);
+                              await refetchTokens();
+                            }}
+                            className="text-[10px] text-destructive hover:opacity-80"
+                          >
+                            Отозвать
+                          </button>
+                        )}
+                        {t.revokedAt && (
+                          <span className="text-[10px] text-muted-foreground">
+                            Отозван
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
     </div>
