@@ -13,14 +13,14 @@ import { CardComposer } from './card-composer';
 export function Column({
   column,
   index,
-  projectId,
+  boardId,
   disabled,
   onChanged,
   onSelectCard,
 }: {
   column: ColumnDto;
   index: number;
-  projectId: string;
+  boardId: string;
   disabled?: boolean;
   onChanged: () => void;
   onSelectCard: (card: CardDto) => void;
@@ -148,7 +148,7 @@ export function Column({
         </SortableContext>
 
         <CardComposer
-          projectId={projectId}
+          boardId={boardId}
           columnId={column.id}
           onAdded={onChanged}
           disabled={disabled}

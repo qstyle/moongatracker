@@ -2,13 +2,13 @@ import { apiFetch, asJson } from './client';
 import type { ColumnDto } from '@moongatracker/shared-types';
 
 export function createColumn(
-  projectId: string,
+  boardId: string,
   title: string,
 ): Promise<ColumnDto> {
   return apiFetch('/api/columns', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ projectId, title }),
+    body: JSON.stringify({ boardId, title }),
   }).then((r) => asJson<ColumnDto>(r));
 }
 
@@ -24,13 +24,13 @@ export function updateColumn(
 }
 
 export function reorderColumns(
-  projectId: string,
+  boardId: string,
   orderedIds: string[],
 ): Promise<void> {
   return apiFetch('/api/columns/reorder', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ projectId, orderedIds }),
+    body: JSON.stringify({ boardId, orderedIds }),
   }).then(async (r) => {
     if (!r.ok) throw new Error(`${r.status}`);
   });

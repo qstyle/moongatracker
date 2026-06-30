@@ -3,12 +3,12 @@ import { RiAddLine } from '@remixicon/react';
 import { createCard } from '../../api/cards';
 
 export function CardComposer({
-  projectId,
+  boardId,
   columnId,
   onAdded,
   disabled,
 }: {
-  projectId: string;
+  boardId: string;
   columnId: string;
   onAdded: () => void;
   disabled?: boolean;
@@ -27,7 +27,7 @@ export function CardComposer({
     if (!value || busy) return;
     setBusy(true);
     try {
-      await createCard({ projectId, columnId, title: value });
+      await createCard({ boardId, columnId, title: value });
       reset();
       onAdded();
     } finally {

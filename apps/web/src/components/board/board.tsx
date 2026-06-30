@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ProjectDto, CardDto, ColumnDto } from '@moongatracker/shared-types';
+import { BoardDto, CardDto, ColumnDto } from '@moongatracker/shared-types';
 import {
   DndContext,
   DragEndEvent,
@@ -14,7 +14,7 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { RiTBoxLine } from '@remixicon/react';
 import { FilterState, useCardFilter } from '../../lib/use-card-filter';
 import { updateCard } from '../../api/cards';
-import { updateProject } from '../../api/projects';
+import { updateBoard } from '../../api/boards';
 import { createColumn } from '../../api/columns';
 import { Column } from './column';
 import { CardDialog } from './card-dialog';
@@ -72,24 +72,24 @@ function computeMove(
 }
 
 export function Board({
-  project,
+  board,
   onChanged,
 }: {
-  project: ProjectDto;
+  board: BoardDto;
   onChanged: () => void;
 }) {
   const [selected, setSelected] = useState<CardDto | null>(null);
-  const [columns, setColumns] = useState<ColumnDto[]>(project.columns);
+  const [columns, setColumns] = useState<ColumnDto[]>(board.columns);
   const [activeCard, setActiveCard] = useState<CardDto | null>(null);
   const [filter, setFilter] = useState<FilterState>({ search: '' });
   const [editingName, setEditingName] = useState(false);
-  const [nameInput, setNameInput] = useState(project.name);
+  const [nameInput, setNameInput] = useState(board.name);
   const [addingColumn, setAddingColumn] = useState(false);
 
   useEffect(() => {
-    setColumns(project.columns);
-    setNameInput(project.name);
-  }, [project]);
+    setColumns(board.columns);
+    setNameInput(board.name);
+  }, [board]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -108,7 +108,7 @@ export function Board({
 
   async function persist(next: ColumnDto[]) {
     const original = new Map<string, { columnId: string; index: number }>();
-    project.columns.forEach((c) =>
+    board.columns.forEach((c) =>
       c.cards.forEach((card, i) =>
         original.set(card.id, { columnId: c.id, index: i }),
       ),
@@ -168,15 +168,15 @@ export function Board({
               onChange={(e) => setNameInput(e.target.value)}
               onBlur={async () => {
                 setEditingName(false);
-                if (nameInput.trim() && nameInput.trim() !== project.name) {
-                  await updateProject(project.id, nameInput.trim());
+                if (nameInput.trim() && nameInput.trim() !== board.name) {
+                  await updateBoard(board.id, nameInput.trim());
                   onChanged();
                 }
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') e.currentTarget.blur();
                 if (e.key === 'Escape') {
-                  setNameInput(project.name);
+                  setNameInput(board.name);
                   setEditingName(false);
                 }
               }}
@@ -186,7 +186,7 @@ export function Board({
               className="cursor-pointer text-[12px] text-muted-foreground hover:text-foreground"
               onClick={() => setEditingName(true)}
             >
-              {project.name}
+              {board.name}
             </span>
           )}
         </div>
@@ -214,7 +214,7 @@ export function Board({
               key={col.id}
               column={col}
               index={i}
-              projectId={project.id}
+              boardId={board.id}
               disabled={filterActive}
               onSelectCard={setSelected}
               onChanged={onChanged}
@@ -230,7 +230,7 @@ export function Board({
                   const fd = new FormData(e.currentTarget);
                   const title = (fd.get('title') as string)?.trim();
                   if (title) {
-                    await createColumn(project.id, title);
+                    await createColumn(board.id, title);
                     onChanged();
                   }
                   setAddingColumn(false);

@@ -1,30 +1,30 @@
 import { useRoute } from 'wouter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchProject } from '../api/projects';
-import { useProjectSocket } from '../api/socket';
+import { fetchBoard } from '../api/boards';
+import { useBoardSocket } from '../api/socket';
 import { Board } from '../components/board/board';
 
 export function BoardPage() {
-  const [, params] = useRoute('/projects/:projectId');
-  const projectId = params?.projectId ?? '';
+  const [, params] = useRoute('/boards/:boardId');
+  const boardId = params?.boardId ?? '';
   const queryClient = useQueryClient();
 
-  useProjectSocket(projectId, queryClient);
+  useBoardSocket(boardId, queryClient);
 
   const {
-    data: project,
+    data: board,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['project', projectId],
-    queryFn: () => fetchProject(projectId),
-    enabled: !!projectId,
+    queryKey: ['board', boardId],
+    queryFn: () => fetchBoard(boardId),
+    enabled: !!boardId,
   });
 
-  if (!projectId)
+  if (!boardId)
     return (
       <div className="flex h-full items-center justify-center text-[12px] text-muted-foreground">
-        Выберите проект в боковой панели
+        Выберите доску в боковой панели
       </div>
     );
 
@@ -35,18 +35,18 @@ export function BoardPage() {
       </div>
     );
 
-  if (error || !project)
+  if (error || !board)
     return (
       <div className="flex h-full items-center justify-center text-[12px] text-destructive">
-        Ошибка загрузки проекта
+        Ошибка загрузки доски
       </div>
     );
 
   return (
     <Board
-      project={project}
+      board={board}
       onChanged={() =>
-        queryClient.invalidateQueries({ queryKey: ['project', projectId] })
+        queryClient.invalidateQueries({ queryKey: ['board', boardId] })
       }
     />
   );

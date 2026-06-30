@@ -1,40 +1,97 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useRoute, useLocation } from 'wouter';
-import { fetchOrgs } from '../../api/orgs';
 import { fetchProjects, createProject } from '../../api/projects';
+import { fetchBoards, createBoard } from '../../api/boards';
 import { logout } from '../../api/auth';
+import type { ProjectDto } from '@moongatracker/shared-types';
+
+function ProjectSection({
+  project,
+  activeBoardId,
+}: {
+  project: ProjectDto;
+  activeBoardId?: string;
+}) {
+  const { data: boards = [] } = useQuery({
+    queryKey: ['boards', project.id],
+    queryFn: () => fetchBoards(project.id),
+  });
+  const [addingBoard, setAddingBoard] = useState(false);
+  const queryClient = useQueryClient();
+
+  return (
+    <div className="mb-2">
+      {/* Project name as section header */}
+      <div className="px-3 py-1 text-[10px] uppercase tracking-wider text-muted-foreground/60">
+        {project.name}
+      </div>
+
+      {/* Board list */}
+      {boards.map((board) => (
+        <Link
+          key={board.id}
+          href={`/boards/${board.id}`}
+          className={[
+            'block rounded px-3 py-1.5 text-[12px] transition-colors',
+            activeBoardId === board.id
+              ? 'bg-muted text-foreground'
+              : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
+          ].join(' ')}
+        >
+          {board.name}
+        </Link>
+      ))}
+
+      {/* Add board */}
+      {addingBoard ? (
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.currentTarget);
+            const name = (fd.get('name') as string)?.trim();
+            if (name) {
+              await createBoard(project.id, name);
+              queryClient.invalidateQueries({
+                queryKey: ['boards', project.id],
+              });
+            }
+            setAddingBoard(false);
+          }}
+          className="px-2 py-1"
+        >
+          <input
+            autoFocus
+            name="name"
+            placeholder="Название доски"
+            className="w-full rounded border border-border bg-muted px-2 py-1 text-[12px] outline-none"
+            onKeyDown={(e) => e.key === 'Escape' && setAddingBoard(false)}
+          />
+        </form>
+      ) : (
+        <button
+          onClick={() => setAddingBoard(true)}
+          className="flex w-full items-center gap-1 rounded px-3 py-1.5 text-[11px] text-muted-foreground hover:text-foreground"
+        >
+          + Новая доска
+        </button>
+      )}
+    </div>
+  );
+}
 
 export function Sidebar() {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
-  const [creating, setCreating] = useState(false);
-  const [newProjectName, setNewProjectName] = useState('');
-
-  const { data: orgs = [] } = useQuery({
-    queryKey: ['orgs'],
-    queryFn: fetchOrgs,
-  });
-
-  const activeOrg = orgs[0];
+  const [addingProject, setAddingProject] = useState(false);
 
   const { data: projects = [] } = useQuery({
-    queryKey: ['projects', activeOrg?.id],
-    queryFn: () => fetchProjects(activeOrg!.id),
-    enabled: !!activeOrg,
+    queryKey: ['projects'],
+    queryFn: fetchProjects,
   });
 
-  const [, boardParams] = useRoute('/projects/:projectId');
-  const activeProjectId = boardParams?.projectId;
-
-  async function handleCreateProject(e: React.FormEvent) {
-    e.preventDefault();
-    if (!activeOrg || !newProjectName.trim()) return;
-    await createProject(activeOrg.id, newProjectName.trim());
-    setNewProjectName('');
-    setCreating(false);
-    queryClient.invalidateQueries({ queryKey: ['projects', activeOrg.id] });
-  }
+  const [, boardParams] = useRoute('/boards/:boardId');
+  const activeBoardId = boardParams?.boardId;
 
   function handleLogout() {
     logout();
@@ -50,50 +107,45 @@ export function Sidebar() {
         </span>
       </div>
 
-      {/* Org name */}
-      {activeOrg && (
-        <div className="px-4 py-2">
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-            {activeOrg.name}
-          </span>
-        </div>
-      )}
-
-      {/* Projects list */}
-      <nav className="flex-1 overflow-y-auto px-2 py-1">
-        {projects.map((p) => (
-          <Link
-            key={p.id}
-            href={`/projects/${p.id}`}
-            className={[
-              'block rounded px-3 py-1.5 text-[12px] transition-colors',
-              activeProjectId === p.id
-                ? 'bg-muted text-foreground'
-                : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
-            ].join(' ')}
-          >
-            {p.name}
-          </Link>
+      {/* Projects + Boards */}
+      <nav className="flex-1 overflow-y-auto py-2">
+        {projects.map((project) => (
+          <ProjectSection
+            key={project.id}
+            project={project}
+            activeBoardId={activeBoardId}
+          />
         ))}
 
-        {/* New project */}
-        {creating ? (
-          <form onSubmit={handleCreateProject} className="px-1 py-1">
+        {/* Add project */}
+        {addingProject ? (
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const fd = new FormData(e.currentTarget);
+              const name = (fd.get('name') as string)?.trim();
+              if (name) {
+                await createProject(name);
+                queryClient.invalidateQueries({ queryKey: ['projects'] });
+              }
+              setAddingProject(false);
+            }}
+            className="px-2 py-1"
+          >
             <input
               autoFocus
-              className="w-full rounded border border-border bg-muted px-2 py-1 text-[12px] text-foreground outline-none"
-              placeholder="Project name"
-              value={newProjectName}
-              onChange={(e) => setNewProjectName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Escape' && setCreating(false)}
+              name="name"
+              placeholder="Название проекта"
+              className="w-full rounded border border-border bg-muted px-2 py-1 text-[12px] outline-none"
+              onKeyDown={(e) => e.key === 'Escape' && setAddingProject(false)}
             />
           </form>
         ) : (
           <button
-            onClick={() => setCreating(true)}
-            className="mt-1 flex w-full items-center gap-1 rounded px-3 py-1.5 text-[11px] text-muted-foreground hover:text-foreground"
+            onClick={() => setAddingProject(true)}
+            className="flex w-full items-center gap-1 rounded px-3 py-1.5 text-[11px] text-muted-foreground hover:text-foreground"
           >
-            <span>+</span> Новый проект
+            + Новый проект
           </button>
         )}
       </nav>

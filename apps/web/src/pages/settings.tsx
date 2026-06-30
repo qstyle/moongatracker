@@ -1,21 +1,21 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  fetchOrgs,
-  updateOrg,
-  fetchOrgMembers,
+  fetchProjects,
+  updateProject,
+  fetchProjectMembers,
   addMember,
   removeMember,
-} from '../api/orgs';
+} from '../api/projects';
 import { fetchTokens, createToken, revokeToken } from '../api/api-tokens';
 import type { ApiTokenDto } from '@moongatracker/shared-types';
 import { cn } from '../lib/utils';
 
-type Tab = 'org' | 'members' | 'tokens';
+type Tab = 'project' | 'members' | 'tokens';
 
 export function SettingsPage() {
-  const [tab, setTab] = useState<Tab>('org');
-  const [orgName, setOrgName] = useState('');
+  const [tab, setTab] = useState<Tab>('project');
+  const [projectName, setProjectName] = useState('');
   const [saving, setSaving] = useState(false);
   const queryClient = useQueryClient();
 
@@ -31,39 +31,39 @@ export function SettingsPage() {
   const [inviting, setInviting] = useState(false);
   const [inviteError, setInviteError] = useState('');
 
-  const { data: orgs = [] } = useQuery({
-    queryKey: ['orgs'],
-    queryFn: fetchOrgs,
+  const { data: projects = [] } = useQuery({
+    queryKey: ['projects'],
+    queryFn: fetchProjects,
   });
-  const activeOrg = orgs[0];
+  const activeProject = projects[0];
 
   const { data: members = [] } = useQuery({
-    queryKey: ['members', activeOrg?.id],
-    queryFn: () => fetchOrgMembers(activeOrg!.id),
-    enabled: !!activeOrg && tab === 'members',
+    queryKey: ['members', activeProject?.id],
+    queryFn: () => fetchProjectMembers(activeProject!.id),
+    enabled: !!activeProject && tab === 'members',
   });
 
   const { data: tokens = [], refetch: refetchTokens } = useQuery({
-    queryKey: ['tokens', activeOrg?.id],
-    queryFn: () => fetchTokens(activeOrg!.id),
-    enabled: !!activeOrg && tab === 'tokens',
+    queryKey: ['tokens', activeProject?.id],
+    queryFn: () => fetchTokens(activeProject!.id),
+    enabled: !!activeProject && tab === 'tokens',
   });
 
-  async function handleRenameOrg(e: React.FormEvent) {
+  async function handleRenameProject(e: React.FormEvent) {
     e.preventDefault();
-    if (!activeOrg || !orgName.trim()) return;
+    if (!activeProject || !projectName.trim()) return;
     setSaving(true);
     try {
-      await updateOrg(activeOrg.id, orgName.trim());
-      queryClient.invalidateQueries({ queryKey: ['orgs'] });
-      setOrgName('');
+      await updateProject(activeProject.id, projectName.trim());
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      setProjectName('');
     } finally {
       setSaving(false);
     }
   }
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: 'org', label: 'Организация' },
+    { key: 'project', label: 'Проект' },
     { key: 'members', label: 'Участники' },
     { key: 'tokens', label: 'AI-агенты' },
   ];
@@ -92,23 +92,23 @@ export function SettingsPage() {
         ))}
       </div>
 
-      {/* Tab: Organization */}
-      {tab === 'org' && (
+      {/* Tab: Project */}
+      {tab === 'project' && (
         <div className="max-w-sm space-y-4">
           <p className="text-[12px] text-muted-foreground">
             Текущее название:{' '}
-            <span className="text-foreground">{activeOrg?.name}</span>
+            <span className="text-foreground">{activeProject?.name}</span>
           </p>
-          <form onSubmit={handleRenameOrg} className="flex gap-2">
+          <form onSubmit={handleRenameProject} className="flex gap-2">
             <input
               className="flex-1 rounded border border-border bg-muted px-3 py-2 text-[12px] text-foreground outline-none"
               placeholder="Новое название"
-              value={orgName}
-              onChange={(e) => setOrgName(e.target.value)}
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
             />
             <button
               type="submit"
-              disabled={saving || !orgName.trim()}
+              disabled={saving || !projectName.trim()}
               className="rounded bg-foreground px-4 py-2 text-[11px] text-background hover:opacity-80 disabled:opacity-40"
             >
               {saving ? '…' : 'Сохранить'}
@@ -128,14 +128,14 @@ export function SettingsPage() {
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
-                if (!activeOrg || !inviteEmail.trim()) return;
+                if (!activeProject || !inviteEmail.trim()) return;
                 setInviting(true);
                 setInviteError('');
                 try {
-                  await addMember(activeOrg.id, inviteEmail.trim());
+                  await addMember(activeProject.id, inviteEmail.trim());
                   setInviteEmail('');
                   queryClient.invalidateQueries({
-                    queryKey: ['members', activeOrg.id],
+                    queryKey: ['members', activeProject.id],
                   });
                 } catch (err: unknown) {
                   setInviteError(
@@ -187,11 +187,11 @@ export function SettingsPage() {
                     <td className="py-2">
                       <button
                         onClick={async () => {
-                          if (!activeOrg) return;
+                          if (!activeProject) return;
                           try {
-                            await removeMember(activeOrg.id, m.userId);
+                            await removeMember(activeProject.id, m.userId);
                             queryClient.invalidateQueries({
-                              queryKey: ['members', activeOrg.id],
+                              queryKey: ['members', activeProject.id],
                             });
                           } catch {
                             // ignore
@@ -284,11 +284,11 @@ export function SettingsPage() {
                 newTokenScopes.length === 0
               }
               onClick={async () => {
-                if (!activeOrg) return;
+                if (!activeProject) return;
                 setCreatingToken(true);
                 try {
                   const resp = await createToken(
-                    activeOrg.id,
+                    activeProject.id,
                     newTokenName.trim(),
                     newTokenScopes,
                   );
@@ -344,8 +344,8 @@ export function SettingsPage() {
                         {!t.revokedAt && (
                           <button
                             onClick={async () => {
-                              if (!activeOrg) return;
-                              await revokeToken(activeOrg.id, t.id);
+                              if (!activeProject) return;
+                              await revokeToken(activeProject.id, t.id);
                               await refetchTokens();
                             }}
                             className="text-[10px] text-destructive hover:opacity-80"

@@ -25,10 +25,10 @@ export function App() {
   return (
     <AppLayout>
       <Switch>
-        <Route path="/projects/:projectId" component={BoardPage} />
+        <Route path="/boards/:boardId" component={BoardPage} />
         <Route path="/settings" component={SettingsPage} />
         <Route>
-          <Redirect to="/projects/select" />
+          <Redirect to="/boards/select" />
         </Route>
       </Switch>
     </AppLayout>
