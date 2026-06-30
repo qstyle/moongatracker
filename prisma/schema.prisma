@@ -6,84 +6,91 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  name         String?
-  passwordHash String
-  role         String   @default("member")
-  createdAt    DateTime @default(now())
+model Organization {
+  id          String       @id @default(cuid())
+  name        String
+  createdAt   DateTime     @default(now())
+  memberships Membership[]
+  projects    Project[]
+  apiTokens   ApiToken[]
 }
 
-model Board {
-  id        String   @id @default(cuid())
+model Membership {
+  id        String       @id @default(cuid())
+  orgId     String
+  userId    String
+  createdAt DateTime     @default(now())
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, userId])
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  name         String?
+  passwordHash String
+  createdAt    DateTime     @default(now())
+  memberships  Membership[]
+}
+
+model ApiToken {
+  id         String       @id @default(cuid())
+  orgId      String
+  name       String
+  tokenHash  String       @unique
+  scopes     String[]
+  lastUsedAt DateTime?
+  createdAt  DateTime     @default(now())
+  revokedAt  DateTime?
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+}
+
+model Project {
+  id        String       @id @default(cuid())
+  orgId     String
   name      String
-  createdAt DateTime @default(now())
+  createdAt DateTime     @default(now())
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
   columns   Column[]
   cards     Card[]
-  labels    Label[]
 }
 
 model Column {
-  id      String @id @default(cuid())
-  boardId String
-  key     String
-  title   String
-  order   Int
-  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
-
-  @@unique([boardId, key])
+  id        String   @id @default(cuid())
+  projectId String
+  title     String
+  order     Int
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  cards     Card[]
 }
 
 model Card {
-  id         String      @id @default(cuid())
-  boardId    String
-  columnKey  String
-  title      String
-  body       String?
-  priority   Int         @default(0)
-  order      Int         @default(0)
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  board      Board       @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  comments   Comment[]
-  labels     CardLabel[]
+  id           String    @id @default(cuid())
+  projectId    String
+  columnId     String
+  title        String
+  body         String?
+  priority     String?
+  authorType   String    @default("user")
+  authorId     String    @default("")
+  assigneeType String?
+  assigneeId   String?
+  order        Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  project      Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  column       Column    @relation(fields: [columnId], references: [id], onDelete: Restrict)
+  comments     Comment[]
 }
 
 model Comment {
   id         String   @id @default(cuid())
   cardId     String
-  authorType String   @default("human") // human | agent
+  authorType String   @default("user")
   authorId   String?
   body       String
   createdAt  DateTime @default(now())
   card       Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
-}
-
-model Label {
-  id      String      @id @default(cuid())
-  boardId String
-  name    String
-  color   String
-  board   Board       @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  cards   CardLabel[]
-}
-
-model CardLabel {
-  cardId  String
-  labelId String
-  card    Card  @relation(fields: [cardId], references: [id], onDelete: Cascade)
-  label   Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
-
-  @@id([cardId, labelId])
-}
-
-model ApiToken {
-  id         String    @id @default(cuid())
-  userId     String
-  name       String
-  tokenHash  String    @unique
-  scope      String[]
-  lastUsedAt DateTime?
-  createdAt  DateTime  @default(now())
 }
