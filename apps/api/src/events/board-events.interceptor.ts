@@ -8,7 +8,7 @@ import { Observable, tap } from 'rxjs';
 import { EventsGateway } from './events.gateway';
 
 /**
- * Broadcasts a generic "board:changed" event after any successful mutating
+ * Broadcasts a generic "project:changed" event after any successful mutating
  * request (non-GET), so connected clients refetch. Auth routes are excluded.
  */
 @Injectable()
@@ -25,7 +25,7 @@ export class BoardEventsInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap(() => {
-        if (isMutation && !isAuth) this.events.emitBoardChanged();
+        if (isMutation && !isAuth) this.events.emitProjectChanged();
       }),
     );
   }

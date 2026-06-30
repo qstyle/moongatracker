@@ -1,12 +1,13 @@
 import { join } from 'path';
 import { DynamicModule, Module } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { ApiTokensModule } from '../api-tokens/api-tokens.module';
+import { OrgsModule } from '../orgs/orgs.module';
+import { ProjectsModule } from '../projects/projects.module';
+import { ColumnsModule } from '../columns/columns.module';
 import { AuthModule } from '../auth/auth.module';
-import { BoardsModule } from '../boards/boards.module';
+import { ApiTokensModule } from '../api-tokens/api-tokens.module';
 import { CardsModule } from '../cards/cards.module';
 import { CommentsModule } from '../comments/comments.module';
-import { LabelsModule } from '../labels/labels.module';
 import { EventsModule } from '../events/events.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -26,12 +27,13 @@ const staticModules: DynamicModule[] =
 @Module({
   imports: [
     ...staticModules,
+    OrgsModule,
+    ProjectsModule,
+    ColumnsModule,
     AuthModule,
     ApiTokensModule,
-    BoardsModule,
     CardsModule,
     CommentsModule,
-    LabelsModule,
     EventsModule,
   ],
   controllers: [AppController],

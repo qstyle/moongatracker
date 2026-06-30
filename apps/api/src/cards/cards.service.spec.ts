@@ -1,5 +1,7 @@
 import { CardsService } from './cards.service';
 
+const NOW = new Date('2025-01-01T00:00:00.000Z');
+
 describe('CardsService', () => {
   it('create() computes order as (max order in column) + 1', async () => {
     const created: Array<{ order: number }> = [];
@@ -14,11 +16,18 @@ describe('CardsService', () => {
           created.push(data);
           return {
             id: 'k9',
-            columnKey: 'idea',
+            projectId: 'p1',
+            columnId: 'col1',
             title: data.title,
             body: data.body,
-            priority: 0,
+            priority: null,
+            authorType: 'user',
+            authorId: null,
+            assigneeType: null,
+            assigneeId: null,
             order: data.order,
+            createdAt: NOW,
+            updatedAt: NOW,
           };
         },
       },
@@ -26,8 +35,8 @@ describe('CardsService', () => {
 
     const service = new CardsService(fakePrisma);
     const result = await service.create({
-      boardId: 'b1',
-      columnKey: 'idea',
+      projectId: 'p1',
+      columnId: 'col1',
       title: 'X',
       body: null,
     } as any);
@@ -35,12 +44,16 @@ describe('CardsService', () => {
     expect(created[0].order).toBe(3);
     expect(result).toEqual({
       id: 'k9',
-      columnKey: 'idea',
+      projectId: 'p1',
+      columnId: 'col1',
       title: 'X',
       body: null,
-      priority: 0,
+      priority: null,
+      author: { type: 'user', id: null, name: null },
+      assignee: null,
       order: 3,
-      labels: [],
+      createdAt: NOW.toISOString(),
+      updatedAt: NOW.toISOString(),
     });
   });
 
@@ -50,19 +63,26 @@ describe('CardsService', () => {
         aggregate: async () => ({ _max: { order: null } }),
         create: async ({ data }: { data: { order: number } }) => ({
           id: 'k1',
-          columnKey: 'idea',
+          projectId: 'p1',
+          columnId: 'col1',
           title: 't',
           body: null,
-          priority: 0,
+          priority: null,
+          authorType: 'user',
+          authorId: null,
+          assigneeType: null,
+          assigneeId: null,
           order: data.order,
+          createdAt: NOW,
+          updatedAt: NOW,
         }),
       },
     } as any;
 
     const service = new CardsService(fakePrisma);
     const result = await service.create({
-      boardId: 'b1',
-      columnKey: 'idea',
+      projectId: 'p1',
+      columnId: 'col1',
       title: 't',
     } as any);
 
