@@ -4,5 +4,10 @@
     "outDir": "../../dist/apps/mcp",
     "types": ["node"]
   },
-  "exclude": ["**/*.spec.ts"]
+  "exclude": ["**/*.spec.ts"],
+  "references": [
+    {
+      "path": "../../libs/shared-types/tsconfig.lib.json"
+    }
+  ]
 }

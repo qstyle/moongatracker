@@ -5,5 +5,10 @@
     "moduleResolution": "NodeNext",
     "outDir": "../../dist/apps/mcp"
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "references": [
+    {
+      "path": "../../libs/shared-types"
+    }
+  ]
 }
