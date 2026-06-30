@@ -84,6 +84,7 @@ model Card {
   column       Column    @relation(fields: [columnId], references: [id], onDelete: Restrict)
   comments     Comment[]
   activities   Activity[]
+  attachments  Attachment[]
 }
 
 model Comment {
@@ -104,6 +105,17 @@ model Activity {
   action    String   // 'create' | 'update' | 'move' | 'comment'
   before    Json?
   after     Json?
+  createdAt DateTime @default(now())
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+}
+
+model Attachment {
+  id        String   @id @default(cuid())
+  cardId    String
+  key       String   // S3 object key
+  filename  String
+  mimeType  String
+  size      Int
   createdAt DateTime @default(now())
   card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
 }

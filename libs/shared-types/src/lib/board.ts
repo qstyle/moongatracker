@@ -40,6 +40,7 @@ export interface CardDto {
   order: number;
   createdAt: string;
   updatedAt: string;
+  attachmentCount: number;
 }
 
 export interface ColumnDto {
@@ -124,4 +125,15 @@ export interface ActivityDto {
   before: Record<string, unknown> | null;
   after: Record<string, unknown> | null;
   createdAt: string;
+}
+
+export interface AttachmentDto {
+  id: string;
+  cardId: string;
+  key: string;
+  filename: string;
+  mimeType: string;
+  size: number;
+  createdAt: string;
+  url?: string; // presigned GET URL, populated by API
 }
