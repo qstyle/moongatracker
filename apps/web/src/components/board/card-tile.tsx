@@ -6,9 +6,11 @@ import { LabelChip } from './label-chip';
 
 export function CardTile({
   card,
+  disabled,
   onClick,
 }: {
   card: CardDto;
+  disabled?: boolean;
   onClick: () => void;
 }) {
   const {
@@ -18,7 +20,7 @@ export function CardTile({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: card.id });
+  } = useSortable({ id: card.id, disabled });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -31,9 +33,12 @@ export function CardTile({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
+      {...(disabled ? {} : listeners)}
       onClick={onClick}
-      className="group relative cursor-grab touch-none border border-border bg-card px-3 py-2.5 transition-colors hover:border-foreground/30 active:cursor-grabbing"
+      className={
+        'group relative touch-none border border-border bg-card px-3 py-2.5 transition-colors hover:border-foreground/30 ' +
+        (disabled ? 'cursor-default' : 'cursor-grab active:cursor-grabbing')
+      }
     >
       <span className="absolute inset-y-0 left-0 w-[2px] bg-transparent transition-colors group-hover:bg-primary" />
 
@@ -49,10 +54,12 @@ export function CardTile({
         <p className="flex-1 text-[13px] font-medium leading-snug text-card-foreground">
           {card.title}
         </p>
-        <RiDraggable
-          aria-hidden
-          className="mt-px size-3.5 shrink-0 text-muted-foreground/40 opacity-0 transition-opacity group-hover:opacity-100"
-        />
+        {!disabled && (
+          <RiDraggable
+            aria-hidden
+            className="mt-px size-3.5 shrink-0 text-muted-foreground/40 opacity-0 transition-opacity group-hover:opacity-100"
+          />
+        )}
       </div>
 
       {card.body && (
