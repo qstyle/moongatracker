@@ -6,7 +6,7 @@
       "cwd": "/Users/dmitrijordin/checker_pro/moongatracker",
       "env": {
         "MOONGATRACKER_API_URL": "http://localhost:3020",
-        "MOONGATRACKER_API_TOKEN": ""
+        "MOONGATRACKER_API_TOKEN": "5e63fb5d3cc75664e8c1a3be5e9183e2ee2c784a9dc8850454b1f43c3bc5ca47"
       }
     }
   }
