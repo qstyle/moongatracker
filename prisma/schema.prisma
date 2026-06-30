@@ -6,24 +6,24 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Organization {
+model Project {
   id          String       @id @default(cuid())
   name        String
   createdAt   DateTime     @default(now())
   memberships Membership[]
-  projects    Project[]
+  boards      Board[]
   apiTokens   ApiToken[]
 }
 
 model Membership {
-  id        String       @id @default(cuid())
-  orgId     String
+  id        String   @id @default(cuid())
+  projectId String
   userId    String
-  createdAt DateTime     @default(now())
-  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
-  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([orgId, userId])
+  @@unique([projectId, userId])
 }
 
 model User {
@@ -36,52 +36,52 @@ model User {
 }
 
 model ApiToken {
-  id         String       @id @default(cuid())
-  orgId      String
+  id         String    @id @default(cuid())
+  projectId  String
   name       String
-  tokenHash  String       @unique
+  tokenHash  String    @unique
   scopes     String[]
   lastUsedAt DateTime?
-  createdAt  DateTime     @default(now())
+  createdAt  DateTime  @default(now())
   revokedAt  DateTime?
-  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
-model Project {
-  id        String       @id @default(cuid())
-  orgId     String
+model Board {
+  id        String   @id @default(cuid())
+  projectId String
   name      String
-  createdAt DateTime     @default(now())
-  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   columns   Column[]
   cards     Card[]
 }
 
 model Column {
-  id        String   @id @default(cuid())
-  projectId String
-  title     String
-  order     Int
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  cards     Card[]
+  id      String @id @default(cuid())
+  boardId String
+  title   String
+  order   Int
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards   Card[]
 }
 
 model Card {
-  id           String    @id @default(cuid())
-  projectId    String
+  id           String       @id @default(cuid())
+  boardId      String
   columnId     String
   title        String
   body         String?
   priority     String?
-  authorType   String    @default("user")
+  authorType   String       @default("user")
   authorId     String?
   assigneeType String?
   assigneeId   String?
-  order        Int       @default(0)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  project      Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  column       Column    @relation(fields: [columnId], references: [id], onDelete: Restrict)
+  order        Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  board        Board        @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  column       Column       @relation(fields: [columnId], references: [id], onDelete: Restrict)
   comments     Comment[]
   activities   Activity[]
   attachments  Attachment[]
