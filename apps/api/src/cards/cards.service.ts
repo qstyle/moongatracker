@@ -9,35 +9,51 @@ import { UpdateCardDto } from './dto/update-card.dto';
 export class CardsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(input: CreateCardDto): Promise<CardDto> {
+  async create(dto: CreateCardDto, user?: any): Promise<CardDto> {
     const max = await this.prisma.card.aggregate({
-      where: { boardId: input.boardId, columnKey: input.columnKey },
+      where: { projectId: dto.projectId, columnId: dto.columnId },
       _max: { order: true },
     });
     const order = (max._max.order ?? -1) + 1;
 
+    const authorType = user?.type === 'agent' ? 'agent' : 'user';
+    const authorId =
+      user?.type === 'agent' ? (user.tokenId ?? null) : (user?.sub ?? null);
+
     const card = await this.prisma.card.create({
       data: {
-        boardId: input.boardId,
-        columnKey: input.columnKey,
-        title: input.title,
-        body: input.body ?? null,
+        projectId: dto.projectId,
+        columnId: dto.columnId,
+        title: dto.title,
+        body: dto.body ?? null,
         order,
+        authorType,
+        authorId,
       },
     });
     return toCardDto(card);
   }
 
-  async update(id: string, input: UpdateCardDto): Promise<CardDto> {
+  async getById(id: string): Promise<CardDto> {
+    const card = await this.prisma.card.findUnique({ where: { id } });
+    if (!card) throw new NotFoundException(`Card ${id} not found`);
+    return toCardDto(card);
+  }
+
+  async update(id: string, dto: UpdateCardDto, user?: any): Promise<CardDto> {
     await this.ensureExists(id);
     const card = await this.prisma.card.update({
       where: { id },
       data: {
-        ...(input.title !== undefined && { title: input.title }),
-        ...(input.body !== undefined && { body: input.body }),
-        ...(input.columnKey !== undefined && { columnKey: input.columnKey }),
-        ...(input.order !== undefined && { order: input.order }),
-        ...(input.priority !== undefined && { priority: input.priority }),
+        ...(dto.title !== undefined && { title: dto.title }),
+        ...(dto.body !== undefined && { body: dto.body }),
+        ...(dto.columnId !== undefined && { columnId: dto.columnId }),
+        ...(dto.order !== undefined && { order: dto.order }),
+        ...(dto.priority !== undefined && { priority: dto.priority }),
+        ...(dto.assigneeType !== undefined && {
+          assigneeType: dto.assigneeType,
+        }),
+        ...(dto.assigneeId !== undefined && { assigneeId: dto.assigneeId }),
       },
     });
     return toCardDto(card);
@@ -46,15 +62,6 @@ export class CardsService {
   async remove(id: string): Promise<void> {
     await this.ensureExists(id);
     await this.prisma.card.delete({ where: { id } });
-  }
-
-  async getById(id: string): Promise<CardDto> {
-    const card = await this.prisma.card.findUnique({
-      where: { id },
-      include: { labels: { include: { label: true } } },
-    });
-    if (!card) throw new NotFoundException(`Card ${id} not found`);
-    return toCardDto(card);
   }
 
   private async ensureExists(id: string): Promise<void> {

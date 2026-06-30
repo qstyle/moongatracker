@@ -1,27 +1,43 @@
-import { CardDto } from '@moongatracker/shared-types';
+import { CardDto, CardPriority } from '@moongatracker/shared-types';
 
 export interface PrismaCardLike {
   id: string;
-  columnKey: string;
+  projectId: string;
+  columnId: string;
   title: string;
   body: string | null;
-  priority: number;
+  priority: string | null;
+  authorType: string;
+  authorId: string | null;
+  assigneeType: string | null;
+  assigneeId: string | null;
   order: number;
-  labels?: { label: { id: string; name: string; color: string } }[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export function toCardDto(card: PrismaCardLike): CardDto {
   return {
     id: card.id,
-    columnKey: card.columnKey as CardDto['columnKey'],
+    projectId: card.projectId,
+    columnId: card.columnId,
     title: card.title,
     body: card.body,
-    priority: card.priority,
+    priority: card.priority as CardPriority | null,
+    author: {
+      type: card.authorType as 'user' | 'agent',
+      id: card.authorId ?? null,
+      name: null,
+    },
+    assignee: card.assigneeType
+      ? {
+          type: card.assigneeType as 'user' | 'agent',
+          id: card.assigneeId ?? null,
+          name: null,
+        }
+      : null,
     order: card.order,
-    labels: (card.labels ?? []).map((cl) => ({
-      id: cl.label.id,
-      name: cl.label.name,
-      color: cl.label.color,
-    })),
+    createdAt: card.createdAt.toISOString(),
+    updatedAt: card.updatedAt.toISOString(),
   };
 }

@@ -6,6 +6,6 @@ export class CreateApiTokenDto {
   name!: string;
 
   @IsArray()
-  @IsIn(['cards:read', 'cards:write'], { each: true })
-  scope!: string[];
+  @IsIn(['cards:read', 'cards:write', 'comments:write'], { each: true })
+  scopes!: string[];
 }

@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   Param,
@@ -15,26 +16,32 @@ import {
 import { ApiTokensService } from './api-tokens.service';
 import { CreateApiTokenDto } from './dto/create-api-token.dto';
 
-@Controller('api-tokens')
+@Controller()
 export class ApiTokensController {
-  constructor(private readonly svc: ApiTokensService) {}
+  constructor(private readonly apiTokens: ApiTokensService) {}
 
-  @Post()
+  @Post('orgs/:orgId/api-tokens')
   create(
+    @Param('orgId') orgId: string,
     @Body() dto: CreateApiTokenDto,
     @Req() req: any,
   ): Promise<CreateApiTokenResponse> {
-    return this.svc.create(req.user.sub, dto.name, dto.scope);
+    if (req.user?.type === 'agent')
+      throw new ForbiddenException('Agents cannot create tokens');
+    return this.apiTokens.create(orgId, dto.name, dto.scopes);
   }
 
-  @Get()
-  list(@Req() req: any): Promise<ApiTokenDto[]> {
-    return this.svc.list(req.user.sub);
+  @Get('orgs/:orgId/api-tokens')
+  list(@Param('orgId') orgId: string): Promise<ApiTokenDto[]> {
+    return this.apiTokens.list(orgId);
   }
 
-  @Delete(':id')
+  @Delete('orgs/:orgId/api-tokens/:id')
   @HttpCode(204)
-  revoke(@Param('id') id: string, @Req() req: any): Promise<void> {
-    return this.svc.revoke(req.user.sub, id);
+  revoke(
+    @Param('orgId') orgId: string,
+    @Param('id') id: string,
+  ): Promise<void> {
+    return this.apiTokens.revoke(orgId, id);
   }
 }

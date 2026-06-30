@@ -2,6 +2,7 @@ import { CommentDto } from '@moongatracker/shared-types';
 
 export interface PrismaCommentLike {
   id: string;
+  cardId: string;
   authorType: string;
   authorId: string | null;
   body: string;
@@ -11,7 +12,8 @@ export interface PrismaCommentLike {
 export function toCommentDto(c: PrismaCommentLike): CommentDto {
   return {
     id: c.id,
-    authorType: c.authorType === 'agent' ? 'agent' : 'human',
+    cardId: c.cardId,
+    authorType: c.authorType === 'agent' ? 'agent' : 'user',
     authorId: c.authorId,
     body: c.body,
     createdAt: c.createdAt.toISOString(),

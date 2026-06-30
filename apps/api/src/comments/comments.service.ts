@@ -15,11 +15,16 @@ export class CommentsService {
     return rows.map(toCommentDto);
   }
 
-  async create(cardId: string, body: string): Promise<CommentDto> {
+  async create(cardId: string, body: string, user?: any): Promise<CommentDto> {
     const card = await this.prisma.card.findUnique({ where: { id: cardId } });
     if (!card) throw new NotFoundException(`Card ${cardId} not found`);
+
+    const authorType = user?.type === 'agent' ? 'agent' : 'user';
+    const authorId =
+      user?.type === 'agent' ? (user.tokenId ?? null) : (user?.sub ?? null);
+
     const created = await this.prisma.comment.create({
-      data: { cardId, body, authorType: 'human' },
+      data: { cardId, body, authorType, authorId },
     });
     return toCommentDto(created);
   }

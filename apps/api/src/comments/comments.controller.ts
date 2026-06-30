@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
 import { CommentDto } from '@moongatracker/shared-types';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
@@ -16,7 +16,8 @@ export class CommentsController {
   create(
     @Param('cardId') cardId: string,
     @Body() dto: CreateCommentDto,
+    @Req() req: any,
   ): Promise<CommentDto> {
-    return this.comments.create(cardId, dto.body);
+    return this.comments.create(cardId, dto.body, req.user);
   }
 }

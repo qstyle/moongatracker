@@ -1,5 +1,5 @@
 import * as crypto from 'crypto';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@moongatracker/data-access';
 import {
   ApiTokenDto,
@@ -8,17 +8,21 @@ import {
 
 function toDto(row: {
   id: string;
+  orgId: string;
   name: string;
-  scope: string[];
+  scopes: string[];
   lastUsedAt: Date | null;
   createdAt: Date;
+  revokedAt: Date | null;
 }): ApiTokenDto {
   return {
     id: row.id,
+    orgId: row.orgId,
     name: row.name,
-    scope: row.scope,
+    scopes: row.scopes,
     lastUsedAt: row.lastUsedAt?.toISOString() ?? null,
     createdAt: row.createdAt.toISOString(),
+    revokedAt: row.revokedAt?.toISOString() ?? null,
   };
 }
 
@@ -27,9 +31,9 @@ export class ApiTokensService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(
-    userId: string,
+    orgId: string,
     name: string,
-    scope: string[],
+    scopes: string[],
   ): Promise<CreateApiTokenResponse> {
     const rawToken = crypto.randomBytes(32).toString('hex');
     const tokenHash = crypto
@@ -37,20 +41,26 @@ export class ApiTokensService {
       .update(rawToken)
       .digest('hex');
     const row = await this.prisma.apiToken.create({
-      data: { userId, name, tokenHash, scope },
+      data: { orgId, name, tokenHash, scopes },
     });
     return { ...toDto(row), token: rawToken };
   }
 
-  async list(userId: string): Promise<ApiTokenDto[]> {
+  async list(orgId: string): Promise<ApiTokenDto[]> {
     const rows = await this.prisma.apiToken.findMany({
-      where: { userId },
+      where: { orgId },
       orderBy: { createdAt: 'desc' },
     });
     return rows.map(toDto);
   }
 
-  async revoke(userId: string, id: string): Promise<void> {
-    await this.prisma.apiToken.deleteMany({ where: { id, userId } });
+  async revoke(orgId: string, id: string): Promise<void> {
+    const updated = await this.prisma.apiToken.updateMany({
+      where: { id, orgId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    if (updated.count === 0) {
+      throw new NotFoundException(`ApiToken ${id} not found`);
+    }
   }
 }

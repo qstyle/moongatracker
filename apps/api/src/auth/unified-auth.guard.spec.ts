@@ -32,7 +32,7 @@ describe('UnifiedAuthGuard', () => {
     await expect(guard.canActivate(ctx)).rejects.toThrow();
   });
 
-  it('accepts valid JWT and sets req.user.type=human', async () => {
+  it('accepts valid JWT and sets req.user.type=user', async () => {
     const payload = { sub: 'u1', email: 'a@b.com' };
     const jwt = { verifyAsync: jest.fn().mockResolvedValue(payload) } as any;
     const prisma = { apiToken: { findUnique: jest.fn() } } as any;
@@ -43,14 +43,19 @@ describe('UnifiedAuthGuard', () => {
       prisma,
     );
     expect(await guard.canActivate(ctx)).toBe(true);
-    expect(req.user).toMatchObject({ sub: 'u1', type: 'human' });
+    expect(req.user).toMatchObject({ sub: 'u1', type: 'user' });
   });
 
   it('accepts valid API token and sets req.user.type=agent', async () => {
     const jwt = {
       verifyAsync: jest.fn().mockRejectedValue(new Error('bad')),
     } as any;
-    const fakeToken = { id: 'tok1', userId: 'u2', scope: ['cards:write'] };
+    const fakeToken = {
+      id: 'tok1',
+      orgId: 'org1',
+      scopes: ['cards:write'],
+      revokedAt: null,
+    };
     const prisma = {
       apiToken: {
         findUnique: jest.fn().mockResolvedValue(fakeToken),
@@ -64,6 +69,36 @@ describe('UnifiedAuthGuard', () => {
       prisma,
     );
     expect(await guard.canActivate(ctx)).toBe(true);
-    expect(req.user).toMatchObject({ sub: 'u2', type: 'agent' });
+    expect(req.user).toMatchObject({
+      type: 'agent',
+      orgId: 'org1',
+      tokenId: 'tok1',
+      scopes: ['cards:write'],
+    });
+  });
+
+  it('rejects revoked API token', async () => {
+    const jwt = {
+      verifyAsync: jest.fn().mockRejectedValue(new Error('bad')),
+    } as any;
+    const fakeToken = {
+      id: 'tok1',
+      orgId: 'org1',
+      scopes: ['cards:read'],
+      revokedAt: new Date(),
+    };
+    const prisma = {
+      apiToken: {
+        findUnique: jest.fn().mockResolvedValue(fakeToken),
+        update: jest.fn(),
+      },
+    } as any;
+    const { ctx } = makeCtx('raw-token');
+    const guard = new UnifiedAuthGuard(
+      jwt,
+      { getAllAndOverride: () => false } as any,
+      prisma,
+    );
+    await expect(guard.canActivate(ctx)).rejects.toThrow('Token revoked');
   });
 });

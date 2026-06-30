@@ -1,23 +1,14 @@
-import {
-  IsIn,
-  IsOptional,
-  IsString,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
-import {
-  COLUMN_KEYS,
-  ColumnKey,
-  CreateCardInput,
-} from '@moongatracker/shared-types';
+import { IsString, IsOptional, MinLength, MaxLength } from 'class-validator';
+import { CreateCardInput } from '@moongatracker/shared-types';
 
 export class CreateCardDto implements CreateCardInput {
   @IsString()
   @MinLength(1)
-  boardId!: string;
+  projectId!: string;
 
-  @IsIn(COLUMN_KEYS)
-  columnKey!: ColumnKey;
+  @IsString()
+  @MinLength(1)
+  columnId!: string;
 
   @IsString()
   @MinLength(1)

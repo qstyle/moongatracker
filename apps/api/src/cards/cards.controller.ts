@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Req,
 } from '@nestjs/common';
 import { CardDto } from '@moongatracker/shared-types';
 import { CardsService } from './cards.service';
@@ -18,8 +19,8 @@ export class CardsController {
   constructor(private readonly cards: CardsService) {}
 
   @Post()
-  create(@Body() dto: CreateCardDto): Promise<CardDto> {
-    return this.cards.create(dto);
+  create(@Body() dto: CreateCardDto, @Req() req: any): Promise<CardDto> {
+    return this.cards.create(dto, req.user);
   }
 
   @Get(':id')
@@ -31,8 +32,9 @@ export class CardsController {
   update(
     @Param('id') id: string,
     @Body() dto: UpdateCardDto,
+    @Req() req: any,
   ): Promise<CardDto> {
-    return this.cards.update(id, dto);
+    return this.cards.update(id, dto, req.user);
   }
 
   @Delete(':id')

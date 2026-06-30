@@ -1,17 +1,13 @@
 import {
-  IsIn,
-  IsInt,
-  IsOptional,
   IsString,
-  MaxLength,
+  IsOptional,
+  IsInt,
   Min,
+  IsIn,
+  MaxLength,
   MinLength,
 } from 'class-validator';
-import {
-  COLUMN_KEYS,
-  ColumnKey,
-  UpdateCardInput,
-} from '@moongatracker/shared-types';
+import { UpdateCardInput, CardPriority } from '@moongatracker/shared-types';
 
 export class UpdateCardDto implements UpdateCardInput {
   @IsOptional()
@@ -26,8 +22,8 @@ export class UpdateCardDto implements UpdateCardInput {
   body?: string | null;
 
   @IsOptional()
-  @IsIn(COLUMN_KEYS)
-  columnKey?: ColumnKey;
+  @IsString()
+  columnId?: string;
 
   @IsOptional()
   @IsInt()
@@ -35,7 +31,14 @@ export class UpdateCardDto implements UpdateCardInput {
   order?: number;
 
   @IsOptional()
-  @IsInt()
-  @Min(0)
-  priority?: number;
+  @IsIn(['urgent', 'normal', 'low', null])
+  priority?: CardPriority | null;
+
+  @IsOptional()
+  @IsString()
+  assigneeType?: string | null;
+
+  @IsOptional()
+  @IsString()
+  assigneeId?: string | null;
 }

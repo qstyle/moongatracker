@@ -36,11 +36,24 @@ export class AuthService {
     name?: string,
   ): Promise<AuthResponse> {
     const existing = await this.prisma.user.findUnique({ where: { email } });
-    if (existing) throw new ConflictException('Email already registered');
+    if (existing) throw new ConflictException('Email already in use');
+
     const passwordHash = await bcrypt.hash(password, 10);
-    const user = await this.prisma.user.create({
-      data: { email, passwordHash, name: name ?? null },
+
+    const { user } = await this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: { email, passwordHash, name: name ?? null },
+      });
+      const orgName = name ? `${name}'s org` : email.split('@')[0] + "'s org";
+      await tx.organization.create({
+        data: {
+          name: orgName,
+          memberships: { create: { userId: user.id } },
+        },
+      });
+      return { user };
     });
+
     return this.toResponse(user);
   }
 

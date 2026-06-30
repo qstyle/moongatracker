@@ -38,7 +38,7 @@ export class UnifiedAuthGuard implements CanActivate {
         sub: string;
         email: string;
       }>(rawToken);
-      req.user = { sub: payload.sub, email: payload.email, type: 'human' };
+      req.user = { type: 'user', sub: payload.sub, email: payload.email };
       return true;
     } catch {
       // fall through to ApiToken lookup
@@ -54,12 +54,19 @@ export class UnifiedAuthGuard implements CanActivate {
     });
     if (!apiToken) throw new UnauthorizedException();
 
+    if (apiToken.revokedAt) throw new UnauthorizedException('Token revoked');
+
     await this.prisma.apiToken.update({
       where: { id: apiToken.id },
       data: { lastUsedAt: new Date() },
     });
 
-    req.user = { sub: apiToken.userId, type: 'agent', scope: apiToken.scope };
+    req.user = {
+      type: 'agent',
+      orgId: apiToken.orgId,
+      tokenId: apiToken.id,
+      scopes: apiToken.scopes,
+    };
     return true;
   }
 }
