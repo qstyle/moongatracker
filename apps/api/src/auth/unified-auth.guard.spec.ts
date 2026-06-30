@@ -52,7 +52,7 @@ describe('UnifiedAuthGuard', () => {
     } as any;
     const fakeToken = {
       id: 'tok1',
-      orgId: 'org1',
+      projectId: 'org1',
       scopes: ['cards:write'],
       revokedAt: null,
     };
@@ -71,7 +71,7 @@ describe('UnifiedAuthGuard', () => {
     expect(await guard.canActivate(ctx)).toBe(true);
     expect(req.user).toMatchObject({
       type: 'agent',
-      orgId: 'org1',
+      projectId: 'org1',
       tokenId: 'tok1',
       scopes: ['cards:write'],
     });
@@ -83,7 +83,7 @@ describe('UnifiedAuthGuard', () => {
     } as any;
     const fakeToken = {
       id: 'tok1',
-      orgId: 'org1',
+      projectId: 'org1',
       scopes: ['cards:read'],
       revokedAt: new Date(),
     };

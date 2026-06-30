@@ -26,7 +26,7 @@ describe('ApiTokensService', () => {
       crypto.createHash('sha256').update(result.token).digest('hex'),
     );
     expect(result.token).not.toBe(stored.tokenHash);
-    expect(stored.orgId).toBe('org1');
+    expect(stored.projectId).toBe('org1');
   });
 
   it('revoke() soft-deletes by orgId and id', async () => {
@@ -34,7 +34,7 @@ describe('ApiTokensService', () => {
     const svc = new ApiTokensService({ apiToken: { updateMany } } as any);
     await svc.revoke('org1', 'tok1');
     expect(updateMany).toHaveBeenCalledWith({
-      where: { id: 'tok1', orgId: 'org1', revokedAt: null },
+      where: { id: 'tok1', projectId: 'org1', revokedAt: null },
       data: expect.objectContaining({ revokedAt: expect.any(Date) }),
     });
   });

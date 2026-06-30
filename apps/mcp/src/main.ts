@@ -37,12 +37,10 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
     let text: string;
     switch (name) {
       case 'list_projects':
-        text = await listProjects(args as { orgId: string });
+        text = await listProjects(args as { projectId: string });
         break;
       case 'list_cards':
-        text = await listCards(
-          args as { projectId: string; columnId?: string },
-        );
+        text = await listCards(args as { boardId: string; columnId?: string });
         break;
       case 'get_card':
         text = await getCard(args as { cardId: string });

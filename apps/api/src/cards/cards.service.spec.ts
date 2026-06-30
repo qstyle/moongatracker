@@ -16,7 +16,7 @@ describe('CardsService', () => {
           created.push(data);
           return {
             id: 'k9',
-            projectId: 'p1',
+            boardId: 'b1',
             columnId: 'col1',
             title: data.title,
             body: data.body,
@@ -35,7 +35,7 @@ describe('CardsService', () => {
 
     const service = new CardsService(fakePrisma);
     const result = await service.create({
-      projectId: 'p1',
+      boardId: 'b1',
       columnId: 'col1',
       title: 'X',
       body: null,
@@ -44,7 +44,7 @@ describe('CardsService', () => {
     expect(created[0].order).toBe(3);
     expect(result).toEqual({
       id: 'k9',
-      projectId: 'p1',
+      boardId: 'b1',
       columnId: 'col1',
       title: 'X',
       body: null,
@@ -64,7 +64,7 @@ describe('CardsService', () => {
         aggregate: async () => ({ _max: { order: null } }),
         create: async ({ data }: { data: { order: number } }) => ({
           id: 'k1',
-          projectId: 'p1',
+          boardId: 'b1',
           columnId: 'col1',
           title: 't',
           body: null,
@@ -82,7 +82,7 @@ describe('CardsService', () => {
 
     const service = new CardsService(fakePrisma);
     const result = await service.create({
-      projectId: 'p1',
+      boardId: 'b1',
       columnId: 'col1',
       title: 't',
     } as any);

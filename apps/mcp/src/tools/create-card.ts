@@ -4,29 +4,29 @@ import type { CardDto } from '@moongatracker/shared-types';
 
 export const createCardTool: Tool = {
   name: 'create_card',
-  description: 'Create a new card in a project column',
+  description: 'Create a new card in a board column',
   inputSchema: {
     type: 'object',
     properties: {
-      projectId: { type: 'string' },
+      boardId: { type: 'string' },
       columnId: { type: 'string' },
       title: { type: 'string', maxLength: 200 },
       body: { type: 'string', maxLength: 2000 },
       priority: { type: 'string', enum: ['urgent', 'normal', 'low'] },
     },
-    required: ['projectId', 'columnId', 'title'],
+    required: ['boardId', 'columnId', 'title'],
   },
 };
 
 export async function createCard(args: {
-  projectId: string;
+  boardId: string;
   columnId: string;
   title: string;
   body?: string;
   priority?: 'urgent' | 'normal' | 'low';
 }): Promise<string> {
   const card = await apiPost<CardDto>('/api/cards', {
-    projectId: args.projectId,
+    boardId: args.boardId,
     columnId: args.columnId,
     title: args.title,
     body: args.body,

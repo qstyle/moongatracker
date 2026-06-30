@@ -76,42 +76,42 @@ async function main() {
     console.log(`User exists: ${email}`);
   }
 
-  // 2. Skip if org already exists
-  const existingOrg = await prisma.organization.findFirst();
-  if (existingOrg) {
-    console.log('Seed skipped: organization already present.');
+  // 2. Skip if project already exists
+  const existingProject = await prisma.project.findFirst();
+  if (existingProject) {
+    console.log('Seed skipped: project already present.');
     return;
   }
 
-  // 3. Create demo org + membership
-  const org = await prisma.organization.create({
+  // 3. Create demo project + membership
+  const project = await prisma.project.create({
     data: {
-      name: 'Demo Org',
+      name: 'Demo Project',
       memberships: { create: { userId: user.id } },
     },
   });
-  console.log(`Created org: ${org.name}`);
+  console.log(`Created project: ${project.name}`);
 
-  // 4. Create demo project with columns
-  const project = await prisma.project.create({
+  // 4. Create demo board with columns
+  const board = await prisma.board.create({
     data: {
-      orgId: org.id,
-      name: 'Демо-проект',
+      projectId: project.id,
+      name: 'Демо-доска',
       columns: { create: COLUMNS },
     },
     include: { columns: { orderBy: { order: 'asc' } } },
   });
   console.log(
-    `Created project: ${project.name} with ${project.columns.length} columns`,
+    `Created board: ${board.name} with ${board.columns.length} columns`,
   );
 
   // 5. Build column title → id map
-  const colMap = new Map(project.columns.map((c) => [c.title, c.id]));
+  const colMap = new Map(board.columns.map((c) => [c.title, c.id]));
 
   // 6. Create cards
   await prisma.card.createMany({
     data: CARDS.map((c) => ({
-      projectId: project.id,
+      boardId: board.id,
       columnId: colMap.get(c.colTitle)!,
       title: c.title,
       body: c.body ?? null,
