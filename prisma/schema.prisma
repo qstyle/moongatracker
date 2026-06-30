@@ -74,7 +74,7 @@ model Card {
   body         String?
   priority     String?
   authorType   String    @default("user")
-  authorId     String    @default("")
+  authorId     String?
   assigneeType String?
   assigneeId   String?
   order        Int       @default(0)

@@ -120,6 +120,12 @@ SET "priority_new" = CASE "priority"
     ELSE 'medium'
 END;
 
+-- Safety: assign orphaned cards (columnId still NULL = no matching column for their boardId+columnKey)
+-- to the first column (by order) in their project, so the SET NOT NULL below never fails.
+UPDATE "Card" SET "columnId" = (
+    SELECT c.id FROM "Column" c WHERE c."projectId" = "Card"."projectId" ORDER BY c."order" ASC LIMIT 1
+) WHERE "columnId" IS NULL;
+
 -- Make projectId / columnId NOT NULL (safe: either populated or table is empty)
 ALTER TABLE "Card" ALTER COLUMN "projectId" SET NOT NULL;
 ALTER TABLE "Card" ALTER COLUMN "columnId"  SET NOT NULL;
