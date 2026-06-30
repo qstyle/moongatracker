@@ -1,9 +1,17 @@
 const STORAGE_KEY = 'mgt_token';
 
-let token: string | null =
-  typeof localStorage !== 'undefined'
-    ? localStorage.getItem(STORAGE_KEY)
-    : null;
+function safeLocalStorage(): Storage | null {
+  try {
+    return typeof localStorage !== 'undefined' &&
+      typeof localStorage.getItem === 'function'
+      ? localStorage
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+let token: string | null = safeLocalStorage()?.getItem(STORAGE_KEY) ?? null;
 
 const listeners = new Set<() => void>();
 
@@ -13,8 +21,9 @@ export function getToken(): string | null {
 
 export function setToken(next: string | null): void {
   token = next;
-  if (next) localStorage.setItem(STORAGE_KEY, next);
-  else localStorage.removeItem(STORAGE_KEY);
+  const ls = safeLocalStorage();
+  if (next) ls?.setItem(STORAGE_KEY, next);
+  else ls?.removeItem(STORAGE_KEY);
   listeners.forEach((l) => l());
 }
 
