@@ -51,6 +51,7 @@ describe('CardsService', () => {
       priority: null,
       author: { type: 'user', id: null, name: null },
       assignee: null,
+      attachmentCount: 0,
       order: 3,
       createdAt: NOW.toISOString(),
       updatedAt: NOW.toISOString(),
