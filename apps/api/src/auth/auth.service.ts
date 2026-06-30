@@ -44,10 +44,12 @@ export class AuthService {
       const user = await tx.user.create({
         data: { email, passwordHash, name: name ?? null },
       });
-      const orgName = name ? `${name}'s org` : email.split('@')[0] + "'s org";
-      await tx.organization.create({
+      const projectName = name
+        ? `${name}'s project`
+        : email.split('@')[0] + "'s project";
+      await tx.project.create({
         data: {
-          name: orgName,
+          name: projectName,
           memberships: { create: { userId: user.id } },
         },
       });

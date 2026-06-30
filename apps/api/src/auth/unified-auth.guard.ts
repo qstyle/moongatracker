@@ -63,7 +63,7 @@ export class UnifiedAuthGuard implements CanActivate {
 
     req.user = {
       type: 'agent',
-      orgId: apiToken.orgId,
+      projectId: apiToken.projectId,
       tokenId: apiToken.id,
       scopes: apiToken.scopes,
     };

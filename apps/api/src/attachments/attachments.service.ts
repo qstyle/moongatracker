@@ -21,10 +21,10 @@ export class AttachmentsService {
   ): Promise<{ presignedUrl: string; attachmentId: string }> {
     const card = await this.prisma.card.findUnique({
       where: { id: cardId },
-      include: { project: true },
+      include: { board: true },
     });
     if (!card) throw new NotFoundException('Card not found');
-    await assertMembership(this.prisma, userId, card.project.orgId);
+    await assertMembership(this.prisma, userId, card.board.projectId);
 
     const key = `attachments/${cardId}/${randomUUID()}-${filename}`;
     const presignedUrl = await this.s3.presignPut(key, mimeType, size);
@@ -39,10 +39,10 @@ export class AttachmentsService {
   async listForCard(cardId: string, userId: string): Promise<AttachmentDto[]> {
     const card = await this.prisma.card.findUnique({
       where: { id: cardId },
-      include: { project: true },
+      include: { board: true },
     });
     if (!card) throw new NotFoundException('Card not found');
-    await assertMembership(this.prisma, userId, card.project.orgId);
+    await assertMembership(this.prisma, userId, card.board.projectId);
 
     const attachments = await this.prisma.attachment.findMany({
       where: { cardId },
@@ -66,10 +66,14 @@ export class AttachmentsService {
   async remove(attachmentId: string, userId: string): Promise<void> {
     const attachment = await this.prisma.attachment.findUnique({
       where: { id: attachmentId },
-      include: { card: { include: { project: true } } },
+      include: { card: { include: { board: true } } },
     });
     if (!attachment) throw new NotFoundException('Attachment not found');
-    await assertMembership(this.prisma, userId, attachment.card.project.orgId);
+    await assertMembership(
+      this.prisma,
+      userId,
+      attachment.card.board.projectId,
+    );
 
     await this.s3.deleteObject(attachment.key);
     await this.prisma.attachment.delete({ where: { id: attachmentId } });

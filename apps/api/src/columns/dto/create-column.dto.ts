@@ -3,7 +3,7 @@ import { IsString, MinLength, MaxLength } from 'class-validator';
 export class CreateColumnDto {
   @IsString()
   @MinLength(1)
-  projectId!: string;
+  boardId!: string;
 
   @IsString()
   @MinLength(1)

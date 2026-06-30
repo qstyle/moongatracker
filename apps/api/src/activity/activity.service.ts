@@ -30,10 +30,10 @@ export class ActivityService {
   async listForCard(cardId: string, userId: string): Promise<ActivityDto[]> {
     const card = await this.prisma.card.findUnique({
       where: { id: cardId },
-      include: { project: true },
+      include: { board: true },
     });
     if (!card) throw new NotFoundException('Card not found');
-    await assertMembership(this.prisma, userId, card.project.orgId);
+    await assertMembership(this.prisma, userId, card.board.projectId);
 
     const activities = await this.prisma.activity.findMany({
       where: { cardId },
@@ -55,10 +55,10 @@ export class ActivityService {
   async revert(activityId: string, userId: string): Promise<void> {
     const activity = await this.prisma.activity.findUnique({
       where: { id: activityId },
-      include: { card: { include: { project: true } } },
+      include: { card: { include: { board: true } } },
     });
     if (!activity) throw new NotFoundException('Activity not found');
-    await assertMembership(this.prisma, userId, activity.card.project.orgId);
+    await assertMembership(this.prisma, userId, activity.card.board.projectId);
 
     if (!activity.before || activity.action === 'revert') return;
 

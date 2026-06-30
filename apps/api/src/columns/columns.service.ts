@@ -11,29 +11,29 @@ export class ColumnsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(
-    projectId: string,
+    boardId: string,
     title: string,
     userId: string,
   ): Promise<ColumnDto> {
-    const project = await this.prisma.project.findUnique({
-      where: { id: projectId },
+    const board = await this.prisma.board.findUnique({
+      where: { id: boardId },
     });
-    if (!project) throw new NotFoundException(`Project ${projectId} not found`);
-    await assertMembership(this.prisma, userId, project.orgId);
+    if (!board) throw new NotFoundException(`Board ${boardId} not found`);
+    await assertMembership(this.prisma, userId, board.projectId);
 
     const max = await this.prisma.column.aggregate({
-      where: { projectId },
+      where: { boardId },
       _max: { order: true },
     });
     const order = (max._max.order ?? -1) + 1;
 
     const column = await this.prisma.column.create({
-      data: { projectId, title, order },
+      data: { boardId, title, order },
     });
 
     return {
       id: column.id,
-      projectId: column.projectId,
+      boardId: column.boardId,
       title: column.title,
       order: column.order,
       cards: [],
@@ -47,10 +47,10 @@ export class ColumnsService {
   ): Promise<ColumnDto> {
     const column = await this.prisma.column.findUnique({
       where: { id: columnId },
-      include: { project: true },
+      include: { board: true },
     });
     if (!column) throw new NotFoundException(`Column ${columnId} not found`);
-    await assertMembership(this.prisma, userId, column.project.orgId);
+    await assertMembership(this.prisma, userId, column.board.projectId);
 
     const updated = await this.prisma.column.update({
       where: { id: columnId },
@@ -62,7 +62,7 @@ export class ColumnsService {
 
     return {
       id: updated.id,
-      projectId: updated.projectId,
+      boardId: updated.boardId,
       title: updated.title,
       order: updated.order,
       cards: [],
@@ -70,20 +70,20 @@ export class ColumnsService {
   }
 
   async reorder(
-    projectId: string,
+    boardId: string,
     orderedIds: string[],
     userId: string,
   ): Promise<void> {
-    const project = await this.prisma.project.findUnique({
-      where: { id: projectId },
+    const board = await this.prisma.board.findUnique({
+      where: { id: boardId },
     });
-    if (!project) throw new NotFoundException(`Project ${projectId} not found`);
-    await assertMembership(this.prisma, userId, project.orgId);
+    if (!board) throw new NotFoundException(`Board ${boardId} not found`);
+    await assertMembership(this.prisma, userId, board.projectId);
 
     await Promise.all(
       orderedIds.map((id, index) =>
         this.prisma.column.updateMany({
-          where: { id, projectId },
+          where: { id, boardId },
           data: { order: index },
         }),
       ),
@@ -93,10 +93,10 @@ export class ColumnsService {
   async remove(columnId: string, userId: string): Promise<void> {
     const column = await this.prisma.column.findUnique({
       where: { id: columnId },
-      include: { project: true },
+      include: { board: true },
     });
     if (!column) throw new NotFoundException(`Column ${columnId} not found`);
-    await assertMembership(this.prisma, userId, column.project.orgId);
+    await assertMembership(this.prisma, userId, column.board.projectId);
 
     const cardCount = await this.prisma.card.count({
       where: { columnId },

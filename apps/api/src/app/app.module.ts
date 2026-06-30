@@ -1,8 +1,8 @@
 import { join } from 'path';
 import { DynamicModule, Module } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { OrgsModule } from '../orgs/orgs.module';
 import { ProjectsModule } from '../projects/projects.module';
+import { BoardsModule } from '../boards/boards.module';
 import { ColumnsModule } from '../columns/columns.module';
 import { AuthModule } from '../auth/auth.module';
 import { ApiTokensModule } from '../api-tokens/api-tokens.module';
@@ -29,8 +29,8 @@ const staticModules: DynamicModule[] =
 @Module({
   imports: [
     ...staticModules,
-    OrgsModule,
     ProjectsModule,
+    BoardsModule,
     ColumnsModule,
     AuthModule,
     ApiTokensModule,

@@ -4,7 +4,7 @@ import { CreateCardInput } from '@moongatracker/shared-types';
 export class CreateCardDto implements CreateCardInput {
   @IsString()
   @MinLength(1)
-  projectId!: string;
+  boardId!: string;
 
   @IsString()
   @MinLength(1)

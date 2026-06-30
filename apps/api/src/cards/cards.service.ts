@@ -15,7 +15,7 @@ export class CardsService {
 
   async create(dto: CreateCardDto, user?: any): Promise<CardDto> {
     const max = await this.prisma.card.aggregate({
-      where: { projectId: dto.projectId, columnId: dto.columnId },
+      where: { boardId: dto.boardId, columnId: dto.columnId },
       _max: { order: true },
     });
     const order = (max._max.order ?? -1) + 1;
@@ -26,7 +26,7 @@ export class CardsService {
 
     const card = await this.prisma.card.create({
       data: {
-        projectId: dto.projectId,
+        boardId: dto.boardId,
         columnId: dto.columnId,
         title: dto.title,
         body: dto.body ?? null,

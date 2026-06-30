@@ -23,7 +23,7 @@ export class ColumnsController {
     @Body() dto: CreateColumnDto,
     @Request() req: { user: { sub: string } },
   ): Promise<ColumnDto> {
-    return this.columns.create(dto.projectId, dto.title, req.user.sub);
+    return this.columns.create(dto.boardId, dto.title, req.user.sub);
   }
 
   @Patch('reorder')
@@ -31,7 +31,7 @@ export class ColumnsController {
     @Body() dto: ReorderColumnsDto,
     @Request() req: { user: { sub: string } },
   ): Promise<void> {
-    return this.columns.reorder(dto.projectId, dto.orderedIds, req.user.sub);
+    return this.columns.reorder(dto.boardId, dto.orderedIds, req.user.sub);
   }
 
   @Patch(':id')

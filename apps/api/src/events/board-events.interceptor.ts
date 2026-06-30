@@ -25,7 +25,7 @@ export class BoardEventsInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap(() => {
-        if (isMutation && !isAuth) this.events.emitProjectChanged();
+        if (isMutation && !isAuth) this.events.emitBoardChanged();
       }),
     );
   }

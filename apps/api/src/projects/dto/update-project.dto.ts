@@ -4,6 +4,6 @@ export class UpdateProjectDto {
   @IsOptional()
   @IsString()
   @MinLength(1)
-  @MaxLength(100)
+  @MaxLength(80)
   name?: string;
 }

@@ -6,7 +6,7 @@ export class EventsGateway {
   @WebSocketServer()
   server!: Server;
 
-  emitProjectChanged(): void {
-    this.server?.emit('project:changed');
+  emitBoardChanged(): void {
+    this.server?.emit('board:changed');
   }
 }

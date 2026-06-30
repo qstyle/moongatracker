@@ -1,64 +1,73 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
+  Req,
   Request,
 } from '@nestjs/common';
-import {
-  ActorDto,
-  ProjectDto,
-  ProjectSummaryDto,
-} from '@moongatracker/shared-types';
+import { MemberDto, ProjectDto } from '@moongatracker/shared-types';
 import { ProjectsService } from './projects.service';
+import { AddMemberDto } from './dto/add-member.dto';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 
-@Controller()
+@Controller('projects')
 export class ProjectsController {
   constructor(private readonly projects: ProjectsService) {}
 
-  @Get('orgs/:orgId/projects')
-  listForOrg(
-    @Param('orgId') orgId: string,
+  @Get()
+  listForUser(
     @Request() req: { user: { sub: string } },
-  ): Promise<ProjectSummaryDto[]> {
-    return this.projects.listForOrg(orgId, req.user.sub);
+  ): Promise<ProjectDto[]> {
+    return this.projects.listForUser(req.user.sub);
   }
 
-  @Post('orgs/:orgId/projects')
+  @Post()
   create(
-    @Param('orgId') orgId: string,
     @Body() dto: CreateProjectDto,
     @Request() req: { user: { sub: string } },
-  ): Promise<ProjectSummaryDto> {
-    return this.projects.create(orgId, dto.name, req.user.sub);
-  }
-
-  @Get('projects/:projectId')
-  getWithColumns(
-    @Param('projectId') projectId: string,
-    @Request() req: { user: { sub: string } },
   ): Promise<ProjectDto> {
-    return this.projects.getWithColumns(projectId, req.user.sub);
+    return this.projects.create(dto.name, req.user.sub);
   }
 
-  @Patch('projects/:projectId')
+  @Patch(':projectId')
   update(
     @Param('projectId') projectId: string,
     @Body() dto: UpdateProjectDto,
     @Request() req: { user: { sub: string } },
-  ): Promise<ProjectSummaryDto> {
+  ): Promise<ProjectDto> {
     return this.projects.update(projectId, req.user.sub, dto.name!);
   }
 
-  @Get('projects/:projectId/actors')
-  getActors(
+  @Get(':projectId/members')
+  getMembers(
     @Param('projectId') projectId: string,
     @Request() req: { user: { sub: string } },
-  ): Promise<ActorDto[]> {
-    return this.projects.getActors(projectId, req.user.sub);
+  ): Promise<MemberDto[]> {
+    return this.projects.getMembers(projectId, req.user.sub);
+  }
+
+  @Post(':projectId/members')
+  addMember(
+    @Param('projectId') projectId: string,
+    @Body() dto: AddMemberDto,
+    @Req() req: any,
+  ): Promise<MemberDto> {
+    return this.projects.addMember(projectId, dto.email, req.user.sub);
+  }
+
+  @Delete(':projectId/members/:userId')
+  @HttpCode(204)
+  removeMember(
+    @Param('projectId') projectId: string,
+    @Param('userId') userId: string,
+    @Req() req: any,
+  ): Promise<void> {
+    return this.projects.removeMember(projectId, userId, req.user.sub);
   }
 }

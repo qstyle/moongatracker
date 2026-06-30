@@ -2,7 +2,7 @@ import { CardDto, CardPriority } from '@moongatracker/shared-types';
 
 export interface PrismaCardLike {
   id: string;
-  projectId: string;
+  boardId: string;
   columnId: string;
   title: string;
   body: string | null;
@@ -20,7 +20,7 @@ export interface PrismaCardLike {
 export function toCardDto(card: PrismaCardLike): CardDto {
   return {
     id: card.id,
-    projectId: card.projectId,
+    boardId: card.boardId,
     columnId: card.columnId,
     title: card.title,
     body: card.body,
