@@ -1,0 +1,61 @@
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
+import { listBoardsTool, listBoards } from './tools/list-boards.js';
+import { listCardsTool, listCards } from './tools/list-cards.js';
+import { getCardTool, getCard } from './tools/get-card.js';
+import { createCardTool, createCard } from './tools/create-card.js';
+import { moveCardTool, moveCard } from './tools/move-card.js';
+
+const server = new Server(
+  { name: 'moongatracker', version: '0.1.0' },
+  { capabilities: { tools: {} } },
+);
+
+const tools = [
+  listBoardsTool,
+  listCardsTool,
+  getCardTool,
+  createCardTool,
+  moveCardTool,
+];
+
+server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }));
+
+server.setRequestHandler(CallToolRequestSchema, async (req) => {
+  const { name, arguments: args = {} } = req.params;
+  try {
+    let text: string;
+    switch (name) {
+      case 'list_boards':
+        text = await listBoards();
+        break;
+      case 'list_cards':
+        text = await listCards(args as any);
+        break;
+      case 'get_card':
+        text = await getCard(args as any);
+        break;
+      case 'create_card':
+        text = await createCard(args as any);
+        break;
+      case 'move_card':
+        text = await moveCard(args as any);
+        break;
+      default:
+        throw new Error(`Unknown tool: ${name}`);
+    }
+    return { content: [{ type: 'text', text }] };
+  } catch (e: any) {
+    return {
+      content: [{ type: 'text', text: `Error: ${e.message}` }],
+      isError: true,
+    };
+  }
+});
+
+const transport = new StdioServerTransport();
+await server.connect(transport);
