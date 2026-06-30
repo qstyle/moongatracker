@@ -1,5 +1,10 @@
-import { useEffect, useState } from 'react';
-import { BoardDto, CardDto, ColumnDto } from '@moongatracker/shared-types';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  BoardDto,
+  CardDto,
+  ColumnDto,
+  LabelDto,
+} from '@moongatracker/shared-types';
 import {
   DndContext,
   DragEndEvent,
@@ -13,11 +18,13 @@ import {
 import { arrayMove } from '@dnd-kit/sortable';
 import { RiLogoutBoxRLine, RiTBoxLine } from '@remixicon/react';
 import { VIEWS, ViewId } from '../../lib/views';
+import { FilterState, useCardFilter } from '../../lib/use-card-filter';
 import { updateCard } from '../../api/cards';
 import { logout } from '../../api/auth';
 import { Column } from './column';
 import { ViewSwitch } from './view-switch';
 import { CardDialog } from './card-dialog';
+import { FilterBar } from './filter-bar';
 
 const GRID_BG: React.CSSProperties = {
   backgroundImage:
@@ -38,7 +45,6 @@ function computeMove(
   const card = fromCol.cards.find((k) => k.id === activeId);
   if (!card) return cols;
 
-  // overId is either a column key (empty area) or a card id
   let toCol = cols.find((c) => c.key === overId);
   let overIndex = -1;
   if (!toCol) {
@@ -72,6 +78,18 @@ function computeMove(
   });
 }
 
+function dedupeLabels(columns: ColumnDto[]): LabelDto[] {
+  const seen = new Map<string, LabelDto>();
+  columns.forEach((col) =>
+    col.cards.forEach((card) =>
+      card.labels.forEach((l) => {
+        if (!seen.has(l.id)) seen.set(l.id, l);
+      }),
+    ),
+  );
+  return Array.from(seen.values());
+}
+
 export function Board({
   board,
   onChanged,
@@ -83,8 +101,11 @@ export function Board({
   const [selected, setSelected] = useState<CardDto | null>(null);
   const [columns, setColumns] = useState<ColumnDto[]>(board.columns);
   const [activeCard, setActiveCard] = useState<CardDto | null>(null);
+  const [filter, setFilter] = useState<FilterState>({
+    search: '',
+    labelIds: new Set(),
+  });
 
-  // Re-sync local board state whenever the server copy changes.
   useEffect(() => setColumns(board.columns), [board]);
 
   const sensors = useSensors(
@@ -95,10 +116,16 @@ export function Board({
   const visible = def.columns
     ? columns.filter((c) => def.columns!.includes(c.key))
     : columns;
-  const total = columns.reduce((n, c) => n + c.cards.length, 0);
+
+  const filterActive = filter.search !== '' || filter.labelIds.size > 0;
+  const allLabels = useMemo(() => dedupeLabels(board.columns), [board.columns]);
+  const filteredVisible = useCardFilter(visible, filter);
+
+  const displayTotal = filterActive
+    ? filteredVisible.reduce((n, c) => n + c.cards.length, 0)
+    : columns.reduce((n, c) => n + c.cards.length, 0);
 
   async function persist(next: ColumnDto[]) {
-    // Original positions from the server truth (board prop).
     const original = new Map<string, { key: string; index: number }>();
     board.columns.forEach((c) =>
       c.cards.forEach((card, i) =>
@@ -167,8 +194,9 @@ export function Board({
 
         <div className="flex items-center gap-4">
           <span className="hidden text-[11px] tabular-nums text-muted-foreground sm:inline">
-            {total} задач
+            {displayTotal} задач
           </span>
+          <FilterBar labels={allLabels} filter={filter} onChange={setFilter} />
           <ViewSwitch value={view} onChange={setView} />
           <button
             type="button"
@@ -191,12 +219,13 @@ export function Board({
           className="flex flex-1 items-start gap-5 overflow-x-auto px-5 py-6"
           style={GRID_BG}
         >
-          {visible.map((column, i) => (
+          {filteredVisible.map((column, i) => (
             <Column
               key={column.id}
               column={column}
               index={i}
               boardId={board.id}
+              disabled={filterActive}
               onChanged={onChanged}
               onSelectCard={setSelected}
             />
