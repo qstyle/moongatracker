@@ -16,6 +16,7 @@ import { listWikiTool, listWiki } from './tools/list-wiki.js';
 import { getWikiPageTool, getWikiPage } from './tools/get-wiki-page.js';
 import { createWikiPageTool, createWikiPage } from './tools/create-wiki-page.js';
 import { updateWikiPageTool, updateWikiPage } from './tools/update-wiki-page.js';
+import { getCanvasTool, getCanvas } from './tools/get-canvas.js';
 
 const server = new Server(
   { name: 'moongatracker', version: '0.1.0' },
@@ -35,6 +36,7 @@ const tools = [
   getWikiPageTool,
   createWikiPageTool,
   updateWikiPageTool,
+  getCanvasTool,
 ];
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }));
@@ -104,6 +106,9 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
         text = await updateWikiPage(
           args as { pageId: string; title?: string; body?: string },
         );
+        break;
+      case 'get_canvas':
+        text = await getCanvas(args as { projectId: string });
         break;
       default:
         throw new Error(`Unknown tool: ${name}`);
