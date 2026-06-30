@@ -26,3 +26,19 @@ export function fetchOrgMembers(orgId: string): Promise<MemberDto[]> {
     asJson<MemberDto[]>(r),
   );
 }
+
+export function addMember(orgId: string, email: string): Promise<MemberDto> {
+  return apiFetch(`/api/orgs/${orgId}/members`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  }).then((r) => asJson<MemberDto>(r));
+}
+
+export function removeMember(orgId: string, userId: string): Promise<void> {
+  return apiFetch(`/api/orgs/${orgId}/members/${userId}`, {
+    method: 'DELETE',
+  }).then(async (r) => {
+    if (!r.ok) throw new Error(`${r.status} ${await r.text()}`);
+  });
+}
