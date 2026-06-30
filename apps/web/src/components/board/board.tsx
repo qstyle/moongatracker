@@ -20,6 +20,14 @@ import { Column } from './column';
 import { CardDialog } from './card-dialog';
 import { FilterBar } from './filter-bar';
 
+const GRID_BG: React.CSSProperties = {
+  backgroundImage:
+    'linear-gradient(color-mix(in oklab, var(--border) 55%, transparent) 1px, transparent 1px),' +
+    'linear-gradient(90deg, color-mix(in oklab, var(--border) 55%, transparent) 1px, transparent 1px)',
+  backgroundSize: '28px 28px',
+  backgroundPosition: '-1px -1px',
+};
+
 /** Move a card within or across columns, returning a new columns array. */
 function computeMove(
   cols: ColumnDto[],
@@ -197,7 +205,10 @@ export function Board({
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
       >
-        <div className="flex h-full flex-1 gap-4 overflow-x-auto p-4">
+        <div
+          className="flex h-full flex-1 gap-4 overflow-x-auto p-4"
+          style={GRID_BG}
+        >
           {filteredVisible.map((col, i) => (
             <Column
               key={col.id}

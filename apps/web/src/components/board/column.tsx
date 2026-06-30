@@ -49,7 +49,7 @@ export function Column({
   }
 
   return (
-    <section className="flex w-[280px] shrink-0 flex-col">
+    <section className="flex w-[280px] shrink-0 flex-col self-start rounded-lg bg-neutral-300/15 p-3">
       <header className="mb-3 flex items-center justify-between border-b border-border pb-2">
         <div className="flex items-baseline gap-2">
           <span className="text-[10px] tabular-nums text-muted-foreground/50">
