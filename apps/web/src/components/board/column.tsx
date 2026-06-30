@@ -12,17 +12,19 @@ export function Column({
   column,
   index,
   boardId,
+  disabled,
   onChanged,
   onSelectCard,
 }: {
   column: ColumnDto;
   index: number;
   boardId: string;
+  disabled?: boolean;
   onChanged: () => void;
   onSelectCard: (card: CardDto) => void;
 }) {
   const count = column.cards.length;
-  const { setNodeRef, isOver } = useDroppable({ id: column.key });
+  const { setNodeRef, isOver } = useDroppable({ id: column.key, disabled });
 
   return (
     <section className="flex w-[280px] shrink-0 flex-col">
@@ -44,7 +46,7 @@ export function Column({
         ref={setNodeRef}
         className={
           'flex min-h-16 flex-col gap-2 transition-colors ' +
-          (isOver ? 'bg-accent/40' : '')
+          (isOver && !disabled ? 'bg-accent/40' : '')
         }
       >
         <SortableContext
@@ -61,6 +63,7 @@ export function Column({
               <CardTile
                 key={card.id}
                 card={card}
+                disabled={disabled}
                 onClick={() => onSelectCard(card)}
               />
             ))
