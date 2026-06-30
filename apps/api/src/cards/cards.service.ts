@@ -48,6 +48,15 @@ export class CardsService {
     await this.prisma.card.delete({ where: { id } });
   }
 
+  async getById(id: string): Promise<CardDto> {
+    const card = await this.prisma.card.findUnique({
+      where: { id },
+      include: { labels: { include: { label: true } } },
+    });
+    if (!card) throw new NotFoundException(`Card ${id} not found`);
+    return toCardDto(card);
+  }
+
   private async ensureExists(id: string): Promise<void> {
     const found = await this.prisma.card.findUnique({ where: { id } });
     if (!found) throw new NotFoundException(`Card ${id} not found`);

@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpCode,
   Param,
   Patch,
@@ -19,6 +20,11 @@ export class CardsController {
   @Post()
   create(@Body() dto: CreateCardDto): Promise<CardDto> {
     return this.cards.create(dto);
+  }
+
+  @Get(':id')
+  getById(@Param('id') id: string): Promise<CardDto> {
+    return this.cards.getById(id);
   }
 
   @Patch(':id')

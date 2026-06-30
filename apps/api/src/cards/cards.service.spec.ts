@@ -14,6 +14,7 @@ describe('CardsService', () => {
           created.push(data);
           return {
             id: 'k9',
+            columnKey: 'idea',
             title: data.title,
             body: data.body,
             priority: 0,
@@ -34,6 +35,7 @@ describe('CardsService', () => {
     expect(created[0].order).toBe(3);
     expect(result).toEqual({
       id: 'k9',
+      columnKey: 'idea',
       title: 'X',
       body: null,
       priority: 0,
@@ -48,6 +50,7 @@ describe('CardsService', () => {
         aggregate: async () => ({ _max: { order: null } }),
         create: async ({ data }: { data: { order: number } }) => ({
           id: 'k1',
+          columnKey: 'idea',
           title: 't',
           body: null,
           priority: 0,

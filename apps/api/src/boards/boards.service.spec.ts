@@ -45,6 +45,7 @@ describe('BoardsService', () => {
             cards: [
               {
                 id: 'k1',
+                columnKey: 'idea',
                 title: 'Карточка идеи',
                 body: 'описание',
                 priority: 0,
