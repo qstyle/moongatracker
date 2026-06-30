@@ -83,6 +83,7 @@ model Card {
   project      Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   column       Column    @relation(fields: [columnId], references: [id], onDelete: Restrict)
   comments     Comment[]
+  activities   Activity[]
 }
 
 model Comment {
@@ -93,4 +94,16 @@ model Comment {
   body       String
   createdAt  DateTime @default(now())
   card       Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  cardId    String
+  actorType String   // 'user' | 'agent'
+  actorId   String
+  action    String   // 'create' | 'update' | 'move' | 'comment'
+  before    Json?
+  after     Json?
+  createdAt DateTime @default(now())
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
 }

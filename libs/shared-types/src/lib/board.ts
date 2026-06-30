@@ -114,3 +114,14 @@ export interface ReorderColumnsInput {
   projectId: string;
   orderedIds: string[];
 }
+
+export interface ActivityDto {
+  id: string;
+  cardId: string;
+  actorType: 'user' | 'agent';
+  actorId: string;
+  action: string;
+  before: Record<string, unknown> | null;
+  after: Record<string, unknown> | null;
+  createdAt: string;
+}
