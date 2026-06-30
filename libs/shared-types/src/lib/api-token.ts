@@ -1,11 +1,13 @@
 export interface ApiTokenDto {
   id: string;
+  orgId: string;
   name: string;
-  scope: string[];
+  scopes: string[];
   lastUsedAt: string | null;
   createdAt: string;
+  revokedAt: string | null;
 }
 
 export interface CreateApiTokenResponse extends ApiTokenDto {
-  token: string; // plain token, показывается ОДИН РАЗ
+  token: string;
 }
