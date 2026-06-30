@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CardDto, ColumnDto } from '@moongatracker/shared-types';
+import { ActorDto, CardDto, ColumnDto } from '@moongatracker/shared-types';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { RiCheckboxBlankCircleLine, RiMoreLine } from '@remixicon/react';
@@ -22,6 +22,8 @@ export function Column({
   disabled,
   onChanged,
   onSelectCard,
+  resolveActor,
+  cardKeyOf,
 }: {
   column: ColumnDto;
   index: number;
@@ -29,6 +31,8 @@ export function Column({
   disabled?: boolean;
   onChanged: () => void;
   onSelectCard: (card: CardDto) => void;
+  resolveActor: (actor: ActorDto | null) => ActorDto | null;
+  cardKeyOf: (cardNumber: number) => string;
 }) {
   const count = column.cards.length;
   const { setNodeRef, isOver } = useDroppable({ id: column.id, disabled });
@@ -108,7 +112,7 @@ export function Column({
             </div>
           ) : (
             column.cards.map((card) => (
-              <CardTile key={card.id} card={card} disabled={disabled} onClick={() => onSelectCard(card)} />
+              <CardTile key={card.id} card={card} cardKey={cardKeyOf(card.number)} assignee={resolveActor(card.assignee)} disabled={disabled} onClick={() => onSelectCard(card)} />
             ))
           )}
         </SortableContext>

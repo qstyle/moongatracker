@@ -26,6 +26,7 @@ export function App() {
   return (
     <AppLayout>
       <Switch>
+        <Route path="/boards/:boardId/cards/:cardKey" component={BoardPage} />
         <Route path="/boards/:boardId" component={BoardPage} />
         <Route path="/projects/:projectId/wiki" component={WikiPage} />
         <Route path="/settings" component={SettingsPage} />

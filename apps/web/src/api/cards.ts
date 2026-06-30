@@ -5,6 +5,10 @@ import {
 } from '@moongatracker/shared-types';
 import { apiFetch, asJson } from './client';
 
+export function fetchCard(id: string): Promise<CardDto> {
+  return apiFetch(`/api/cards/${id}`).then((r) => asJson<CardDto>(r));
+}
+
 export function createCard(input: CreateCardInput): Promise<CardDto> {
   return apiFetch('/api/cards', {
     method: 'POST',

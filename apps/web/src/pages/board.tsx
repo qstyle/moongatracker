@@ -6,7 +6,8 @@ import { Board } from '../components/board/board';
 
 export function BoardPage() {
   const [, params] = useRoute('/boards/:boardId');
-  const boardId = params?.boardId ?? '';
+  const [, cardParams] = useRoute('/boards/:boardId/cards/:cardKey');
+  const boardId = params?.boardId ?? cardParams?.boardId ?? '';
   const queryClient = useQueryClient();
 
   useBoardSocket(boardId, queryClient);

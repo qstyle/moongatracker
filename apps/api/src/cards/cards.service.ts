@@ -14,26 +14,35 @@ export class CardsService {
   ) {}
 
   async create(dto: CreateCardDto, user?: any): Promise<CardDto> {
-    const max = await this.prisma.card.aggregate({
-      where: { boardId: dto.boardId, columnId: dto.columnId },
-      _max: { order: true },
-    });
-    const order = (max._max.order ?? -1) + 1;
-
     const authorType = user?.type === 'agent' ? 'agent' : 'user';
     const authorId =
       user?.type === 'agent' ? (user.tokenId ?? null) : (user?.sub ?? null);
 
-    const card = await this.prisma.card.create({
-      data: {
-        boardId: dto.boardId,
-        columnId: dto.columnId,
-        title: dto.title,
-        body: dto.body ?? null,
-        order,
-        authorType,
-        authorId,
-      },
+    // Assign order (per column) and number (per board) atomically; the
+    // @@unique([boardId, number]) index guards against any residual race.
+    const card = await this.prisma.$transaction(async (tx) => {
+      const [orderAgg, numberAgg] = await Promise.all([
+        tx.card.aggregate({
+          where: { boardId: dto.boardId, columnId: dto.columnId },
+          _max: { order: true },
+        }),
+        tx.card.aggregate({
+          where: { boardId: dto.boardId },
+          _max: { number: true },
+        }),
+      ]);
+      return tx.card.create({
+        data: {
+          boardId: dto.boardId,
+          columnId: dto.columnId,
+          number: (numberAgg._max.number ?? 0) + 1,
+          title: dto.title,
+          body: dto.body ?? null,
+          order: (orderAgg._max.order ?? -1) + 1,
+          authorType,
+          authorId,
+        },
+      });
     });
 
     if (user?.type === 'agent') {
@@ -47,6 +56,18 @@ export class CardsService {
       );
     }
 
+    return toCardDto(card);
+  }
+
+  async getByBoardAndNumber(boardId: string, number: number): Promise<CardDto> {
+    const card = await this.prisma.card.findUnique({
+      where: { boardId_number: { boardId, number } },
+      include: {
+        _count: { select: { attachments: true } },
+      },
+    });
+    if (!card)
+      throw new NotFoundException(`Card #${number} not found in board ${boardId}`);
     return toCardDto(card);
   }
 

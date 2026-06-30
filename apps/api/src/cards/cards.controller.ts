@@ -23,6 +23,14 @@ export class CardsController {
     return this.cards.create(dto, req.user);
   }
 
+  @Get('by-board/:boardId/number/:number')
+  getByNumber(
+    @Param('boardId') boardId: string,
+    @Param('number') number: string,
+  ): Promise<CardDto> {
+    return this.cards.getByBoardAndNumber(boardId, Number(number));
+  }
+
   @Get(':id')
   getById(@Param('id') id: string): Promise<CardDto> {
     return this.cards.getById(id);

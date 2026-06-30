@@ -97,6 +97,7 @@ async function main() {
     data: {
       projectId: project.id,
       name: 'Демо-доска',
+      seq: 1,
       columns: { create: COLUMNS },
     },
     include: { columns: { orderBy: { order: 'asc' } } },
@@ -110,9 +111,10 @@ async function main() {
 
   // 6. Create cards
   await prisma.card.createMany({
-    data: CARDS.map((c) => ({
+    data: CARDS.map((c, i) => ({
       boardId: board.id,
       columnId: colMap.get(c.colTitle)!,
+      number: i + 1,
       title: c.title,
       body: c.body ?? null,
       priority: c.priority ?? null,

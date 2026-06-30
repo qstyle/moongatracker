@@ -1,5 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { BoardDto, CardDto, ColumnDto } from '@moongatracker/shared-types';
+import { useLocation, useRoute } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
+import {
+  BoardDto,
+  CardDto,
+  ColumnDto,
+  formatCardKey,
+  parseCardNumber,
+} from '@moongatracker/shared-types';
 import {
   DndContext, DragEndEvent, DragOverlay, DragStartEvent,
   PointerSensor, closestCorners, useSensor, useSensors,
@@ -9,7 +17,8 @@ import { RiTBoxLine } from '@remixicon/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FilterState, useCardFilter } from '../../lib/use-card-filter';
-import { updateCard } from '../../api/cards';
+import { useBoardActors } from '../../lib/use-board-actors';
+import { fetchCard, updateCard } from '../../api/cards';
 import { updateBoard } from '../../api/boards';
 import { createColumn } from '../../api/columns';
 import { Column } from './column';
@@ -55,7 +64,11 @@ function computeMove(cols: ColumnDto[], activeId: string, overId: string): Colum
 }
 
 export function Board({ board, onChanged }: { board: BoardDto; onChanged: () => void }) {
-  const [selected, setSelected] = useState<CardDto | null>(null);
+  const [, navigate] = useLocation();
+  const [cardRouteMatch, cardRouteParams] = useRoute('/boards/:boardId/cards/:cardKey');
+  const selectedCardKey = cardRouteMatch ? cardRouteParams.cardKey : null;
+  const { resolve } = useBoardActors(board.id);
+  const keyOf = (n: number) => formatCardKey(board.name, board.seq, n);
   const [columns, setColumns] = useState<ColumnDto[]>(board.columns);
   const [activeCard, setActiveCard] = useState<CardDto | null>(null);
   const [filter, setFilter] = useState<FilterState>({ search: '' });
@@ -75,6 +88,28 @@ export function Board({ board, onChanged }: { board: BoardDto; onChanged: () => 
       : columns.reduce((n, c) => n + c.cards.length, 0),
     [filterActive, filteredVisible, columns],
   );
+
+  const openCard = (card: CardDto) =>
+    navigate(`/boards/${board.id}/cards/${keyOf(card.number)}`);
+  const closeCard = () => navigate(`/boards/${board.id}`);
+
+  // Selected card comes from the URL key (e.g. "РАЗР2-15"). Resolve by the
+  // per-board number — the board payload already holds every card. Fall back to
+  // id-based fetch only for legacy cuid links (parseCardNumber returns null).
+  const selectedNumber = selectedCardKey ? parseCardNumber(selectedCardKey) : null;
+  const localSelectedCard = selectedCardKey
+    ? columns
+        .flatMap((c) => c.cards)
+        .find((k) =>
+          selectedNumber != null ? k.number === selectedNumber : k.id === selectedCardKey,
+        ) ?? null
+    : null;
+  const { data: fetchedCard } = useQuery({
+    queryKey: ['card', selectedCardKey],
+    queryFn: () => fetchCard(selectedCardKey as string),
+    enabled: !!selectedCardKey && !localSelectedCard && selectedNumber == null,
+  });
+  const selectedCard = localSelectedCard ?? fetchedCard ?? null;
 
   async function persist(next: ColumnDto[]) {
     const original = new Map<string, { columnId: string; index: number }>();
@@ -154,7 +189,7 @@ export function Board({ board, onChanged }: { board: BoardDto; onChanged: () => 
       <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={onDragStart} onDragEnd={onDragEnd}>
         <div className="flex h-full flex-1 gap-4 overflow-x-auto p-4" style={GRID_BG}>
           {filteredVisible.map((col, i) => (
-            <Column key={col.id} column={col} index={i} boardId={board.id} disabled={filterActive} onSelectCard={setSelected} onChanged={onChanged} />
+            <Column key={col.id} column={col} index={i} boardId={board.id} disabled={filterActive} onSelectCard={openCard} onChanged={onChanged} resolveActor={resolve} cardKeyOf={keyOf} />
           ))}
           <div className="flex w-70 shrink-0 items-start pt-1">
             {addingColumn ? (
@@ -186,7 +221,7 @@ export function Board({ board, onChanged }: { board: BoardDto; onChanged: () => 
         </DragOverlay>
       </DndContext>
 
-      {selected && <CardDialog card={selected} onClose={() => setSelected(null)} onChanged={onChanged} />}
+      {selectedCard && <CardDialog card={selectedCard} cardKey={keyOf(selectedCard.number)} onClose={closeCard} onChanged={onChanged} />}
     </div>
   );
 }

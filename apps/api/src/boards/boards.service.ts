@@ -22,6 +22,7 @@ function toCardDto(card: {
   id: string;
   boardId: string;
   columnId: string;
+  number: number;
   title: string;
   body: string | null;
   priority: string | null;
@@ -38,6 +39,7 @@ function toCardDto(card: {
     id: card.id,
     boardId: card.boardId,
     columnId: card.columnId,
+    number: card.number,
     title: card.title,
     body: card.body,
     priority: card.priority as CardPriority | null,
@@ -77,6 +79,7 @@ export class BoardsService {
       id: b.id,
       projectId: b.projectId,
       name: b.name,
+      seq: b.seq,
       createdAt: b.createdAt.toISOString(),
     }));
   }
@@ -88,7 +91,13 @@ export class BoardsService {
   ): Promise<BoardSummaryDto> {
     await assertMembership(this.prisma, userId, projectId);
     const board = await this.prisma.$transaction(async (tx) => {
-      const created = await tx.board.create({ data: { projectId, name } });
+      const seqAgg = await tx.board.aggregate({
+        where: { projectId },
+        _max: { seq: true },
+      });
+      const created = await tx.board.create({
+        data: { projectId, name, seq: (seqAgg._max.seq ?? 0) + 1 },
+      });
       const column = await tx.column.create({
         data: { boardId: created.id, title: 'С чего начать', order: 0 },
       });
@@ -101,6 +110,7 @@ export class BoardsService {
       id: board.id,
       projectId: board.projectId,
       name: board.name,
+      seq: board.seq,
       createdAt: board.createdAt.toISOString(),
     };
   }
@@ -145,6 +155,7 @@ export class BoardsService {
       id: board.id,
       projectId: board.projectId,
       name: board.name,
+      seq: board.seq,
       createdAt: board.createdAt.toISOString(),
       columns,
     };
@@ -168,6 +179,7 @@ export class BoardsService {
       id: updated.id,
       projectId: updated.projectId,
       name: updated.name,
+      seq: updated.seq,
       createdAt: updated.createdAt.toISOString(),
     };
   }

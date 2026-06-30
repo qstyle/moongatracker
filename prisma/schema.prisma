@@ -54,10 +54,13 @@ model Board {
   id        String   @id @default(cuid())
   projectId String
   name      String
+  seq       Int
   createdAt DateTime @default(now())
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   columns   Column[]
   cards     Card[]
+
+  @@unique([projectId, seq])
 }
 
 model Column {
@@ -73,6 +76,7 @@ model Card {
   id           String       @id @default(cuid())
   boardId      String
   columnId     String
+  number       Int
   title        String
   body         String?
   priority     String?
@@ -88,6 +92,8 @@ model Card {
   comments     Comment[]
   activities   Activity[]
   attachments  Attachment[]
+
+  @@unique([boardId, number])
 }
 
 model Comment {

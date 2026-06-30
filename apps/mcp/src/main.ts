@@ -51,7 +51,15 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
         text = await listCards(args as { boardId: string; columnId?: string });
         break;
       case 'get_card':
-        text = await getCard(args as { cardId: string });
+        text = await getCard(
+          args as {
+            cardId?: string;
+            boardId?: string;
+            number?: number;
+            key?: string;
+            projectId?: string;
+          },
+        );
         break;
       case 'create_card':
         text = await createCard(args as any);

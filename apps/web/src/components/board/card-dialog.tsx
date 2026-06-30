@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CardDto, CardPriority, PRIORITIES } from '@moongatracker/shared-types';
-import { RiAttachment2, RiDeleteBin6Line } from '@remixicon/react';
+import { RiAttachment2, RiCheckLine, RiDeleteBin6Line, RiFileCopyLine } from '@remixicon/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,17 +10,22 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { deleteCard, updateCard } from '../../api/cards';
 import { addComment, listComments } from '../../api/comments';
 import { fetchActivity, revertActivity } from '../../api/activity';
 import { deleteAttachment, listAttachments, uploadAttachment } from '../../api/attachments';
+import { useBoardActors } from '../../lib/use-board-actors';
+import { ActorAvatar } from './actor-avatar';
 
 export function CardDialog({
   card,
+  cardKey,
   onClose,
   onChanged,
 }: {
   card: CardDto;
+  cardKey: string;
   onClose: () => void;
   onChanged: () => void;
 }) {
@@ -32,6 +37,13 @@ export function CardDialog({
   const [busy, setBusy] = useState(false);
   const [commentBody, setCommentBody] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const { actors, resolve } = useBoardActors(card.boardId);
+  const author = resolve(card.author);
+  const assigneeValue = card.assignee
+    ? `${card.assignee.type}:${card.assignee.id}`
+    : 'none';
 
   const comments = useQuery({ queryKey: ['comments', card.id], queryFn: () => listComments(card.id) });
   const { data: activities = [] } = useQuery({ queryKey: ['activity', card.id], queryFn: () => fetchActivity(card.id) });
@@ -91,6 +103,23 @@ export function CardDialog({
     onChanged();
   }
 
+  async function handleSetAssignee(value: string) {
+    if (value === 'none') {
+      await updateCard(card.id, { assigneeType: null, assigneeId: null });
+    } else {
+      const [type, id] = value.split(':');
+      await updateCard(card.id, { assigneeType: type, assigneeId: id });
+    }
+    onChanged();
+  }
+
+  function copyLink() {
+    const url = `${location.origin}/boards/${card.boardId}/cards/${cardKey}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
+
   async function postComment() {
     const value = commentBody.trim();
     if (!value) return;
@@ -116,8 +145,11 @@ export function CardDialog({
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="flex max-h-[90dvh] max-w-lg flex-col gap-0 p-0">
-        <DialogHeader className="border-b border-border px-4 py-2.5">
-          <DialogTitle>карточка</DialogTitle>
+        <DialogHeader className="flex-row items-center gap-1.5 space-y-0 border-b border-border px-4 py-2.5">
+          <DialogTitle className="font-mono text-sm tracking-wide">{cardKey}</DialogTitle>
+          <Button type="button" variant="ghost" size="icon-xs" onClick={copyLink} title="Скопировать ссылку на карточку">
+            {copied ? <RiCheckLine className="text-emerald-500" /> : <RiFileCopyLine />}
+          </Button>
         </DialogHeader>
 
         <ScrollArea className="flex-1">
@@ -138,6 +170,41 @@ export function CardDialog({
                     {p?.label ?? 'Нет'}
                   </Badge>
                 ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="mb-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">исполнитель</div>
+              <Select value={assigneeValue} onValueChange={handleSetAssignee}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Не назначен" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Не назначен</SelectItem>
+                  {actors.map((a) => (
+                    <SelectItem key={`${a.type}:${a.id}`} value={`${a.type}:${a.id}`}>
+                      <span className="flex items-center gap-2">
+                        <ActorAvatar actor={a} size="xs" />
+                        {a.name ?? (a.type === 'agent' ? 'Агент' : 'Участник')}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+              {author && (
+                <div className="flex items-center gap-1.5">
+                  <span className="uppercase tracking-wider">автор</span>
+                  <ActorAvatar actor={author} size="xs" />
+                  <span className="text-foreground">{author.name}</span>
+                </div>
+              )}
+              <div className="tabular-nums">
+                создано {new Date(card.createdAt).toLocaleDateString('ru')}
+                {card.updatedAt !== card.createdAt &&
+                  ` · изменено ${new Date(card.updatedAt).toLocaleDateString('ru')}`}
               </div>
             </div>
 

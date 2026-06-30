@@ -12,6 +12,7 @@ export function buildOnboardingCards(
   return titles.map((title, order) => ({
     boardId,
     columnId,
+    number: order + 1,
     title,
     body: null,
     priority: 'normal',

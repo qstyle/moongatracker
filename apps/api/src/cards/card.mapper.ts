@@ -4,6 +4,7 @@ export interface PrismaCardLike {
   id: string;
   boardId: string;
   columnId: string;
+  number: number;
   title: string;
   body: string | null;
   priority: string | null;
@@ -22,6 +23,7 @@ export function toCardDto(card: PrismaCardLike): CardDto {
     id: card.id,
     boardId: card.boardId,
     columnId: card.columnId,
+    number: card.number,
     title: card.title,
     body: card.body,
     priority: card.priority as CardPriority | null,

@@ -42,7 +42,7 @@ export class ProjectsService {
         data: { projectId: created.id, userId, color: MEMBER_COLOR_PALETTE[0] },
       });
       const board = await tx.board.create({
-        data: { projectId: created.id, name },
+        data: { projectId: created.id, name, seq: 1 },
       });
       const column = await tx.column.create({
         data: { boardId: board.id, title: 'С чего начать', order: 0 },

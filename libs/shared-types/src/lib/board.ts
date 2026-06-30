@@ -34,6 +34,8 @@ export interface CardDto {
   id: string;
   boardId: string;
   columnId: string;
+  /** Per-board sequential number, assigned at creation, immutable. */
+  number: number;
   title: string;
   body: string | null;
   priority: CardPriority | null;
@@ -57,6 +59,8 @@ export interface BoardDto {
   id: string;
   projectId: string;
   name: string;
+  /** Per-project ordinal of the board, used in the card key prefix. */
+  seq: number;
   createdAt: string;
   columns: ColumnDto[];
 }
@@ -65,6 +69,7 @@ export interface BoardSummaryDto {
   id: string;
   projectId: string;
   name: string;
+  seq: number;
   createdAt: string;
 }
 

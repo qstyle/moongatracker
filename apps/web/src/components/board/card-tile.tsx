@@ -1,15 +1,20 @@
-import { CardDto } from '@moongatracker/shared-types';
+import { ActorDto, CardDto } from '@moongatracker/shared-types';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { RiAttachment2, RiDraggable } from '@remixicon/react';
 import { PriorityChip } from './priority-chip';
+import { ActorAvatar } from './actor-avatar';
 
 export function CardTile({
   card,
+  cardKey,
+  assignee,
   disabled,
   onClick,
 }: {
   card: CardDto;
+  cardKey?: string;
+  assignee?: ActorDto | null;
   disabled?: boolean;
   onClick: () => void;
 }) {
@@ -42,6 +47,12 @@ export function CardTile({
     >
       <div className="absolute inset-y-0 left-0 w-0.5 transition-colors" style={{ backgroundColor: stripe }} />
 
+      {cardKey && (
+        <div className="mb-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60">
+          {cardKey}
+        </div>
+      )}
+
       {card.priority && (
         <div className="mb-1.5">
           <PriorityChip priority={card.priority} />
@@ -66,10 +77,19 @@ export function CardTile({
         </div>
       )}
 
-      {card.attachmentCount > 0 && (
-        <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
-          <RiAttachment2 className="size-3" />
-          <div>{card.attachmentCount}</div>
+      {(card.attachmentCount > 0 || assignee) && (
+        <div className="mt-1.5 flex items-center gap-2">
+          {card.attachmentCount > 0 && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <RiAttachment2 className="size-3" />
+              <div>{card.attachmentCount}</div>
+            </div>
+          )}
+          {assignee && (
+            <div className="ml-auto">
+              <ActorAvatar actor={assignee} size="xs" />
+            </div>
+          )}
         </div>
       )}
     </div>
