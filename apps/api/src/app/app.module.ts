@@ -1,6 +1,7 @@
 import { join } from 'path';
 import { DynamicModule, Module } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { ApiTokensModule } from '../api-tokens/api-tokens.module';
 import { AuthModule } from '../auth/auth.module';
 import { BoardsModule } from '../boards/boards.module';
 import { CardsModule } from '../cards/cards.module';
@@ -26,6 +27,7 @@ const staticModules: DynamicModule[] =
   imports: [
     ...staticModules,
     AuthModule,
+    ApiTokensModule,
     BoardsModule,
     CardsModule,
     CommentsModule,

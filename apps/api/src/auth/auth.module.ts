@@ -4,7 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PrismaService } from '@moongatracker/data-access';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from './jwt-auth.guard';
+import { UnifiedAuthGuard } from './unified-auth.guard';
 
 @Module({
   imports: [
@@ -17,7 +17,8 @@ import { JwtAuthGuard } from './jwt-auth.guard';
   providers: [
     AuthService,
     PrismaService,
-    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: UnifiedAuthGuard },
   ],
+  exports: [JwtModule],
 })
 export class AuthModule {}
