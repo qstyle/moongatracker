@@ -2,30 +2,29 @@ import { describe, it, expect } from 'vitest';
 import { ColumnDto, CardDto } from '@moongatracker/shared-types';
 import { filterColumns, FilterState } from './use-card-filter';
 
-const card = (
-  id: string,
-  title: string,
-  body?: string,
-  labelIds: string[] = [],
-): CardDto => ({
+const card = (id: string, title: string, body?: string): CardDto => ({
   id,
-  columnKey: 'idea',
+  projectId: 'proj-1',
+  columnId: 'col-1',
   title,
   body: body ?? null,
-  priority: 0,
+  priority: null,
   order: 0,
-  labels: labelIds.map((lid) => ({ id: lid, name: lid, color: '#000' })),
+  author: { type: 'user', id: null, name: null },
+  assignee: null,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
 });
 
-const col = (key: string, cards: CardDto[]): ColumnDto => ({
-  id: `col-${key}`,
-  key: key as ColumnDto['key'],
-  title: key,
+const col = (id: string, cards: CardDto[]): ColumnDto => ({
+  id,
+  projectId: 'proj-1',
+  title: id,
   order: 0,
   cards,
 });
 
-const empty: FilterState = { search: '', labelIds: new Set() };
+const empty: FilterState = { search: '' };
 
 describe('filterColumns', () => {
   it('returns same reference when filter is empty', () => {
@@ -35,7 +34,7 @@ describe('filterColumns', () => {
 
   it('filters by title substring (case-insensitive)', () => {
     const cols = [col('idea', [card('1', 'Buy milk'), card('2', 'Fix bug')])];
-    const result = filterColumns(cols, { search: 'MiLk', labelIds: new Set() });
+    const result = filterColumns(cols, { search: 'MiLk' });
     expect(result[0].cards).toHaveLength(1);
     expect(result[0].cards[0].id).toBe('1');
   });
@@ -47,10 +46,7 @@ describe('filterColumns', () => {
         card('2', 'Other', 'nothing'),
       ]),
     ];
-    const result = filterColumns(cols, {
-      search: 'the thing',
-      labelIds: new Set(),
-    });
+    const result = filterColumns(cols, { search: 'the thing' });
     expect(result[0].cards[0].id).toBe('1');
     expect(result[0].cards).toHaveLength(1);
   });
@@ -60,46 +56,14 @@ describe('filterColumns', () => {
       col('idea', [card('1', 'Foo')]),
       col('backlog', [card('2', 'Bar')]),
     ];
-    const result = filterColumns(cols, { search: 'Foo', labelIds: new Set() });
+    const result = filterColumns(cols, { search: 'Foo' });
     expect(result).toHaveLength(2);
     expect(result[1].cards).toHaveLength(0);
   });
 
-  it('filters by label (OR logic — any matching label)', () => {
-    const cols = [
-      col('idea', [
-        card('1', 'Alpha', '', ['bug']),
-        card('2', 'Beta', '', ['feature']),
-        card('3', 'Gamma', '', []),
-      ]),
-    ];
-    const result = filterColumns(cols, {
-      search: '',
-      labelIds: new Set(['bug']),
-    });
-    expect(result[0].cards.map((c) => c.id)).toEqual(['1']);
-  });
-
-  it('combines search and label filter (both must match)', () => {
-    const cols = [
-      col('idea', [
-        card('1', 'bug fix', '', ['bug']),
-        card('2', 'bug report', '', ['feature']),
-        card('3', 'feature work', '', ['bug']),
-      ]),
-    ];
-    const result = filterColumns(cols, {
-      search: 'bug',
-      labelIds: new Set(['bug']),
-    });
-    expect(result[0].cards.map((c) => c.id)).toEqual(['1']);
-  });
-
-  it('shows all cards when labelIds is empty (no label filter)', () => {
-    const cols = [
-      col('idea', [card('1', 'X', '', ['a']), card('2', 'Y', '', ['b'])]),
-    ];
-    const result = filterColumns(cols, { search: '', labelIds: new Set() });
+  it('shows all cards when search is empty', () => {
+    const cols = [col('idea', [card('1', 'X'), card('2', 'Y')])];
+    const result = filterColumns(cols, { search: '' });
     expect(result[0].cards).toHaveLength(2);
   });
 });

@@ -1,16 +1,17 @@
 import { useState } from 'react';
-import { ColumnKey } from '@moongatracker/shared-types';
 import { RiAddLine } from '@remixicon/react';
 import { createCard } from '../../api/cards';
 
 export function CardComposer({
-  boardId,
-  columnKey,
+  projectId,
+  columnId,
   onAdded,
+  disabled,
 }: {
-  boardId: string;
-  columnKey: ColumnKey;
+  projectId: string;
+  columnId: string;
   onAdded: () => void;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
@@ -26,7 +27,7 @@ export function CardComposer({
     if (!value || busy) return;
     setBusy(true);
     try {
-      await createCard({ boardId, columnKey, title: value });
+      await createCard({ projectId, columnId, title: value });
       reset();
       onAdded();
     } finally {
@@ -38,8 +39,9 @@ export function CardComposer({
     return (
       <button
         type="button"
+        disabled={disabled}
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 px-1 py-1.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+        className="flex items-center gap-1.5 px-1 py-1.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
       >
         <RiAddLine className="size-3.5" />
         добавить

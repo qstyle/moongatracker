@@ -2,7 +2,7 @@ import { CardDto } from '@moongatracker/shared-types';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { RiDraggable } from '@remixicon/react';
-import { LabelChip } from './label-chip';
+import { PriorityChip } from './priority-chip';
 
 export function CardTile({
   card,
@@ -22,6 +22,15 @@ export function CardTile({
     isDragging,
   } = useSortable({ id: card.id, disabled });
 
+  const stripe =
+    card.priority === 'urgent'
+      ? '#e11d48'
+      : card.priority === 'normal'
+        ? '#f59e0b'
+        : card.priority === 'low'
+          ? '#64748b'
+          : 'transparent';
+
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -40,13 +49,14 @@ export function CardTile({
         (disabled ? 'cursor-default' : 'cursor-grab active:cursor-grabbing')
       }
     >
-      <span className="absolute inset-y-0 left-0 w-[2px] bg-transparent transition-colors group-hover:bg-primary" />
+      <span
+        className="absolute inset-y-0 left-0 w-[2px] transition-colors"
+        style={{ backgroundColor: stripe }}
+      />
 
-      {card.labels.length > 0 && (
-        <div className="mb-1.5 flex flex-wrap gap-1">
-          {card.labels.map((l) => (
-            <LabelChip key={l.id} name={l.name} color={l.color} />
-          ))}
+      {card.priority && (
+        <div className="mb-1.5">
+          <PriorityChip priority={card.priority} />
         </div>
       )}
 

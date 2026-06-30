@@ -1,30 +1,52 @@
+import { useRef, useState } from 'react';
 import { CardDto, ColumnDto } from '@moongatracker/shared-types';
 import { useDroppable } from '@dnd-kit/core';
 import {
   SortableContext,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { RiCheckboxBlankCircleLine } from '@remixicon/react';
+import { RiCheckboxBlankCircleLine, RiMoreLine } from '@remixicon/react';
+import { updateColumn, deleteColumn } from '../../api/columns';
 import { CardTile } from './card-tile';
 import { CardComposer } from './card-composer';
 
 export function Column({
   column,
   index,
-  boardId,
+  projectId,
   disabled,
   onChanged,
   onSelectCard,
 }: {
   column: ColumnDto;
   index: number;
-  boardId: string;
+  projectId: string;
   disabled?: boolean;
   onChanged: () => void;
   onSelectCard: (card: CardDto) => void;
 }) {
   const count = column.cards.length;
-  const { setNodeRef, isOver } = useDroppable({ id: column.key, disabled });
+  const { setNodeRef, isOver } = useDroppable({ id: column.id, disabled });
+
+  const [renaming, setRenaming] = useState(false);
+  const [renameValue, setRenameValue] = useState(column.title);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  async function commitRename() {
+    setRenaming(false);
+    const value = renameValue.trim();
+    if (!value || value === column.title) return;
+    await updateColumn(column.id, { title: value });
+    onChanged();
+  }
+
+  async function handleDelete() {
+    setMenuOpen(false);
+    if (count > 0) return;
+    await deleteColumn(column.id);
+    onChanged();
+  }
 
   return (
     <section className="flex w-[280px] shrink-0 flex-col">
@@ -33,13 +55,68 @@ export function Column({
           <span className="text-[10px] tabular-nums text-muted-foreground/50">
             {String(index + 1).padStart(2, '0')}
           </span>
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground">
-            {column.title}
-          </h2>
+          {renaming ? (
+            <input
+              autoFocus
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onBlur={commitRename}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') commitRename();
+                if (e.key === 'Escape') {
+                  setRenameValue(column.title);
+                  setRenaming(false);
+                }
+              }}
+              className="w-32 border-b border-foreground/40 bg-transparent text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground outline-none"
+            />
+          ) : (
+            <h2
+              className="cursor-default text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground"
+              onDoubleClick={() => {
+                setRenameValue(column.title);
+                setRenaming(true);
+              }}
+              title="Двойной клик для переименования"
+            >
+              {column.title}
+            </h2>
+          )}
         </div>
-        <span className="min-w-5 border border-border px-1.5 text-center text-[10px] leading-4 tabular-nums text-muted-foreground">
-          {count}
-        </span>
+
+        <div className="flex items-center gap-1">
+          <span className="min-w-5 border border-border px-1.5 text-center text-[10px] leading-4 tabular-nums text-muted-foreground">
+            {count}
+          </span>
+          <div className="relative" ref={menuRef}>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((v) => !v)}
+              className="flex items-center text-muted-foreground/50 transition-colors hover:text-foreground"
+              title="Действия"
+            >
+              <RiMoreLine className="size-3.5" />
+            </button>
+            {menuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setMenuOpen(false)}
+                />
+                <div className="absolute right-0 z-20 mt-1 min-w-[120px] border border-border bg-card shadow-lg">
+                  <button
+                    type="button"
+                    disabled={count > 0}
+                    onClick={handleDelete}
+                    className="flex w-full items-center px-3 py-2 text-left text-[11px] text-destructive transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Удалить
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </header>
 
       <div
@@ -71,9 +148,10 @@ export function Column({
         </SortableContext>
 
         <CardComposer
-          boardId={boardId}
-          columnKey={column.key}
+          projectId={projectId}
+          columnId={column.id}
           onAdded={onChanged}
+          disabled={disabled}
         />
       </div>
     </section>
