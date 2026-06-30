@@ -1,30 +1,26 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { apiPatch } from '../api-client.js';
-import type { CardDto, ColumnKey } from '@moongatracker/shared-types';
+import type { CardDto } from '@moongatracker/shared-types';
 
 export const moveCardTool: Tool = {
   name: 'move_card',
-  description:
-    'Переместить карточку в другую колонку (idea→triage→backlog→in_dev→done)',
+  description: 'Move a card to a different column',
   inputSchema: {
     type: 'object',
     properties: {
-      cardId: { type: 'string' },
-      columnKey: {
-        type: 'string',
-        enum: ['idea', 'triage', 'backlog', 'in_dev', 'done'],
-      },
+      cardId: { type: 'string', description: 'Card ID' },
+      columnId: { type: 'string', description: 'Target column ID' },
     },
-    required: ['cardId', 'columnKey'],
+    required: ['cardId', 'columnId'],
   },
 };
 
 export async function moveCard(args: {
   cardId: string;
-  columnKey: ColumnKey;
+  columnId: string;
 }): Promise<string> {
   const card = await apiPatch<CardDto>(`/api/cards/${args.cardId}`, {
-    columnKey: args.columnKey,
+    columnId: args.columnId,
   });
   return JSON.stringify(card, null, 2);
 }

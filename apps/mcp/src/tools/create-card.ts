@@ -4,34 +4,33 @@ import type { CardDto } from '@moongatracker/shared-types';
 
 export const createCardTool: Tool = {
   name: 'create_card',
-  description: 'Создать карточку. По умолчанию попадает в колонку idea.',
+  description: 'Create a new card in a project column',
   inputSchema: {
     type: 'object',
     properties: {
-      boardId: { type: 'string' },
+      projectId: { type: 'string' },
+      columnId: { type: 'string' },
       title: { type: 'string', maxLength: 200 },
       body: { type: 'string', maxLength: 2000 },
-      columnKey: {
-        type: 'string',
-        enum: ['idea', 'triage', 'backlog', 'in_dev', 'done'],
-        default: 'idea',
-      },
+      priority: { type: 'string', enum: ['urgent', 'normal', 'low'] },
     },
-    required: ['boardId', 'title'],
+    required: ['projectId', 'columnId', 'title'],
   },
 };
 
 export async function createCard(args: {
-  boardId: string;
+  projectId: string;
+  columnId: string;
   title: string;
   body?: string;
-  columnKey?: string;
+  priority?: 'urgent' | 'normal' | 'low';
 }): Promise<string> {
   const card = await apiPost<CardDto>('/api/cards', {
-    boardId: args.boardId,
+    projectId: args.projectId,
+    columnId: args.columnId,
     title: args.title,
-    body: args.body ?? null,
-    columnKey: args.columnKey ?? 'idea',
+    body: args.body,
+    priority: args.priority,
   });
   return JSON.stringify(card, null, 2);
 }

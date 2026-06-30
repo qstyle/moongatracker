@@ -4,7 +4,7 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
-import { listBoardsTool, listBoards } from './tools/list-boards.js';
+import { listProjectsTool, listProjects } from './tools/list-projects.js';
 import { listCardsTool, listCards } from './tools/list-cards.js';
 import { getCardTool, getCard } from './tools/get-card.js';
 import { createCardTool, createCard } from './tools/create-card.js';
@@ -16,7 +16,7 @@ const server = new Server(
 );
 
 const tools = [
-  listBoardsTool,
+  listProjectsTool,
   listCardsTool,
   getCardTool,
   createCardTool,
@@ -30,20 +30,22 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
   try {
     let text: string;
     switch (name) {
-      case 'list_boards':
-        text = await listBoards();
+      case 'list_projects':
+        text = await listProjects(args as { orgId: string });
         break;
       case 'list_cards':
-        text = await listCards(args as any);
+        text = await listCards(
+          args as { projectId: string; columnId?: string },
+        );
         break;
       case 'get_card':
-        text = await getCard(args as any);
+        text = await getCard(args as { cardId: string });
         break;
       case 'create_card':
         text = await createCard(args as any);
         break;
       case 'move_card':
-        text = await moveCard(args as any);
+        text = await moveCard(args as { cardId: string; columnId: string });
         break;
       default:
         throw new Error(`Unknown tool: ${name}`);
