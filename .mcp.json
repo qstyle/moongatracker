@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "moongatracker": {
+      "command": "node",
+      "args": ["--import", "tsx/esm", "apps/mcp/src/main.ts"],
+      "cwd": "/Users/dmitrijordin/checker_pro/moongatracker",
+      "env": {
+        "MOONGATRACKER_API_URL": "http://localhost:3020",
+        "MOONGATRACKER_API_TOKEN": ""
+      }
+    }
+  }
+}
