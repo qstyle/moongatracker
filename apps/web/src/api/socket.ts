@@ -9,11 +9,28 @@ function socketUrl(): string {
   return location.port === '4200' ? 'http://localhost:3020' : location.origin;
 }
 
+export function useProjectSocket(
+  projectId: string,
+  queryClient: QueryClient,
+): void {
+  useEffect(() => {
+    if (!projectId) return;
+    const socket = io(socketUrl(), { transports: ['websocket'] });
+    socket.on('project:changed', () => {
+      queryClient.invalidateQueries({ queryKey: ['project', projectId] });
+    });
+    return () => {
+      socket.disconnect();
+    };
+  }, [projectId, queryClient]);
+}
+
+/** @deprecated use useProjectSocket */
 export function useBoardSocket(queryClient: QueryClient): void {
   useEffect(() => {
     const socket = io(socketUrl(), { transports: ['websocket'] });
-    socket.on('board:changed', () => {
-      queryClient.invalidateQueries({ queryKey: ['boards'] });
+    socket.on('project:changed', () => {
+      queryClient.invalidateQueries({ queryKey: ['project'] });
     });
     return () => {
       socket.disconnect();

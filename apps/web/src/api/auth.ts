@@ -18,3 +18,17 @@ export async function login(
 export function logout(): void {
   setToken(null);
 }
+
+export async function register(
+  email: string,
+  password: string,
+  name?: string,
+): Promise<void> {
+  const res = await apiFetch('/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, name }),
+  });
+  const data = await asJson<{ accessToken: string }>(res);
+  setToken(data.accessToken);
+}
