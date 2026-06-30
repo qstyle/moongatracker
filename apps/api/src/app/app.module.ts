@@ -10,6 +10,7 @@ import { ActivityModule } from '../activity/activity.module';
 import { CardsModule } from '../cards/cards.module';
 import { CommentsModule } from '../comments/comments.module';
 import { EventsModule } from '../events/events.module';
+import { AttachmentsModule } from '../attachments/attachments.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -37,6 +38,7 @@ const staticModules: DynamicModule[] =
     CardsModule,
     CommentsModule,
     EventsModule,
+    AttachmentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

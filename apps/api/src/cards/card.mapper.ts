@@ -14,6 +14,7 @@ export interface PrismaCardLike {
   order: number;
   createdAt: Date;
   updatedAt: Date;
+  _count?: { attachments: number };
 }
 
 export function toCardDto(card: PrismaCardLike): CardDto {
@@ -37,6 +38,7 @@ export function toCardDto(card: PrismaCardLike): CardDto {
         }
       : null,
     order: card.order,
+    attachmentCount: card._count?.attachments ?? 0,
     createdAt: card.createdAt.toISOString(),
     updatedAt: card.updatedAt.toISOString(),
   };

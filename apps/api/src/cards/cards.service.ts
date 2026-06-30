@@ -51,7 +51,12 @@ export class CardsService {
   }
 
   async getById(id: string): Promise<CardDto> {
-    const card = await this.prisma.card.findUnique({ where: { id } });
+    const card = await this.prisma.card.findUnique({
+      where: { id },
+      include: {
+        _count: { select: { attachments: true } },
+      },
+    });
     if (!card) throw new NotFoundException(`Card ${id} not found`);
     return toCardDto(card);
   }

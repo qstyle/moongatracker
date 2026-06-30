@@ -28,6 +28,7 @@ function toCardDto(card: {
   order: number;
   createdAt: Date;
   updatedAt: Date;
+  _count?: { attachments: number };
 }): CardDto {
   return {
     id: card.id,
@@ -49,6 +50,7 @@ function toCardDto(card: {
         } as ActorDto)
       : null,
     order: card.order,
+    attachmentCount: card._count?.attachments ?? 0,
     createdAt: card.createdAt.toISOString(),
     updatedAt: card.updatedAt.toISOString(),
   };
@@ -99,7 +101,11 @@ export class ProjectsService {
         columns: {
           orderBy: { order: 'asc' },
           include: {
-            cards: true,
+            cards: {
+              include: {
+                _count: { select: { attachments: true } },
+              },
+            },
           },
         },
       },

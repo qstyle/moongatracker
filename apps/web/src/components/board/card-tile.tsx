@@ -1,7 +1,7 @@
 import { CardDto } from '@moongatracker/shared-types';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { RiDraggable } from '@remixicon/react';
+import { RiAttachment2, RiDraggable } from '@remixicon/react';
 import { PriorityChip } from './priority-chip';
 
 export function CardTile({
@@ -76,6 +76,13 @@ export function CardTile({
         <p className="mt-1.5 line-clamp-2 text-[11px] leading-relaxed text-muted-foreground">
           {card.body}
         </p>
+      )}
+
+      {card.attachmentCount > 0 && (
+        <div className="mt-1.5 flex items-center gap-1 text-[10px] text-muted-foreground">
+          <RiAttachment2 className="size-3" />
+          <span>{card.attachmentCount}</span>
+        </div>
       )}
     </article>
   );

@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CardDto, CardPriority, PRIORITIES } from '@moongatracker/shared-types';
-import { RiCloseLine, RiDeleteBin6Line } from '@remixicon/react';
+import { RiAttachment2, RiCloseLine, RiDeleteBin6Line } from '@remixicon/react';
 import { deleteCard, updateCard } from '../../api/cards';
 import { addComment, listComments } from '../../api/comments';
 import { fetchActivity, revertActivity } from '../../api/activity';
+import {
+  deleteAttachment,
+  listAttachments,
+  uploadAttachment,
+} from '../../api/attachments';
 
 function cn(...classes: (string | false | null | undefined)[]) {
   return classes.filter(Boolean).join(' ');
@@ -36,6 +41,7 @@ export function CardDialog({
   const [bottomTab, setBottomTab] = useState<'comments' | 'history'>(
     'comments',
   );
+  const [uploading, setUploading] = useState(false);
 
   const comments = useQuery({
     queryKey: ['comments', card.id],
@@ -48,6 +54,11 @@ export function CardDialog({
     enabled: bottomTab === 'history',
   });
 
+  const { data: attachments = [], refetch: refetchAttachments } = useQuery({
+    queryKey: ['attachments', card.id],
+    queryFn: () => listAttachments(card.id),
+  });
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose();
@@ -55,6 +66,31 @@ export function CardDialog({
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
+
+  useEffect(() => {
+    async function onPaste(e: ClipboardEvent) {
+      const items = Array.from(e.clipboardData?.items ?? []);
+      const imageItem = items.find((i) => i.type.startsWith('image/'));
+      if (!imageItem) return;
+      const file = imageItem.getAsFile();
+      if (!file) return;
+      setUploading(true);
+      try {
+        await uploadAttachment(
+          card.id,
+          new File([file], `screenshot-${Date.now()}.png`, {
+            type: file.type,
+          }),
+        );
+        await refetchAttachments();
+        onChanged();
+      } finally {
+        setUploading(false);
+      }
+    }
+    window.addEventListener('paste', onPaste);
+    return () => window.removeEventListener('paste', onPaste);
+  }, [card.id, refetchAttachments, onChanged]);
 
   async function save() {
     const value = title.trim();
@@ -156,6 +192,69 @@ export function CardDialog({
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Attachments */}
+          <div>
+            <SectionTitle>вложения</SectionTitle>
+
+            {attachments.length > 0 && (
+              <div className="mb-2 flex flex-wrap gap-2">
+                {attachments.map((a) => (
+                  <div
+                    key={a.id}
+                    className="flex items-center gap-1 rounded border border-border bg-muted px-2 py-1"
+                  >
+                    <a
+                      href={a.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="max-w-[140px] truncate text-[11px] text-foreground hover:underline"
+                      title={a.filename}
+                    >
+                      {a.filename}
+                    </a>
+                    <button
+                      onClick={async () => {
+                        await deleteAttachment(a.id);
+                        refetchAttachments();
+                        onChanged();
+                      }}
+                      className="ml-1 text-[10px] text-muted-foreground hover:text-destructive"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <label
+              className={[
+                'inline-flex cursor-pointer items-center gap-1 rounded border border-border px-3 py-1.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground',
+                uploading ? 'pointer-events-none opacity-40' : '',
+              ].join(' ')}
+            >
+              <RiAttachment2 className="size-3.5" />
+              <input
+                type="file"
+                className="sr-only"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setUploading(true);
+                  try {
+                    await uploadAttachment(card.id, file);
+                    await refetchAttachments();
+                    onChanged();
+                  } finally {
+                    setUploading(false);
+                    e.target.value = '';
+                  }
+                }}
+              />
+              {uploading ? 'Загрузка…' : 'Прикрепить файл'}
+            </label>
           </div>
 
           {/* comments / history tabs */}
