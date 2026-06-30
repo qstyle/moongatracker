@@ -1,6 +1,6 @@
 export interface ApiTokenDto {
   id: string;
-  orgId: string;
+  projectId: string;
   name: string;
   scopes: string[];
   lastUsedAt: string | null;

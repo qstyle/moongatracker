@@ -30,7 +30,7 @@ export interface CommentDto {
 
 export interface CardDto {
   id: string;
-  projectId: string;
+  boardId: string;
   columnId: string;
   title: string;
   body: string | null;
@@ -45,28 +45,28 @@ export interface CardDto {
 
 export interface ColumnDto {
   id: string;
-  projectId: string;
+  boardId: string;
   title: string;
   order: number;
   cards: CardDto[];
 }
 
-export interface ProjectDto {
+export interface BoardDto {
   id: string;
-  orgId: string;
+  projectId: string;
   name: string;
   createdAt: string;
   columns: ColumnDto[];
 }
 
-export interface ProjectSummaryDto {
+export interface BoardSummaryDto {
   id: string;
-  orgId: string;
+  projectId: string;
   name: string;
   createdAt: string;
 }
 
-export interface OrgDto {
+export interface ProjectDto {
   id: string;
   name: string;
   createdAt: string;
@@ -79,13 +79,13 @@ export interface MemberDto {
   createdAt: string;
 }
 
-export interface CreateProjectInput {
-  orgId: string;
+export interface CreateBoardInput {
+  projectId: string;
   name: string;
 }
 
 export interface CreateCardInput {
-  projectId: string;
+  boardId: string;
   columnId: string;
   title: string;
   body?: string | null;
@@ -102,7 +102,7 @@ export interface UpdateCardInput {
 }
 
 export interface CreateColumnInput {
-  projectId: string;
+  boardId: string;
   title: string;
 }
 
@@ -112,7 +112,7 @@ export interface UpdateColumnInput {
 }
 
 export interface ReorderColumnsInput {
-  projectId: string;
+  boardId: string;
   orderedIds: string[];
 }
 
