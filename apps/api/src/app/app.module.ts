@@ -6,6 +6,7 @@ import { ProjectsModule } from '../projects/projects.module';
 import { ColumnsModule } from '../columns/columns.module';
 import { AuthModule } from '../auth/auth.module';
 import { ApiTokensModule } from '../api-tokens/api-tokens.module';
+import { ActivityModule } from '../activity/activity.module';
 import { CardsModule } from '../cards/cards.module';
 import { CommentsModule } from '../comments/comments.module';
 import { EventsModule } from '../events/events.module';
@@ -32,6 +33,7 @@ const staticModules: DynamicModule[] =
     ColumnsModule,
     AuthModule,
     ApiTokensModule,
+    ActivityModule,
     CardsModule,
     CommentsModule,
     EventsModule,

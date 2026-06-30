@@ -1,13 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@moongatracker/data-access';
 import { CardDto } from '@moongatracker/shared-types';
+import { ActivityService } from '../activity/activity.service';
 import { toCardDto } from './card.mapper';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 
 @Injectable()
 export class CardsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activity: ActivityService,
+  ) {}
 
   async create(dto: CreateCardDto, user?: any): Promise<CardDto> {
     const max = await this.prisma.card.aggregate({
@@ -31,6 +35,18 @@ export class CardsService {
         authorId,
       },
     });
+
+    if (user?.type === 'agent') {
+      await this.activity.record(
+        card.id,
+        'agent',
+        user.tokenId ?? user.sub ?? '',
+        'create',
+        null,
+        { title: card.title, columnId: card.columnId },
+      );
+    }
+
     return toCardDto(card);
   }
 
@@ -42,6 +58,13 @@ export class CardsService {
 
   async update(id: string, dto: UpdateCardDto, user?: any): Promise<CardDto> {
     await this.ensureExists(id);
+
+    let existing: Awaited<ReturnType<typeof this.prisma.card.findUnique>> =
+      null;
+    if (user?.type === 'agent') {
+      existing = await this.prisma.card.findUnique({ where: { id } });
+    }
+
     const card = await this.prisma.card.update({
       where: { id },
       data: {
@@ -56,6 +79,23 @@ export class CardsService {
         ...(dto.assigneeId !== undefined && { assigneeId: dto.assigneeId }),
       },
     });
+
+    if (user?.type === 'agent') {
+      await this.activity.record(
+        id,
+        'agent',
+        user.tokenId ?? '',
+        'update',
+        {
+          title: existing?.title,
+          body: existing?.body,
+          priority: existing?.priority,
+          columnId: existing?.columnId,
+        },
+        { ...dto },
+      );
+    }
+
     return toCardDto(card);
   }
 

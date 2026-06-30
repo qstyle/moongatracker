@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@moongatracker/data-access';
 import { CommentDto } from '@moongatracker/shared-types';
+import { ActivityService } from '../activity/activity.service';
 import { toCommentDto } from './comment.mapper';
 
 @Injectable()
 export class CommentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activity: ActivityService,
+  ) {}
 
   async list(cardId: string): Promise<CommentDto[]> {
     const rows = await this.prisma.comment.findMany({
@@ -26,6 +30,18 @@ export class CommentsService {
     const created = await this.prisma.comment.create({
       data: { cardId, body, authorType, authorId },
     });
+
+    if (user?.type === 'agent') {
+      await this.activity.record(
+        cardId,
+        'agent',
+        user.tokenId ?? '',
+        'comment',
+        null,
+        { body },
+      );
+    }
+
     return toCommentDto(created);
   }
 }
