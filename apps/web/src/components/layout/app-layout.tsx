@@ -8,7 +8,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className="flex h-dvh overflow-hidden bg-background">
       <Sidebar />
-      <main className="flex-1 overflow-hidden">{children}</main>
+      <div className="flex-1 overflow-hidden">{children}</div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { PRIORITIES, type CardPriority } from '@moongatracker/shared-types';
+import { Badge } from '@/components/ui/badge';
 
 interface PriorityChipProps {
   priority: CardPriority | null;
@@ -9,11 +10,8 @@ export function PriorityChip({ priority }: PriorityChipProps) {
   const meta = PRIORITIES.find((p) => p.key === priority);
   if (!meta) return null;
   return (
-    <span
-      style={{ color: meta.color }}
-      className="text-[10px] font-semibold uppercase tracking-wider"
-    >
+    <Badge variant="outline" style={{ color: meta.color, borderColor: meta.color }}>
       {meta.label}
-    </span>
+    </Badge>
   );
 }

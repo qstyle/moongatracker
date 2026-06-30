@@ -13,23 +13,14 @@ export function CardTile({
   disabled?: boolean;
   onClick: () => void;
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: card.id, disabled });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: card.id, disabled });
 
   const stripe =
-    card.priority === 'urgent'
-      ? '#e11d48'
-      : card.priority === 'normal'
-        ? '#f59e0b'
-        : card.priority === 'low'
-          ? '#64748b'
-          : 'transparent';
+    card.priority === 'urgent' ? '#e11d48'
+    : card.priority === 'normal' ? '#f59e0b'
+    : card.priority === 'low' ? '#64748b'
+    : 'transparent';
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -38,7 +29,7 @@ export function CardTile({
   };
 
   return (
-    <article
+    <div
       ref={setNodeRef}
       style={style}
       {...attributes}
@@ -49,10 +40,7 @@ export function CardTile({
         (disabled ? 'cursor-default' : 'cursor-grab active:cursor-grabbing')
       }
     >
-      <span
-        className="absolute inset-y-0 left-0 w-[2px] transition-colors"
-        style={{ backgroundColor: stripe }}
-      />
+      <div className="absolute inset-y-0 left-0 w-0.5 transition-colors" style={{ backgroundColor: stripe }} />
 
       {card.priority && (
         <div className="mb-1.5">
@@ -61,9 +49,9 @@ export function CardTile({
       )}
 
       <div className="flex items-start gap-2">
-        <p className="flex-1 text-[13px] font-medium leading-snug text-card-foreground">
+        <div className="flex-1 text-sm font-medium leading-snug text-card-foreground">
           {card.title}
-        </p>
+        </div>
         {!disabled && (
           <RiDraggable
             aria-hidden
@@ -73,17 +61,17 @@ export function CardTile({
       </div>
 
       {card.body && (
-        <p className="mt-1.5 line-clamp-2 text-[11px] leading-relaxed text-muted-foreground">
+        <div className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
           {card.body}
-        </p>
+        </div>
       )}
 
       {card.attachmentCount > 0 && (
-        <div className="mt-1.5 flex items-center gap-1 text-[10px] text-muted-foreground">
+        <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
           <RiAttachment2 className="size-3" />
-          <span>{card.attachmentCount}</span>
+          <div>{card.attachmentCount}</div>
         </div>
       )}
-    </article>
+    </div>
   );
 }

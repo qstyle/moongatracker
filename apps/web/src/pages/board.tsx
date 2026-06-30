@@ -23,21 +23,21 @@ export function BoardPage() {
 
   if (!boardId)
     return (
-      <div className="flex h-full items-center justify-center text-[12px] text-muted-foreground">
+      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
         Выберите доску в боковой панели
       </div>
     );
 
   if (isLoading)
     return (
-      <div className="flex h-full items-center justify-center animate-pulse text-[11px] uppercase tracking-wider text-muted-foreground">
+      <div className="flex h-full items-center justify-center animate-pulse text-sm uppercase tracking-wider text-muted-foreground">
         загрузка…
       </div>
     );
 
   if (error || !board)
     return (
-      <div className="flex h-full items-center justify-center text-[12px] text-destructive">
+      <div className="flex h-full items-center justify-center text-sm text-destructive">
         Ошибка загрузки доски
       </div>
     );

@@ -5,6 +5,7 @@ import { LoginPage } from '../pages/login';
 import { RegisterPage } from '../pages/register';
 import { BoardPage } from '../pages/board';
 import { SettingsPage } from '../pages/settings';
+import { WikiPage } from '../pages/wiki';
 import { AppLayout } from '../components/layout/app-layout';
 
 export function App() {
@@ -26,6 +27,7 @@ export function App() {
     <AppLayout>
       <Switch>
         <Route path="/boards/:boardId" component={BoardPage} />
+        <Route path="/projects/:projectId/wiki" component={WikiPage} />
         <Route path="/settings" component={SettingsPage} />
         <Route>
           <Redirect to="/boards/select" />

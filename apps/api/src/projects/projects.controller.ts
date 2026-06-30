@@ -15,6 +15,7 @@ import { ProjectsService } from './projects.service';
 import { AddMemberDto } from './dto/add-member.dto';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { UpdateMemberColorDto } from './dto/update-member-color.dto';
 
 @Controller('projects')
 export class ProjectsController {
@@ -59,6 +60,30 @@ export class ProjectsController {
     @Req() req: any,
   ): Promise<MemberDto> {
     return this.projects.addMember(projectId, dto.email, req.user.sub);
+  }
+
+  @Delete(':projectId')
+  @HttpCode(204)
+  deleteProject(
+    @Param('projectId') projectId: string,
+    @Request() req: { user: { sub: string } },
+  ): Promise<void> {
+    return this.projects.delete(projectId, req.user.sub);
+  }
+
+  @Patch(':projectId/members/:userId/color')
+  updateMemberColor(
+    @Param('projectId') projectId: string,
+    @Param('userId') userId: string,
+    @Body() dto: UpdateMemberColorDto,
+    @Req() req: any,
+  ): Promise<MemberDto> {
+    return this.projects.updateMemberColor(
+      projectId,
+      userId,
+      dto.color,
+      req.user.sub,
+    );
   }
 
   @Delete(':projectId/members/:userId')

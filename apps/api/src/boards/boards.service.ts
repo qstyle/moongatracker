@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { assertMembership, PrismaService } from '@moongatracker/data-access';
+import { buildOnboardingCards } from './onboarding';
 import {
   ActorDto,
   BoardDto,
@@ -13,6 +14,9 @@ const priorityWeight = { urgent: 3, normal: 2, low: 1 } as Record<
   string,
   number
 >;
+
+/** Fixed display color for agent actors (matches the amber agent marker in the UI). */
+const AGENT_COLOR = '#f59e0b';
 
 function toCardDto(card: {
   id: string;
@@ -83,8 +87,15 @@ export class BoardsService {
     userId: string,
   ): Promise<BoardSummaryDto> {
     await assertMembership(this.prisma, userId, projectId);
-    const board = await this.prisma.board.create({
-      data: { projectId, name },
+    const board = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.board.create({ data: { projectId, name } });
+      const column = await tx.column.create({
+        data: { boardId: created.id, title: 'С чего начать', order: 0 },
+      });
+      await tx.card.createMany({
+        data: buildOnboardingCards(created.id, column.id, userId),
+      });
+      return created;
     });
     return {
       id: board.id,
@@ -161,6 +172,18 @@ export class BoardsService {
     };
   }
 
+  async delete(boardId: string, userId: string): Promise<void> {
+    const board = await this.prisma.board.findUnique({
+      where: { id: boardId },
+    });
+    if (!board) throw new NotFoundException(`Board ${boardId} not found`);
+    await assertMembership(this.prisma, userId, board.projectId);
+    await this.prisma.$transaction(async (tx) => {
+      await tx.card.deleteMany({ where: { boardId } });
+      await tx.board.delete({ where: { id: boardId } });
+    });
+  }
+
   async getActors(boardId: string, userId: string): Promise<ActorDto[]> {
     const board = await this.prisma.board.findUnique({
       where: { id: boardId },
@@ -182,12 +205,14 @@ export class BoardsService {
       type: 'user' as const,
       id: m.user.id,
       name: m.user.name ?? null,
+      color: m.color ?? null,
     }));
 
     const agentActors: ActorDto[] = apiTokens.map((t) => ({
       type: 'agent' as const,
       id: t.id,
       name: t.name,
+      color: AGENT_COLOR,
     }));
 
     return [...userActors, ...agentActors];

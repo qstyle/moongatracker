@@ -17,6 +17,8 @@ export interface ActorDto {
   type: 'user' | 'agent';
   id: string | null;
   name: string | null;
+  /** Display color (hex). Users get their membership color; agents a fixed hue. */
+  color?: string | null;
 }
 
 export interface CommentDto {
@@ -69,6 +71,7 @@ export interface BoardSummaryDto {
 export interface ProjectDto {
   id: string;
   name: string;
+  ownerId: string | null;
   createdAt: string;
 }
 
@@ -76,6 +79,7 @@ export interface MemberDto {
   userId: string;
   email: string;
   name: string | null;
+  color: string;
   createdAt: string;
 }
 

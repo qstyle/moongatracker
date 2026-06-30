@@ -51,3 +51,23 @@ export async function asJson<T>(res: Response): Promise<T> {
   if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
   return res.json();
 }
+
+/** Decode the `sub` (user id) claim from the stored JWT, if present. */
+export function getCurrentUserId(): string | null {
+  if (!token) return null;
+  const part = token.split('.')[1];
+  if (!part) return null;
+  try {
+    const base64 = part.replace(/-/g, '+').replace(/_/g, '/');
+    const json = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'))
+        .join(''),
+    );
+    const payload = JSON.parse(json) as { sub?: string };
+    return payload.sub ?? null;
+  } catch {
+    return null;
+  }
+}

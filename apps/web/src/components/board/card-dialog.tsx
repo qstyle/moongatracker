@@ -1,27 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CardDto, CardPriority, PRIORITIES } from '@moongatracker/shared-types';
-import { RiAttachment2, RiCloseLine, RiDeleteBin6Line } from '@remixicon/react';
+import { RiAttachment2, RiDeleteBin6Line } from '@remixicon/react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { deleteCard, updateCard } from '../../api/cards';
 import { addComment, listComments } from '../../api/comments';
 import { fetchActivity, revertActivity } from '../../api/activity';
-import {
-  deleteAttachment,
-  listAttachments,
-  uploadAttachment,
-} from '../../api/attachments';
-
-function cn(...classes: (string | false | null | undefined)[]) {
-  return classes.filter(Boolean).join(' ');
-}
-
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <h3 className="mb-2 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-      {children}
-    </h3>
-  );
-}
+import { deleteAttachment, listAttachments, uploadAttachment } from '../../api/attachments';
 
 export function CardDialog({
   card,
@@ -33,39 +25,20 @@ export function CardDialog({
   onChanged: () => void;
 }) {
   const qc = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState(card.title);
   const [body, setBody] = useState(card.body ?? '');
   const [priority, setPriority] = useState<CardPriority | null>(card.priority);
   const [busy, setBusy] = useState(false);
   const [commentBody, setCommentBody] = useState('');
-  const [bottomTab, setBottomTab] = useState<'comments' | 'history'>(
-    'comments',
-  );
   const [uploading, setUploading] = useState(false);
 
-  const comments = useQuery({
-    queryKey: ['comments', card.id],
-    queryFn: () => listComments(card.id),
-  });
-
-  const { data: activities = [] } = useQuery({
-    queryKey: ['activity', card.id],
-    queryFn: () => fetchActivity(card.id),
-    enabled: bottomTab === 'history',
-  });
-
+  const comments = useQuery({ queryKey: ['comments', card.id], queryFn: () => listComments(card.id) });
+  const { data: activities = [] } = useQuery({ queryKey: ['activity', card.id], queryFn: () => fetchActivity(card.id) });
   const { data: attachments = [], refetch: refetchAttachments } = useQuery({
     queryKey: ['attachments', card.id],
     queryFn: () => listAttachments(card.id),
   });
-
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
-    }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
 
   useEffect(() => {
     async function onPaste(e: ClipboardEvent) {
@@ -76,12 +49,7 @@ export function CardDialog({
       if (!file) return;
       setUploading(true);
       try {
-        await uploadAttachment(
-          card.id,
-          new File([file], `screenshot-${Date.now()}.png`, {
-            type: file.type,
-          }),
-        );
+        await uploadAttachment(card.id, new File([file], `screenshot-${Date.now()}.png`, { type: file.type }));
         await refetchAttachments();
         onChanged();
       } finally {
@@ -97,10 +65,7 @@ export function CardDialog({
     if (!value || busy) return;
     setBusy(true);
     try {
-      await updateCard(card.id, {
-        title: value,
-        body: body.trim() ? body : null,
-      });
+      await updateCard(card.id, { title: value, body: body.trim() ? body : null });
       onChanged();
       onClose();
     } finally {
@@ -134,287 +99,163 @@ export function CardDialog({
     qc.invalidateQueries({ queryKey: ['comments', card.id] });
   }
 
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      await uploadAttachment(card.id, file);
+      await refetchAttachments();
+      onChanged();
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  }
+
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/25 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="flex max-h-[90dvh] w-full max-w-lg flex-col border border-border bg-card shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
-          <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-            карточка
-          </span>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <RiCloseLine className="size-4" />
-          </button>
-        </div>
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="flex max-h-[90dvh] max-w-lg flex-col gap-0 p-0">
+        <DialogHeader className="border-b border-border px-4 py-2.5">
+          <DialogTitle>карточка</DialogTitle>
+        </DialogHeader>
 
-        <div className="flex flex-col gap-5 overflow-y-auto p-4">
-          <input
-            value={title}
-            autoFocus
-            onChange={(e) => setTitle(e.target.value)}
-            className="border border-border bg-background px-2.5 py-2 text-[13px] font-medium outline-none transition-colors focus:border-foreground/40"
-          />
-          <textarea
-            value={body}
-            rows={4}
-            placeholder="Описание…"
-            onChange={(e) => setBody(e.target.value)}
-            className="resize-none border border-border bg-background px-2.5 py-2 text-[12px] leading-relaxed outline-none transition-colors placeholder:text-muted-foreground/50 focus:border-foreground/40"
-          />
+        <ScrollArea className="flex-1">
+          <div className="flex flex-col gap-5 p-4">
+            <Input value={title} autoFocus onChange={(e) => setTitle(e.target.value)} />
+            <Textarea value={body} rows={4} placeholder="Описание…" onChange={(e) => setBody(e.target.value)} />
 
-          {/* priority */}
-          <div>
-            <SectionTitle>приоритет</SectionTitle>
-            <div className="flex flex-wrap gap-1.5">
-              {[...PRIORITIES, null].map((p) => (
-                <button
-                  key={p?.key ?? 'none'}
-                  type="button"
-                  onClick={() => handleSetPriority(p?.key ?? null)}
-                  style={{ borderColor: p ? p.color : undefined }}
-                  className={cn(
-                    'rounded border px-2 py-1 text-[10px]',
-                    priority === (p?.key ?? null)
-                      ? 'opacity-100'
-                      : 'opacity-40',
-                  )}
-                >
-                  {p?.label ?? 'Нет'}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Attachments */}
-          <div>
-            <SectionTitle>вложения</SectionTitle>
-
-            {attachments.length > 0 && (
-              <div className="mb-2 flex flex-wrap gap-2">
-                {attachments.map((a) => (
-                  <div
-                    key={a.id}
-                    className="flex items-center gap-1 rounded border border-border bg-muted px-2 py-1"
+            <div>
+              <div className="mb-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">приоритет</div>
+              <div className="flex flex-wrap gap-1.5">
+                {[...PRIORITIES, null].map((p) => (
+                  <Badge
+                    key={p?.key ?? 'none'}
+                    variant={priority === (p?.key ?? null) ? 'default' : 'outline'}
+                    style={p ? { borderColor: p.color, color: priority === p.key ? undefined : p.color } : undefined}
+                    onClick={() => handleSetPriority(p?.key ?? null)}
                   >
-                    <a
-                      href={a.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="max-w-[140px] truncate text-[11px] text-foreground hover:underline"
-                      title={a.filename}
-                    >
-                      {a.filename}
-                    </a>
-                    <button
-                      onClick={async () => {
-                        await deleteAttachment(a.id);
-                        refetchAttachments();
-                        onChanged();
-                      }}
-                      className="ml-1 text-[10px] text-muted-foreground hover:text-destructive"
-                    >
-                      ×
-                    </button>
-                  </div>
+                    {p?.label ?? 'Нет'}
+                  </Badge>
                 ))}
               </div>
-            )}
-
-            <label
-              className={[
-                'inline-flex cursor-pointer items-center gap-1 rounded border border-border px-3 py-1.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground',
-                uploading ? 'pointer-events-none opacity-40' : '',
-              ].join(' ')}
-            >
-              <RiAttachment2 className="size-3.5" />
-              <input
-                type="file"
-                className="sr-only"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  setUploading(true);
-                  try {
-                    await uploadAttachment(card.id, file);
-                    await refetchAttachments();
-                    onChanged();
-                  } finally {
-                    setUploading(false);
-                    e.target.value = '';
-                  }
-                }}
-              />
-              {uploading ? 'Загрузка…' : 'Прикрепить файл'}
-            </label>
-          </div>
-
-          {/* comments / history tabs */}
-          <div>
-            <div className="flex gap-1 border-b border-border mb-3">
-              {(['comments', 'history'] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setBottomTab(t)}
-                  className={[
-                    'px-3 py-1.5 text-[10px] uppercase tracking-wider transition-colors',
-                    bottomTab === t
-                      ? 'border-b-2 border-foreground text-foreground'
-                      : 'text-muted-foreground hover:text-foreground',
-                  ].join(' ')}
-                >
-                  {t === 'comments' ? 'Комментарии' : 'История'}
-                </button>
-              ))}
             </div>
 
-            {bottomTab === 'comments' && (
-              <>
-                <div className="flex flex-col gap-2">
-                  {(comments.data ?? []).map((c) => (
-                    <div
-                      key={c.id}
-                      className="border border-border bg-background px-2.5 py-2"
-                    >
-                      <div className="mb-1 flex items-center gap-2 text-[9px] uppercase tracking-wider text-muted-foreground">
-                        <span
-                          className={
-                            c.authorType === 'agent'
-                              ? 'text-primary'
-                              : 'text-muted-foreground'
-                          }
-                        >
-                          {c.authorType === 'agent' ? 'агент' : 'человек'}
-                        </span>
-                        <span>{new Date(c.createdAt).toLocaleString()}</span>
+            <Separator />
+
+            <div>
+              <div className="mb-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">вложения</div>
+              {attachments.length > 0 && (
+                <div className="mb-2 flex flex-wrap gap-2">
+                  {attachments.map((a) => (
+                    <div key={a.id} className="flex items-center gap-1 rounded border border-border bg-muted px-2 py-1">
+                      <div
+                        className="max-w-35 cursor-pointer truncate text-sm text-foreground hover:underline"
+                        onClick={() => window.open(a.url, '_blank')}
+                        title={a.filename}
+                      >
+                        {a.filename}
                       </div>
-                      <p className="text-[12px] leading-relaxed text-foreground">
-                        {c.body}
-                      </p>
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
+                        onClick={async () => { await deleteAttachment(a.id); refetchAttachments(); onChanged(); }}
+                      >
+                        ×
+                      </Button>
                     </div>
                   ))}
-                  {comments.data && comments.data.length === 0 && (
-                    <p className="text-[11px] text-muted-foreground/50">
-                      пока пусто
-                    </p>
+                </div>
+              )}
+              <input ref={fileInputRef} type="file" hidden onChange={handleFileChange} />
+              <Button variant="outline" size="sm" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
+                <RiAttachment2 />
+                {uploading ? 'Загрузка…' : 'Прикрепить файл'}
+              </Button>
+            </div>
+
+            <Separator />
+
+            <Tabs defaultValue="comments">
+              <TabsList>
+                <TabsTrigger value="comments">Комментарии</TabsTrigger>
+                <TabsTrigger value="history">История</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="comments">
+                <div className="flex flex-col gap-2">
+                  {(comments.data ?? []).map((c) => (
+                    <div key={c.id} className="border border-border bg-background px-2.5 py-2">
+                      <div className="mb-1 flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+                        <div className={c.authorType === 'agent' ? 'text-primary' : 'text-muted-foreground'}>
+                          {c.authorType === 'agent' ? 'агент' : 'человек'}
+                        </div>
+                        <div>{new Date(c.createdAt).toLocaleString()}</div>
+                      </div>
+                      <div className="text-sm leading-relaxed text-foreground">{c.body}</div>
+                    </div>
+                  ))}
+                  {comments.data?.length === 0 && (
+                    <div className="text-xs text-muted-foreground/50">пока пусто</div>
                   )}
                 </div>
                 <div className="mt-2 flex items-start gap-2">
-                  <textarea
+                  <Textarea
                     value={commentBody}
                     rows={2}
                     placeholder="Комментарий…"
                     onChange={(e) => setCommentBody(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        postComment();
-                      }
-                    }}
-                    className="flex-1 resize-none border border-border bg-background px-2 py-1.5 text-[12px] outline-none placeholder:text-muted-foreground/50 focus:border-foreground/40"
+                    onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); postComment(); } }}
                   />
-                  <button
-                    type="button"
-                    onClick={postComment}
-                    disabled={!commentBody.trim()}
-                    className="bg-primary px-2.5 py-1.5 text-[10px] uppercase tracking-wider text-primary-foreground disabled:opacity-40"
-                  >
+                  <Button type="button" size="sm" onClick={postComment} disabled={!commentBody.trim()}>
                     отпр
-                  </button>
+                  </Button>
                 </div>
-              </>
-            )}
+              </TabsContent>
 
-            {bottomTab === 'history' && (
-              <div className="space-y-2">
-                {activities.length === 0 && (
-                  <p className="text-[11px] text-muted-foreground">
-                    Нет истории агентских действий
-                  </p>
-                )}
-                {activities.map((a) => (
-                  <div
-                    key={a.id}
-                    className="flex items-start justify-between gap-2 rounded border border-border/50 px-3 py-2"
-                  >
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="text-[10px] font-semibold uppercase tracking-wider"
-                          style={{ color: '#f59e0b' }}
-                        >
-                          агент
-                        </span>
-                        <span className="text-[11px] text-foreground">
-                          {a.action}
-                        </span>
+              <TabsContent value="history">
+                <div className="space-y-2">
+                  {activities.length === 0 && (
+                    <div className="text-sm text-muted-foreground">Нет истории агентских действий</div>
+                  )}
+                  {activities.map((a) => (
+                    <div key={a.id} className="flex items-start justify-between gap-2 rounded border border-border/50 px-3 py-2">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#f59e0b' }}>агент</div>
+                          <div className="text-sm text-foreground">{a.action}</div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">{new Date(a.createdAt).toLocaleString('ru')}</div>
+                        {a.after && (
+                          <div className="text-xs text-muted-foreground">
+                            {Object.entries(a.after).map(([k, v]) => `${k}: ${v}`).join(', ')}
+                          </div>
+                        )}
                       </div>
-                      <p className="text-[10px] text-muted-foreground">
-                        {new Date(a.createdAt).toLocaleString('ru')}
-                      </p>
-                      {a.after && (
-                        <p className="text-[10px] text-muted-foreground">
-                          {Object.entries(a.after)
-                            .map(([k, v]) => `${k}: ${v}`)
-                            .join(', ')}
-                        </p>
+                      {a.before && a.action !== 'revert' && (
+                        <Button variant="ghost" size="sm" onClick={async () => { await revertActivity(a.id); onChanged(); }}>
+                          Откатить
+                        </Button>
                       )}
                     </div>
-                    {a.before && a.action !== 'revert' && (
-                      <button
-                        onClick={async () => {
-                          await revertActivity(a.id);
-                          onChanged();
-                        }}
-                        className="shrink-0 text-[10px] text-muted-foreground hover:text-destructive"
-                      >
-                        Откатить
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
-        </div>
+        </ScrollArea>
 
-        <div className="flex items-center justify-between border-t border-border px-4 py-2.5">
-          <button
-            type="button"
-            onClick={remove}
-            disabled={busy}
-            className="flex items-center gap-1 text-[11px] text-destructive transition-opacity hover:opacity-80 disabled:opacity-40"
-          >
-            <RiDeleteBin6Line className="size-3.5" />
+        <DialogFooter className="flex items-center justify-between border-t border-border px-4 py-2.5 sm:justify-between">
+          <Button type="button" variant="ghost" size="sm" onClick={remove} disabled={busy}>
+            <RiDeleteBin6Line />
             удалить
-          </button>
+          </Button>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-3 py-1.5 text-[10px] uppercase tracking-wider text-muted-foreground hover:text-foreground"
-            >
-              отмена
-            </button>
-            <button
-              type="button"
-              onClick={save}
-              disabled={busy || !title.trim()}
-              className="bg-primary px-3 py-1.5 text-[10px] uppercase tracking-wider text-primary-foreground disabled:opacity-40"
-            >
-              сохранить
-            </button>
+            <Button type="button" variant="ghost" size="sm" onClick={onClose}>отмена</Button>
+            <Button type="button" size="sm" onClick={save} disabled={busy || !title.trim()}>сохранить</Button>
           </div>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

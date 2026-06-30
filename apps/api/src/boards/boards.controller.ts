@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -52,6 +55,15 @@ export class BoardsController {
     @Request() req: { user: { sub: string } },
   ): Promise<BoardSummaryDto> {
     return this.boards.update(boardId, req.user.sub, dto.name!);
+  }
+
+  @Delete('boards/:boardId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteBoard(
+    @Param('boardId') boardId: string,
+    @Request() req: { user: { sub: string } },
+  ): Promise<void> {
+    return this.boards.delete(boardId, req.user.sub);
   }
 
   @Get('boards/:boardId/actors')

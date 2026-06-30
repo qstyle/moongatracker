@@ -12,6 +12,10 @@ import { moveCardTool, moveCard } from './tools/move-card.js';
 import { updateCardTool, updateCard } from './tools/update-card.js';
 import { commentCardTool, commentCard } from './tools/comment-card.js';
 import { listActivityTool, listActivity } from './tools/list-activity.js';
+import { listWikiTool, listWiki } from './tools/list-wiki.js';
+import { getWikiPageTool, getWikiPage } from './tools/get-wiki-page.js';
+import { createWikiPageTool, createWikiPage } from './tools/create-wiki-page.js';
+import { updateWikiPageTool, updateWikiPage } from './tools/update-wiki-page.js';
 
 const server = new Server(
   { name: 'moongatracker', version: '0.1.0' },
@@ -27,6 +31,10 @@ const tools = [
   updateCardTool,
   commentCardTool,
   listActivityTool,
+  listWikiTool,
+  getWikiPageTool,
+  createWikiPageTool,
+  updateWikiPageTool,
 ];
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }));
@@ -67,6 +75,27 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
         break;
       case 'list_activity':
         text = await listActivity(args as { cardId: string });
+        break;
+      case 'list_wiki':
+        text = await listWiki(args as { projectId: string });
+        break;
+      case 'get_wiki_page':
+        text = await getWikiPage(args as { pageId: string });
+        break;
+      case 'create_wiki_page':
+        text = await createWikiPage(
+          args as {
+            projectId: string;
+            sectionId: string;
+            title: string;
+            body?: string;
+          },
+        );
+        break;
+      case 'update_wiki_page':
+        text = await updateWikiPage(
+          args as { pageId: string; title?: string; body?: string },
+        );
         break;
       default:
         throw new Error(`Unknown tool: ${name}`);

@@ -1,5 +1,9 @@
 import { apiFetch, asJson } from './client';
-import type { BoardDto, BoardSummaryDto } from '@moongatracker/shared-types';
+import type {
+  ActorDto,
+  BoardDto,
+  BoardSummaryDto,
+} from '@moongatracker/shared-types';
 
 export function fetchBoards(projectId: string): Promise<BoardSummaryDto[]> {
   return apiFetch(`/api/projects/${projectId}/boards`).then((r) =>
@@ -33,8 +37,13 @@ export function updateBoard(
   }).then((r) => asJson<BoardSummaryDto>(r));
 }
 
-export function fetchBoardActors(boardId: string): Promise<unknown[]> {
+export async function deleteBoard(boardId: string): Promise<void> {
+  const r = await apiFetch(`/api/boards/${boardId}`, { method: 'DELETE' });
+  if (!r.ok) throw new Error(`${r.status} ${await r.text()}`);
+}
+
+export function fetchBoardActors(boardId: string): Promise<ActorDto[]> {
   return apiFetch(`/api/boards/${boardId}/actors`).then((r) =>
-    asJson<unknown[]>(r),
+    asJson<ActorDto[]>(r),
   );
 }

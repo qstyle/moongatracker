@@ -41,6 +41,23 @@ export function addMember(
   }).then((r) => asJson<MemberDto>(r));
 }
 
+export function updateMemberColor(
+  projectId: string,
+  userId: string,
+  color: string,
+): Promise<MemberDto> {
+  return apiFetch(`/api/projects/${projectId}/members/${userId}/color`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ color }),
+  }).then((r) => asJson<MemberDto>(r));
+}
+
+export async function deleteProject(projectId: string): Promise<void> {
+  const r = await apiFetch(`/api/projects/${projectId}`, { method: 'DELETE' });
+  if (!r.ok) throw new Error(`${r.status} ${await r.text()}`);
+}
+
 export function removeMember(projectId: string, userId: string): Promise<void> {
   return apiFetch(`/api/projects/${projectId}/members/${userId}`, {
     method: 'DELETE',

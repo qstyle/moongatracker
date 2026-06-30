@@ -1,17 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { BoardDto, CardDto, ColumnDto } from '@moongatracker/shared-types';
 import {
-  DndContext,
-  DragEndEvent,
-  DragOverlay,
-  DragStartEvent,
-  PointerSensor,
-  closestCorners,
-  useSensor,
-  useSensors,
+  DndContext, DragEndEvent, DragOverlay, DragStartEvent,
+  PointerSensor, closestCorners, useSensor, useSensors,
 } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { RiTBoxLine } from '@remixicon/react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { FilterState, useCardFilter } from '../../lib/use-card-filter';
 import { updateCard } from '../../api/cards';
 import { updateBoard } from '../../api/boards';
@@ -28,39 +24,26 @@ const GRID_BG: React.CSSProperties = {
   backgroundPosition: '-1px -1px',
 };
 
-/** Move a card within or across columns, returning a new columns array. */
-function computeMove(
-  cols: ColumnDto[],
-  activeId: string,
-  overId: string,
-): ColumnDto[] {
+function computeMove(cols: ColumnDto[], activeId: string, overId: string): ColumnDto[] {
   const fromCol = cols.find((c) => c.cards.some((k) => k.id === activeId));
   if (!fromCol) return cols;
   const card = fromCol.cards.find((k) => k.id === activeId);
   if (!card) return cols;
-
-  let toCol = cols.find((c) => c.id === overId); // column droppable
+  let toCol = cols.find((c) => c.id === overId);
   let overIndex = -1;
   if (!toCol) {
     toCol = cols.find((c) => c.cards.some((k) => k.id === overId));
     if (toCol) overIndex = toCol.cards.findIndex((k) => k.id === overId);
   }
   if (!toCol) return cols;
-
   if (fromCol.id === toCol.id) {
     const oldIndex = fromCol.cards.findIndex((k) => k.id === activeId);
     const newIndex = overIndex === -1 ? fromCol.cards.length - 1 : overIndex;
     if (oldIndex === newIndex) return cols;
-    return cols.map((c) =>
-      c.id === fromCol.id
-        ? { ...c, cards: arrayMove(c.cards, oldIndex, newIndex) }
-        : c,
-    );
+    return cols.map((c) => c.id === fromCol.id ? { ...c, cards: arrayMove(c.cards, oldIndex, newIndex) } : c);
   }
-
   return cols.map((c) => {
-    if (c.id === fromCol.id)
-      return { ...c, cards: c.cards.filter((k) => k.id !== activeId) };
+    if (c.id === fromCol.id) return { ...c, cards: c.cards.filter((k) => k.id !== activeId) };
     if (c.id === toCol!.id) {
       const insertAt = overIndex === -1 ? c.cards.length : overIndex;
       const next = [...c.cards];
@@ -71,13 +54,7 @@ function computeMove(
   });
 }
 
-export function Board({
-  board,
-  onChanged,
-}: {
-  board: BoardDto;
-  onChanged: () => void;
-}) {
+export function Board({ board, onChanged }: { board: BoardDto; onChanged: () => void }) {
   const [selected, setSelected] = useState<CardDto | null>(null);
   const [columns, setColumns] = useState<ColumnDto[]>(board.columns);
   const [activeCard, setActiveCard] = useState<CardDto | null>(null);
@@ -85,58 +62,35 @@ export function Board({
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(board.name);
   const [addingColumn, setAddingColumn] = useState(false);
+  const [newColumnTitle, setNewColumnTitle] = useState('');
 
-  useEffect(() => {
-    setColumns(board.columns);
-    setNameInput(board.name);
-  }, [board]);
+  useEffect(() => { setColumns(board.columns); setNameInput(board.name); }, [board]);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-  );
-
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const filterActive = filter.search !== '';
   const filteredVisible = useCardFilter(columns, filter);
-
   const displayTotal = useMemo(
-    () =>
-      filterActive
-        ? filteredVisible.reduce((n, c) => n + c.cards.length, 0)
-        : columns.reduce((n, c) => n + c.cards.length, 0),
+    () => filterActive
+      ? filteredVisible.reduce((n, c) => n + c.cards.length, 0)
+      : columns.reduce((n, c) => n + c.cards.length, 0),
     [filterActive, filteredVisible, columns],
   );
 
   async function persist(next: ColumnDto[]) {
     const original = new Map<string, { columnId: string; index: number }>();
-    board.columns.forEach((c) =>
-      c.cards.forEach((card, i) =>
-        original.set(card.id, { columnId: c.id, index: i }),
-      ),
-    );
-
+    board.columns.forEach((c) => c.cards.forEach((card, i) => original.set(card.id, { columnId: c.id, index: i })));
     const updates: Promise<unknown>[] = [];
-    next.forEach((col) =>
-      col.cards.forEach((card, index) => {
-        const before = original.get(card.id);
-        if (!before || before.columnId !== col.id || before.index !== index) {
-          updates.push(updateCard(card.id, { columnId: col.id, order: index }));
-        }
-      }),
-    );
-
-    if (updates.length) {
-      try {
-        await Promise.all(updates);
-      } finally {
-        onChanged();
-      }
-    }
+    next.forEach((col) => col.cards.forEach((card, index) => {
+      const before = original.get(card.id);
+      if (!before || before.columnId !== col.id || before.index !== index)
+        updates.push(updateCard(card.id, { columnId: col.id, order: index }));
+    }));
+    if (updates.length) { try { await Promise.all(updates); } finally { onChanged(); } }
   }
 
   function onDragStart(e: DragStartEvent) {
     const id = String(e.active.id);
-    const card = columns.flatMap((c) => c.cards).find((k) => k.id === id);
-    setActiveCard(card ?? null);
+    setActiveCard(columns.flatMap((c) => c.cards).find((k) => k.id === id) ?? null);
   }
 
   function onDragEnd(e: DragEndEvent) {
@@ -146,24 +100,31 @@ export function Board({
     const activeId = String(active.id);
     const overId = String(over.id);
     if (activeId === overId) return;
-
     const next = computeMove(columns, activeId, overId);
     if (next === columns) return;
     setColumns(next);
     persist(next);
   }
 
+  async function addColumn() {
+    const title = newColumnTitle.trim();
+    if (!title) return;
+    await createColumn(board.id, title);
+    setNewColumnTitle('');
+    setAddingColumn(false);
+    onChanged();
+  }
+
   return (
     <div className="flex h-dvh flex-col bg-background text-foreground">
-      <header className="flex items-center justify-between gap-4 border-b border-border px-5 py-3">
+      <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-3">
         <div className="flex items-center gap-3">
           <div className="flex size-6 items-center justify-center bg-primary text-primary-foreground">
             <RiTBoxLine className="size-4" />
           </div>
           {editingName ? (
-            <input
+            <Input
               autoFocus
-              className="rounded border border-border bg-muted px-2 py-0.5 text-[12px] text-foreground outline-none"
               value={nameInput}
               onChange={(e) => setNameInput(e.target.value)}
               onBlur={async () => {
@@ -175,113 +136,57 @@ export function Board({
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') e.currentTarget.blur();
-                if (e.key === 'Escape') {
-                  setNameInput(board.name);
-                  setEditingName(false);
-                }
+                if (e.key === 'Escape') { setNameInput(board.name); setEditingName(false); }
               }}
             />
           ) : (
-            <span
-              className="cursor-pointer text-[12px] text-muted-foreground hover:text-foreground"
-              onClick={() => setEditingName(true)}
-            >
+            <div className="cursor-pointer text-sm text-muted-foreground hover:text-foreground" onClick={() => setEditingName(true)}>
               {board.name}
-            </span>
+            </div>
           )}
         </div>
-
         <div className="flex items-center gap-4">
-          <span className="hidden text-[11px] tabular-nums text-muted-foreground sm:inline">
-            {displayTotal} задач
-          </span>
+          <div className="hidden text-xs tabular-nums text-muted-foreground sm:block">{displayTotal} задач</div>
           <FilterBar filter={filter} onChange={setFilter} />
         </div>
-      </header>
+      </div>
 
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCorners}
-        onDragStart={onDragStart}
-        onDragEnd={onDragEnd}
-      >
-        <div
-          className="flex h-full flex-1 gap-4 overflow-x-auto p-4"
-          style={GRID_BG}
-        >
+      <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={onDragStart} onDragEnd={onDragEnd}>
+        <div className="flex h-full flex-1 gap-4 overflow-x-auto p-4" style={GRID_BG}>
           {filteredVisible.map((col, i) => (
-            <Column
-              key={col.id}
-              column={col}
-              index={i}
-              boardId={board.id}
-              disabled={filterActive}
-              onSelectCard={setSelected}
-              onChanged={onChanged}
-            />
+            <Column key={col.id} column={col} index={i} boardId={board.id} disabled={filterActive} onSelectCard={setSelected} onChanged={onChanged} />
           ))}
-
-          {/* Add column button */}
-          <div className="flex shrink-0 w-[280px] items-start pt-1">
+          <div className="flex w-70 shrink-0 items-start pt-1">
             {addingColumn ? (
-              <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  const fd = new FormData(e.currentTarget);
-                  const title = (fd.get('title') as string)?.trim();
-                  if (title) {
-                    await createColumn(board.id, title);
-                    onChanged();
-                  }
-                  setAddingColumn(false);
-                }}
-                className="flex w-full gap-2"
-              >
-                <input
+              <div className="flex w-full gap-2">
+                <Input
                   autoFocus
-                  name="title"
+                  value={newColumnTitle}
                   placeholder="Название колонки"
-                  className="flex-1 rounded border border-border bg-muted px-2 py-1 text-[12px] text-foreground outline-none"
-                  onKeyDown={(e) =>
-                    e.key === 'Escape' && setAddingColumn(false)
-                  }
+                  onChange={(e) => setNewColumnTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') addColumn();
+                    if (e.key === 'Escape') setAddingColumn(false);
+                  }}
                 />
-                <button
-                  type="submit"
-                  className="rounded bg-foreground px-3 py-1 text-[11px] text-background"
-                >
-                  Добавить
-                </button>
-              </form>
+                <Button size="sm" onClick={addColumn}>Добавить</Button>
+              </div>
             ) : (
-              <button
-                onClick={() => setAddingColumn(true)}
-                className="flex items-center gap-1 rounded px-3 py-1.5 text-[11px] text-muted-foreground hover:text-foreground"
-              >
-                + Колонка
-              </button>
+              <Button variant="ghost" size="sm" onClick={() => setAddingColumn(true)}>+ Колонка</Button>
             )}
           </div>
         </div>
 
         <DragOverlay>
           {activeCard ? (
-            <article className="cursor-grabbing border border-foreground/40 bg-card px-3 py-2.5 shadow-lg">
-              <p className="text-[13px] font-medium leading-snug text-card-foreground">
-                {activeCard.title}
-              </p>
-            </article>
+            <div className="cursor-grabbing border border-foreground/40 bg-card px-3 py-2.5 shadow-lg">
+              <div className="text-sm font-medium leading-snug text-card-foreground">{activeCard.title}</div>
+            </div>
           ) : null}
         </DragOverlay>
       </DndContext>
 
-      {selected && (
-        <CardDialog
-          card={selected}
-          onClose={() => setSelected(null)}
-          onChanged={onChanged}
-        />
-      )}
+      {selected && <CardDialog card={selected} onClose={() => setSelected(null)} onChanged={onChanged} />}
     </div>
   );
 }

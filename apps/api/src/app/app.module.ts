@@ -11,6 +11,7 @@ import { CardsModule } from '../cards/cards.module';
 import { CommentsModule } from '../comments/comments.module';
 import { EventsModule } from '../events/events.module';
 import { AttachmentsModule } from '../attachments/attachments.module';
+import { WikiModule } from '../wiki/wiki.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -39,6 +40,7 @@ const staticModules: DynamicModule[] =
     CommentsModule,
     EventsModule,
     AttachmentsModule,
+    WikiModule,
   ],
   controllers: [AppController],
   providers: [AppService],
