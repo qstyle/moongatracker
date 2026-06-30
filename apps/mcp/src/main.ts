@@ -9,6 +9,9 @@ import { listCardsTool, listCards } from './tools/list-cards.js';
 import { getCardTool, getCard } from './tools/get-card.js';
 import { createCardTool, createCard } from './tools/create-card.js';
 import { moveCardTool, moveCard } from './tools/move-card.js';
+import { updateCardTool, updateCard } from './tools/update-card.js';
+import { commentCardTool, commentCard } from './tools/comment-card.js';
+import { listActivityTool, listActivity } from './tools/list-activity.js';
 
 const server = new Server(
   { name: 'moongatracker', version: '0.1.0' },
@@ -21,6 +24,9 @@ const tools = [
   getCardTool,
   createCardTool,
   moveCardTool,
+  updateCardTool,
+  commentCardTool,
+  listActivityTool,
 ];
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }));
@@ -46,6 +52,23 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
         break;
       case 'move_card':
         text = await moveCard(args as { cardId: string; columnId: string });
+        break;
+      case 'update_card':
+        text = await updateCard(
+          args as {
+            cardId: string;
+            title?: string;
+            body?: string;
+            priority?: 'urgent' | 'normal' | 'low';
+            columnId?: string;
+          },
+        );
+        break;
+      case 'comment_card':
+        text = await commentCard(args as { cardId: string; body: string });
+        break;
+      case 'list_activity':
+        text = await listActivity(args as { cardId: string });
         break;
       default:
         throw new Error(`Unknown tool: ${name}`);
