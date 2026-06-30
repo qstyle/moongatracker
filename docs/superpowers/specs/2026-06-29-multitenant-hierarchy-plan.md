@@ -1,182 +1,173 @@
-# Moongatracker — план: мультитенант-иерархия + агент-токены + скриншоты
+# Moongatracker — спек: мультитенант-иерархия
 
-Дата: 2026-06-29
-Статус: **черновик, в работе** (думаем дальше, не финал)
+Дата: 2026-06-29  
+Статус: **актуален**, фазы соответствуют Phase 3–5 в `docs/ROADMAP.md`
 
-## Решения (зафиксированы)
-
-- **Мультитенант**: много организаций в одном инстансе, данные изолированы по `orgId`.
-  (Пересматривает прежний YAGNI на мультитенант в `DESIGN.md`.)
-- **Одна канбан-доска на проект**: `Project` = доска. Прежний `Board` переименовываем в `Project`.
-- **Скриншоты** → внешнее объектное хранилище (S3/MinIO); в БД только ключ/метаданные.
-- **Токен AI-агента** — скоуп = вся организация.
-- **Участники**: добавляются по email, ролей пока нет — у всех полный доступ.
-- **API агента**: REST (Bearer-токен) + MCP-сервер (`apps/mcp`).
-- **Реализация**: поэтапно, отдельный спек на каждую фазу.
-
-## Новая иерархия
+## Иерархия
 
 ```
 Organization ──► Project (= 1 канбан-доска) ──► Column ──► Card ──► Attachment(screenshot)
      │
      ├─ Membership (User, по почте, без ролей — полный доступ)
-     └─ ApiToken (AI-агент, скоуп = вся орга) ──► MCP-сервер
+     └─ ApiToken (AI-агент, скоуп = вся орга)
 ```
 
-## Модель данных (Prisma)
+## Зафиксированные решения
 
-| Модель         | Что делаем                                                                                           |
-| -------------- | ---------------------------------------------------------------------------------------------------- |
-| `Organization` | **новая**: `{ id, name, createdAt }`                                                                 |
-| `Membership`   | **новая**: `{ id, orgId, userId, createdAt }`, `@@unique([orgId, userId])`; ролей нет                |
-| `User`         | + JWT-auth (email-логин, `passwordHash` уже есть)                                                    |
-| `Project`      | **переименование `Board`** + `orgId`                                                                 |
-| `Column`       | `boardId` → `projectId`                                                                              |
-| `Card`         | `boardId` → `projectId`                                                                              |
-| `Label`        | `boardId` → `projectId`                                                                              |
-| `ApiToken`     | **новая**: `{ id, orgId, name, tokenHash, scopes, lastUsedAt, createdAt }`                           |
-| `Attachment`   | **новая**: `{ id, cardId, storageKey, filename, contentType, size, createdBy, createdAt }` (S3-ключ) |
-| `Activity`     | **новая** (фаза 2): трейс мутаций агента + откат                                                     |
+- Мультитенант: много орг в одном инстансе, изоляция по `orgId` на уровне `data-access`.
+- `Board` → `Project` (одна доска на проект).
+- Колонки свободные (не фикс-набор), view-переключатель убрать.
+- Приоритет карточки: `urgent / normal / low / null` вместо меток и числового `priority`.
+- Автор и исполнитель карточки — полиморфные (user или agent).
+- S3-бакет внешний, через env-переменные; MinIO в compose не поднимаем.
+- Токен AI-агента — скоуп = вся орга, отзываем не удаляем физически.
+- Участники добавляются по email, ролей нет — полный доступ.
 
-Изоляция по `orgId` — на уровне `data-access`, не вразнобой в контроллерах.
+## Модель данных (итоговая Prisma-схема)
 
-## Фазы
+```
+Organization  { id, name, createdAt }
+Membership    { id, orgId, userId, createdAt }  @@unique([orgId, userId])
+User          { id, email, name, passwordHash, createdAt }
+ApiToken      { id, orgId, name, tokenHash, scopes, lastUsedAt, createdAt, revokedAt }
+Project       { id, orgId, name, createdAt }                        // переименован из Board
+Column        { id, projectId, title, order }                       // убран key
+Card          { id, projectId, columnId, title, body,               // columnId вместо columnKey
+                priority,                                           // String? urgent|normal|low
+                authorType, authorId,                               // user|agent
+                assigneeType, assigneeId,                           // user|agent|null
+                order, createdAt, updatedAt }
+Comment       { id, cardId, authorType, authorId, body, createdAt }
+Activity      { id, cardId, actorType, actorId, action, before, after, createdAt }
+Attachment    { id, cardId, storageKey, filename, contentType, size, createdBy, createdAt }
+```
 
-### Фаза 1 — Мультитенант-фундамент: орг + auth + проекты + доска
+Удалить: `Label`, `CardLabel`, `Column.key`, `Card.columnKey`, `Card.priority: Int`, `ApiToken.userId`.
 
-**Backend**
+---
 
-- JWT-auth: `POST /api/auth/register`, `/auth/login`, `/auth/me`; guard на ручки.
-- `Organization` CRUD: создать оргу, список своих орг.
-- `Project` CRUD внутри орги; миграция `Board → Project` (+ `orgId`).
-- Перевесить `cards`/`columns`/`boards`-контроллеры на `projectId` + org-скоуп.
-- Сид: демо-орга + демо-проект.
+## Фаза 1 — Мультитенант + sidebar + настройки (ROADMAP Phase 3)
 
-**Frontend**
+### Схема (Prisma)
 
+- `Board → Project` + добавить `orgId`.
+- `Column`: убрать `key`, `boardId → projectId`.
+- `Card`: `columnKey → columnId` (FK), `priority: Int → String?`, добавить `authorType/authorId/assigneeType/assigneeId`, `boardId → projectId`.
+- Удалить `Label`, `CardLabel`.
+- Добавить `Organization`, `Membership`.
+- `ApiToken.userId → ApiToken.orgId`.
+- Миграция: маппинг `columnKey → columnId`, старый числовой `priority` сбросить в null.
+
+### Backend
+
+- JWT-auth guard на все ручки; `POST /auth/register`, `/auth/login`, `/auth/me`.
+- `Organization`: создать, список своих орг, `PATCH /api/orgs/:id { name }`.
+- `Project` CRUD с org-скоупом; `PATCH /api/projects/:id { name }`.
+- Модуль `columns`:
+  - `POST /api/columns { projectId, title }` (в конец, `order = max+1`)
+  - `PATCH /api/columns/:id { title?, order? }`
+  - `PATCH /api/columns/reorder { projectId, orderedIds[] }`
+  - `DELETE /api/columns/:id` → 409, если есть карточки
+- `cards.service`:
+  - сортировка `(priority weight desc, order asc)` внутри колонки
+  - при создании: автор = принципал из JWT/Bearer
+  - `PATCH /cards/:id` принимает `priority`, `assignee?: { type, id } | null`
+- `GET /api/projects/:id/actors` → members + agent-tokens орги (для пикера исполнителя).
+- Удалить модуль `labels`.
+- `shared-types`:
+  - `CardPriority = 'urgent' | 'normal' | 'low'`
+  - `PRIORITIES: { key, label, color, weight }[]`
+  - `ActorDto { type: 'user'|'agent', id, name }`
+  - `CardDto`: `priority: CardPriority | null`, `author: ActorDto`, `assignee: ActorDto | null`, `columnId`
+  - Убрать `ColumnKey`, `COLUMN_KEYS`, `LabelDto`, `labels`
+- Сид: демо-орга + демо-проект с колонками.
+
+### Frontend
+
+- Роутер: `/login`, `/register`, `/projects/:projectId`, `/settings`.
 - Экраны login / register.
-- Контекст текущей орги + переключатель орг.
-- Список проектов в орге, создание проекта.
-- Канбан текущего `Board`-компонента, привязанный к проекту.
-- Навигация: Орга → Проекты → Доска.
+- Список проектов орги, создание проекта.
+- Канбан привязан к `projectId`:
+  - колонки свободные: инлайн-переименование, меню (⋯) → удалить (блок если не пустая), горизонтальный DnD (`horizontalListSortingStrategy`)
+  - композер «+ колонка» в конце доски
+  - инлайн-редактирование имени проекта в шапке
+- `PriorityDot`/`PriorityChip` по `PRIORITIES`; `CardTile`: левая акцент-полоска + точка.
+- `CardDialog`: селектор приоритета (3 цветных + «нет»); DnD clamp в границах цвет-группы.
+- `ActorChip` (имя + маркер user/agent); чип исполнителя на `CardTile`.
+- `CardDialog`: автор (read-only) + пикер исполнителя (single + «не назначен»).
+- Удалить `view-switch.tsx`, `views.ts`, `label-chip.tsx`.
+- `<Sidebar />` (фиксированный ~220 px, на мобиле — бургер):
+  - переключатель орг (если > 1)
+  - список проектов орги, «+ Новый проект»
+  - ссылка «Настройки» → `/settings`
+  - профиль / выход
+- Страница `/settings` с вкладками:
+  - **Организация** — переименование (полностью рабочая)
+  - **Участники** — только список (добавление/удаление — Phase 4)
+  - **AI-агенты** — только список (создание/отзыв — Phase 4)
 
-**Готово:** регистрируюсь, создаю оргу и проекты, веду канбан руками.
+**Готово:** регистрируюсь, создаю оргу и проекты, хожу между ними через sidebar, веду канбан с приоритетами и исполнителями.
 
-### Фаза 2 — Участники + токены агента + MCP
+---
 
-**Backend**
+## Фаза 2 — Участники + токены агента + MCP + настройки (ROADMAP Phase 4)
 
-- Добавление участника по email (есть юзер → привязка; нет → создаём), без ролей.
-- `ApiToken` (org-скоуп): создать/отозвать, `tokenHash`, scopes (`cards:read|write`, `comments:write`).
+### Backend
+
+- `POST /api/orgs/:orgId/members { email }` — есть юзер → привязка, нет → создать.
+- `DELETE /api/orgs/:orgId/members/:userId`.
+- `ApiToken` CRUD: `POST /api/orgs/:orgId/tokens { name, scopes }`, `DELETE /api/orgs/:orgId/tokens/:tokenId` (soft-revoke).
 - Guard по `Authorization: Bearer <token>` → `actorType=agent`.
-- `Activity`-трейс на мутации + эндпоинт отката.
-- `apps/mcp`: MCP-обёртка над REST (`list_projects`, `list_cards`, `get_card`, `create_card`, `update_card`, `move_card`, `comment_card`, `list_activity`).
+- `Activity`-трейс на все мутации агента + `POST /api/activity/:id/revert`.
+- MCP (`apps/mcp`): `list_projects`, `list_cards`, `get_card`, `create_card`, `update_card`, `move_card`, `comment_card`, `list_activity`.
 
-**Frontend**
+### Frontend
 
-- Управление участниками орги (добавить по почте, удалить).
-- Управление API-токенами (создать → показать раз, отозвать, `lastUsedAt`).
-- Маркер «agent» на действиях/комментариях, история карточки.
+- Маркер «agent» на комментариях и в истории карточки.
+- `CardDialog`: вкладка «История» — лента Activity с актором и кнопкой «Откатить».
+- `/settings`: вкладки **Участники** и **AI-агенты** становятся полностью рабочими.
 
-**Готово:** добавляю людей и агента, агент рулит доской через MCP, действия видны и обратимы.
+**Готово:** добавляю людей и агента через настройки, агент рулит доской через MCP, действия видны и обратимы.
 
-### Фаза 3 — Скриншоты на карточках
+---
 
-**Backend**
+## Фаза 3 — Скриншоты на карточках (ROADMAP Phase 5)
 
-- Интеграция S3/MinIO (env-конфиг), presigned-upload или прокси-загрузка.
-- `Attachment` CRUD: прикрепить, список, удалить (чистка объекта в S3).
+### Backend
 
-**Frontend**
+- S3 внешний: env `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_REGION`.
+- `POST /api/attachments/presign { cardId, filename, contentType }` → presigned URL (фронт льёт напрямую).
+- `GET /api/cards/:id/attachments`, `DELETE /api/attachments/:id` (чистит объект в S3).
 
-- В `CardDialog`: загрузка файла + вставка из буфера (Ctrl+V скриншота), превью-галерея, удаление, лайтбокс.
+### Frontend
+
+- `CardDialog`: загрузка файла + вставка Ctrl+V, превью-галерея, удаление, лайтбокс.
 - Бейдж кол-ва вложений на `CardTile`.
 
 **Готово:** к карточке можно прикрепить скриншоты, посмотреть и удалить.
 
-## Принципы
+---
 
-- YAGNI: ролей нет, полный доступ; SSO/аналитику не тащим.
-- Каждая фаза деплоится и проверяется до следующей.
-- Обновить `docs/DESIGN.md` и `ROADMAP.md` под новую иерархию.
+## Фаза 4 — Боковое меню + страница настроек (ROADMAP Phase 6)
 
-## Канбан: управление проектом и колонками (решено 2026-06-29)
+### Frontend
 
-Колонки становятся свободными под каждый проект (не фикс-набор). Решения:
+- `<Sidebar />` (фиксированный, ~220 px; на мобиле — бургер):
+  - переключатель орг (если орг > 1)
+  - список проектов орги, «+ Новый проект»
+  - ссылка «Настройки» → `/settings`
+  - профиль / выход
+- Страница `/settings` с вкладками:
+  - **Участники**: таблица (email + дата + кнопка удалить) + форма «Добавить по email».
+  - **AI-агенты**: таблица (имя + scopes + lastUsedAt + «Отозвать») + форма создания + модал с токеном (показать один раз).
+  - **Организация**: переименование.
 
-- Подложка колонки — **единый визуальный контейнер** (один стиль на все, без цвета, без поля в БД).
-- Удаление колонки с карточками — **запрещено** (409, пока не пустая).
-- View-переключатель «Всё/Идеи/Разработка» — **убрать совсем**.
+**Готово:** навигация через sidebar; добавляю/удаляю людей и агентов через /settings.
 
-### Изменение модели
+---
 
-- `Card.columnKey` (enum-строка) → **`Card.columnId`** (FK на `Column`).
-- `Column` теряет `key` и `@@unique([…, key])`; остаётся `{ id, projectId, title, order }`.
-- `shared-types`: удалить `ColumnKey`, `COLUMN_KEYS`; `ColumnDto` без `key`; `CardDto`/inputs — `columnId`.
-- Удалить `apps/web/src/lib/views.ts`, `ViewSwitch`, тип `ViewId`.
-- Миграция: маппинг старый `key → columnId`, перенос карточек.
+## Открытые вопросы
 
-### Backend (api)
-
-- `PATCH /api/projects/:id { name }` — переименование проекта.
-- Новый модуль `columns`:
-  - `POST /api/columns { projectId, title }` (в конец, `order = max+1`).
-  - `PATCH /api/columns/:id { title?, order? }`.
-  - `PATCH /api/columns/reorder { projectId, orderedIds[] }`.
-  - `DELETE /api/columns/:id` — 409, если есть карточки.
-- `cards.service`: `move`/`update` по `columnId`.
-
-### Frontend (apps/web)
-
-- Инлайн-редактирование имени проекта в шапке.
-- Подложка-контейнер у каждой колонки (единый стиль).
-- Меню заголовка колонки (⋯): переименовать (инлайн), удалить (блок, если не пустая).
-- Композер «+ колонка» в конце доски.
-- Горизонтальный DnD перестановки колонок (`horizontalListSortingStrategy`) → `PATCH /columns/reorder`.
-- Удалить `view-switch.tsx`/`views.ts`; `Board` рендерит `project.columns`.
-
-## Автор и исполнитель карточки (решено 2026-06-29)
-
-И автор, и исполнитель могут быть человеком или AI-агентом; различаем по credential
-запроса (JWT → `user`, Bearer-токен → `agent`). Исполнитель — **один или никто**.
-
-### Модель (полиморфный actor, как в `Comment`)
-
-- `Card.authorType: 'user' | 'agent'`, `authorId` — `User.id` или `ApiToken.id`.
-- `Card.assigneeType: 'user' | 'agent' | null`, `assigneeId: string | null`.
-- **Автор** ставится автоматически из принципала при создании, неизменен.
-- **Исполнитель** — один, вручную, может быть пустым (`PATCH /cards/:id`).
-- Агент = токен; имя берём из `ApiToken.name`. Токены **отзываем, не удаляем физически**
-  (чтобы имя автора/исполнителя не терялось).
-- FK-ограничений нет (полиморфизм); пропавший актор → резолвер отдаёт «неизвестно».
-
-### shared-types
-
-- `ActorDto { type: 'user' | 'agent', id, name }`.
-- `CardDto` отдаёт резолвнутые `author: ActorDto`, `assignee: ActorDto | null`.
-- `UpdateCardInput.assignee?: { type, id } | null`.
-
-### Backend (api)
-
-- Auth-контекст даёт принципала `{ type, id }`.
-- `cards.create`: автор = принципал. `cards.update`: валидирует исполнителя по орге.
-- Mapper резолвит `authorId/assigneeId → ActorDto` (джойн users + tokens орги).
-- `GET /api/projects/:id/actors` → members + agent-tokens для пикера.
-
-### Frontend (apps/web)
-
-- `ActorChip` (имя + маркер человек/агент); чип исполнителя на `CardTile`.
-- `CardDialog`: автор (read-only) + пикер исполнителя (single + «не назначен»).
-
-### Зависимость по фазам
-
-Поля автора/исполнителя добавляем в модель сейчас. Агент как актор реально появляется
-в **Фазе 2** (есть `ApiToken` + токен-auth). В Фазе 1: автор = создатель-`user`,
-исполнитель — только участник орги.
-
-## Открытые вопросы (думаем дальше)
-
-- Регистрация: личная орга сразу или потом «создать организацию»?
+- Регистрация: личная орга создаётся автоматически или отдельным шагом?
 - Демо-сид: сносить или переносить в демо-оргу?
-- Realtime (Socket.IO) — в этих фазах или откладываем?
-- MinIO локально в docker-compose или внешний S3 (как Postgres)?
+- Socket.IO realtime — в Фазе 1 или откладываем?
