@@ -7,87 +7,122 @@ const url =
   process.env.DATABASE_URL ??
   'postgresql://postgres:postgres@localhost:5432/moongatracker';
 const adapter = new PrismaPg({ connectionString: url });
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient({ adapter } as any);
 
 const COLUMNS = [
-  { key: 'idea', title: 'Идея', order: 0 },
-  { key: 'triage', title: 'Разбор', order: 1 },
-  { key: 'backlog', title: 'Бэклог', order: 2 },
-  { key: 'in_dev', title: 'В разработке', order: 3 },
-  { key: 'done', title: 'Готово', order: 4 },
+  { title: 'Идея', order: 0 },
+  { title: 'Разбор', order: 1 },
+  { title: 'Бэклог', order: 2 },
+  { title: 'В разработке', order: 3 },
+  { title: 'Готово', order: 4 },
 ];
 
 const CARDS = [
   {
-    columnKey: 'idea',
+    colTitle: 'Идея',
     title: 'Автотегирование отзывов по тону',
-    body: 'Размечать отзывы как позитив/негатив для дайджеста.',
+    body: 'Размечать отзывы как позитив/негатив.',
     order: 0,
+    priority: null,
   },
   {
-    columnKey: 'idea',
+    colTitle: 'Идея',
     title: 'Еженедельный дайджест по понедельникам',
     body: null,
     order: 1,
+    priority: null,
   },
   {
-    columnKey: 'triage',
+    colTitle: 'Разбор',
     title: 'Интеграция с MAX-мессенджером',
-    body: 'Оценить объём, нужен ли отдельный воркер.',
+    body: 'Оценить объём.',
     order: 0,
+    priority: 'normal',
   },
   {
-    columnKey: 'backlog',
+    colTitle: 'Бэклог',
     title: 'Экспорт доски в CSV',
     body: null,
     order: 0,
+    priority: 'low',
   },
   {
-    columnKey: 'in_dev',
-    title: 'Эндпоинт GET /api/boards',
+    colTitle: 'В разработке',
+    title: 'Эндпоинт GET /api/projects',
     body: 'Первый вертикальный срез.',
     order: 0,
+    priority: 'urgent',
   },
   {
-    columnKey: 'done',
+    colTitle: 'Готово',
     title: 'Каркас Nx-монорепо',
     body: 'api + web + libs + Prisma.',
     order: 0,
+    priority: null,
   },
 ];
 
-async function seedUser() {
-  const email = 'admin@moongatracker.local';
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) return;
-  const passwordHash = await bcrypt.hash('moonga', 10);
-  await prisma.user.create({
-    data: { email, passwordHash, name: 'Admin', role: 'admin' },
-  });
-  console.log(`Seeded user ${email} (password: moonga).`);
-}
-
 async function main() {
-  await seedUser();
+  // 1. Upsert admin user
+  const email = 'admin@moongatracker.local';
+  let user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    const passwordHash = await bcrypt.hash('moonga', 10);
+    user = await prisma.user.create({
+      data: { email, passwordHash, name: 'Admin' },
+    });
+    console.log(`Created user: ${email}`);
+  } else {
+    console.log(`User exists: ${email}`);
+  }
 
-  const existing = await prisma.board.findFirst();
-  if (existing) {
-    console.log('Seed skipped: board already present.');
+  // 2. Skip if org already exists
+  const existingOrg = await prisma.organization.findFirst();
+  if (existingOrg) {
+    console.log('Seed skipped: organization already present.');
     return;
   }
 
-  const board = await prisma.board.create({
+  // 3. Create demo org + membership
+  const org = await prisma.organization.create({
     data: {
-      name: 'Демо-доска',
-      columns: { create: COLUMNS },
+      name: 'Demo Org',
+      memberships: { create: { userId: user.id } },
     },
   });
+  console.log(`Created org: ${org.name}`);
 
-  await prisma.card.createMany({
-    data: CARDS.map((c) => ({ ...c, boardId: board.id })),
+  // 4. Create demo project with columns
+  const project = await prisma.project.create({
+    data: {
+      orgId: org.id,
+      name: 'Демо-проект',
+      columns: { create: COLUMNS },
+    },
+    include: { columns: { orderBy: { order: 'asc' } } },
   });
+  console.log(
+    `Created project: ${project.name} with ${project.columns.length} columns`,
+  );
 
-  console.log(`Seeded board "${board.name}" with ${CARDS.length} cards.`);
+  // 5. Build column title → id map
+  const colMap = new Map(project.columns.map((c) => [c.title, c.id]));
+
+  // 6. Create cards
+  await prisma.card.createMany({
+    data: CARDS.map((c) => ({
+      projectId: project.id,
+      columnId: colMap.get(c.colTitle)!,
+      title: c.title,
+      body: c.body ?? null,
+      priority: c.priority ?? null,
+      authorType: 'user',
+      authorId: user!.id,
+      order: c.order,
+    })),
+  });
+  console.log(`Created ${CARDS.length} cards`);
+  console.log('Seed complete.');
 }
 
 main()
