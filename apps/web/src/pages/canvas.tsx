@@ -35,11 +35,14 @@ import {
   createNode,
   updateNode,
   createEdge,
+  deleteNode,
+  deleteEdge,
   createTaskFromNode,
   linkTask,
   unlinkTask,
 } from '../api/canvas';
 import { fetchBoards, fetchBoard } from '../api/boards';
+import { fetchProjectMembers } from '../api/projects';
 import {
   MarkdownNode,
   type MarkdownNodeData,
@@ -77,6 +80,12 @@ function CanvasInner({ projectId }: { projectId: string }) {
   const { data, isLoading } = useQuery({
     queryKey: ['canvas', projectId],
     queryFn: () => fetchCanvas(projectId),
+    enabled: !!projectId,
+  });
+
+  const { data: members = [] } = useQuery({
+    queryKey: ['members', projectId],
+    queryFn: () => fetchProjectMembers(projectId),
     enabled: !!projectId,
   });
 
@@ -175,12 +184,17 @@ function CanvasInner({ projectId }: { projectId: string }) {
                   onCreateTask: () => openDialog('create', n.id),
                   onLinkTask: () => openDialog('link', n.id),
                   onUnlinkTask: () => handleUnlinkTask(n.id),
+                  onEditText: (text: string) =>
+                    updateNode(n.id, { text }).then(invalidate),
+                  onSetColor: (color: string | null) =>
+                    updateNode(n.id, { color }).then(invalidate),
+                  onDeleteNode: () => deleteNode(n.id).then(invalidate),
                 }
               : {}),
           } satisfies MarkdownNodeData,
         }),
       ),
-    [data, canEdit, openCard, openDialog, handleUnlinkTask],
+    [data, canEdit, openCard, openDialog, handleUnlinkTask, invalidate],
   );
 
   const rfEdges: Edge[] = useMemo(
@@ -190,13 +204,17 @@ function CanvasInner({ projectId }: { projectId: string }) {
         source: e.sourceNodeId,
         target: e.targetNodeId,
         label: e.label ?? undefined,
+        deletable: canEdit,
       })),
-    [data],
+    [data, canEdit],
   );
 
   const onEdit = async () => {
     if (!myId) return;
-    const ok = await acquire({ userId: myId, name: 'Вы', color: '#2563eb' });
+    const me = members.find((m) => m.userId === myId);
+    const name = me?.name ?? me?.email ?? 'Аноним';
+    const color = me?.color ?? '#2563eb';
+    const ok = await acquire({ userId: myId, name, color });
     setEditing(ok);
   };
 
@@ -270,6 +288,10 @@ function CanvasInner({ projectId }: { projectId: string }) {
                 sourceNodeId: c.source,
                 targetNodeId: c.target,
               }).then(invalidate);
+          }}
+          onEdgesDelete={(edges) => {
+            if (canEdit)
+              Promise.all(edges.map((e) => deleteEdge(e.id))).then(invalidate);
           }}
         >
           <Background />
