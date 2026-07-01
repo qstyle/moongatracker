@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { QueryClient } from '@tanstack/react-query';
 import { io } from 'socket.io-client';
 
@@ -67,10 +67,11 @@ export function useCanvasSocket(projectId: string, queryClient: QueryClient): Ca
     };
   }, [projectId, queryClient]);
 
-  return {
-    holder,
-    acquire: (me) =>
-      new Promise((resolve) => {
+  // Стабильные колбэки: иначе их новая идентичность каждый рендер ломает
+  // зависящие useCallback/useEffect у потребителя (сброс editing-лока и т.п.).
+  const acquire = useCallback(
+    (me: { userId: string; name: string; color: string }) =>
+      new Promise<boolean>((resolve) => {
         socketRef.current?.emit(
           'canvas:acquire',
           { projectId, ...me },
@@ -80,7 +81,16 @@ export function useCanvasSocket(projectId: string, queryClient: QueryClient): Ca
           },
         );
       }),
-    release: () => socketRef.current?.emit('canvas:release', { projectId }),
-    heartbeat: () => socketRef.current?.emit('canvas:heartbeat', { projectId }),
-  };
+    [projectId],
+  );
+  const release = useCallback(
+    () => socketRef.current?.emit('canvas:release', { projectId }),
+    [projectId],
+  );
+  const heartbeat = useCallback(
+    () => socketRef.current?.emit('canvas:heartbeat', { projectId }),
+    [projectId],
+  );
+
+  return { holder, acquire, release, heartbeat };
 }
