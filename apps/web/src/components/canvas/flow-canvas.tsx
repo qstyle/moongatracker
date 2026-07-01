@@ -29,6 +29,7 @@ import { getCurrentUserId } from '../../api/client';
 import { useCanvasSocket } from '../../api/socket';
 import { useUndoRedo } from '../../hooks/use-undo-redo';
 import { layout } from '../../lib/canvas-layout';
+import { useTheme } from '../../lib/use-theme';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -71,6 +72,7 @@ interface DialogState {
 export function FlowCanvas({ projectId }: { projectId: string }) {
   const rf = useReactFlow<MarkdownNodeType, Edge>();
   const queryClient = useQueryClient();
+  const { theme } = useTheme();
   const [, navigate] = useLocation();
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -494,6 +496,7 @@ export function FlowCanvas({ projectId }: { projectId: string }) {
         panOnDrag={panOnDrag}
         minZoom={0.1}
         fitView
+        colorMode={theme}
         proOptions={{ hideAttribution: true }}
       >
         <Background />
