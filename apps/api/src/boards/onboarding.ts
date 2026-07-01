@@ -1,7 +1,7 @@
 export function buildOnboardingCards(
   boardId: string,
   columnId: string,
-  userId: string,
+  userId: string | null,
 ) {
   const titles = [
     'Подключить коллег — добавьте их через настройки проекта',

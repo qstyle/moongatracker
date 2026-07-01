@@ -1,5 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { assertMembership, PrismaService } from '@moongatracker/data-access';
+import {
+  assertProjectAccess,
+  PrismaService,
+  RequestActor,
+} from '@moongatracker/data-access';
 import { buildOnboardingCards } from './onboarding';
 import {
   ActorDto,
@@ -68,9 +72,9 @@ export class BoardsService {
 
   async listForProject(
     projectId: string,
-    userId: string,
+    actor: RequestActor,
   ): Promise<BoardSummaryDto[]> {
-    await assertMembership(this.prisma, userId, projectId);
+    await assertProjectAccess(this.prisma, actor, projectId);
     const boards = await this.prisma.board.findMany({
       where: { projectId },
       orderBy: { createdAt: 'asc' },
@@ -87,9 +91,10 @@ export class BoardsService {
   async create(
     projectId: string,
     name: string,
-    userId: string,
+    actor: RequestActor,
   ): Promise<BoardSummaryDto> {
-    await assertMembership(this.prisma, userId, projectId);
+    await assertProjectAccess(this.prisma, actor, projectId);
+    const authorId = actor.type === 'agent' ? null : actor.sub;
     const board = await this.prisma.$transaction(async (tx) => {
       const seqAgg = await tx.board.aggregate({
         where: { projectId },
@@ -102,7 +107,7 @@ export class BoardsService {
         data: { boardId: created.id, title: 'С чего начать', order: 0 },
       });
       await tx.card.createMany({
-        data: buildOnboardingCards(created.id, column.id, userId),
+        data: buildOnboardingCards(created.id, column.id, authorId),
       });
       return created;
     });
@@ -115,7 +120,7 @@ export class BoardsService {
     };
   }
 
-  async getWithColumns(boardId: string, userId: string): Promise<BoardDto> {
+  async getWithColumns(boardId: string, actor: RequestActor): Promise<BoardDto> {
     const board = await this.prisma.board.findUnique({
       where: { id: boardId },
       include: {
@@ -132,7 +137,7 @@ export class BoardsService {
       },
     });
     if (!board) throw new NotFoundException(`Board ${boardId} not found`);
-    await assertMembership(this.prisma, userId, board.projectId);
+    await assertProjectAccess(this.prisma, actor, board.projectId);
 
     const columns: ColumnDto[] = board.columns.map((col) => {
       const cards = [...col.cards];
@@ -163,14 +168,14 @@ export class BoardsService {
 
   async update(
     boardId: string,
-    userId: string,
+    actor: RequestActor,
     name: string,
   ): Promise<BoardSummaryDto> {
     const board = await this.prisma.board.findUnique({
       where: { id: boardId },
     });
     if (!board) throw new NotFoundException(`Board ${boardId} not found`);
-    await assertMembership(this.prisma, userId, board.projectId);
+    await assertProjectAccess(this.prisma, actor, board.projectId);
     const updated = await this.prisma.board.update({
       where: { id: boardId },
       data: { name },
@@ -184,24 +189,24 @@ export class BoardsService {
     };
   }
 
-  async delete(boardId: string, userId: string): Promise<void> {
+  async delete(boardId: string, actor: RequestActor): Promise<void> {
     const board = await this.prisma.board.findUnique({
       where: { id: boardId },
     });
     if (!board) throw new NotFoundException(`Board ${boardId} not found`);
-    await assertMembership(this.prisma, userId, board.projectId);
+    await assertProjectAccess(this.prisma, actor, board.projectId);
     await this.prisma.$transaction(async (tx) => {
       await tx.card.deleteMany({ where: { boardId } });
       await tx.board.delete({ where: { id: boardId } });
     });
   }
 
-  async getActors(boardId: string, userId: string): Promise<ActorDto[]> {
+  async getActors(boardId: string, actor: RequestActor): Promise<ActorDto[]> {
     const board = await this.prisma.board.findUnique({
       where: { id: boardId },
     });
     if (!board) throw new NotFoundException(`Board ${boardId} not found`);
-    await assertMembership(this.prisma, userId, board.projectId);
+    await assertProjectAccess(this.prisma, actor, board.projectId);
 
     const [memberships, apiTokens] = await Promise.all([
       this.prisma.membership.findMany({
