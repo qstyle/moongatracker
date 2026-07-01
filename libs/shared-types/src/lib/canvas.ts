@@ -1,3 +1,4 @@
+/** Сводка связанной карточки канбана (резолвится сервером на чтении холста). */
 export interface LinkedCardDto {
   id: string;
   boardId: string;
@@ -6,66 +7,47 @@ export interface LinkedCardDto {
   priority: string | null;
 }
 
-export interface CanvasNodeDto {
-  id: string;
-  projectId: string;
+/** data кастомной markdown-ноды React Flow. */
+export interface CanvasNodeData {
   text: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  color: string | null;
-  cardId: string | null;
-  card: LinkedCardDto | null;
-  createdAt: string;
-  updatedAt: string;
+  color?: string | null;
+  /** id связанной карточки канбана (хранится в документе). */
+  cardId?: string | null;
+  /** Резолвится сервером на чтении; на запись не отправляется. */
+  card?: LinkedCardDto | null;
+  [key: string]: unknown;
 }
 
-export interface CanvasEdgeDto {
+/** Нода React Flow (совместима с @xyflow/react Node). */
+export interface CanvasNode {
   id: string;
-  projectId: string;
-  sourceNodeId: string;
-  targetNodeId: string;
-  label: string | null;
+  type?: string;
+  position: { x: number; y: number };
+  width?: number | null;
+  height?: number | null;
+  data: CanvasNodeData;
+  [key: string]: unknown;
 }
 
-export interface CanvasDto {
-  nodes: CanvasNodeDto[];
-  edges: CanvasEdgeDto[];
+/** Ребро React Flow (совместимо с @xyflow/react Edge). */
+export interface CanvasEdge {
+  id: string;
+  source: string;
+  target: string;
+  type?: string;
+  data?: { label?: string | null } & Record<string, unknown>;
+  [key: string]: unknown;
 }
 
-export interface CreateCanvasNodeInput {
-  text?: string;
+export interface CanvasViewport {
   x: number;
   y: number;
-  width?: number;
-  height?: number;
-  color?: string | null;
+  zoom: number;
 }
 
-export interface UpdateCanvasNodeInput {
-  text?: string;
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  color?: string | null;
-}
-
-export interface CreateCanvasEdgeInput {
-  sourceNodeId: string;
-  targetNodeId: string;
-  label?: string | null;
-}
-
-export interface UpdateCanvasEdgeInput {
-  label?: string | null;
-}
-
-export interface CreateTaskFromNodeInput {
-  boardId: string;
-}
-
-export interface LinkTaskInput {
-  cardId: string;
+/** Весь холст проекта. */
+export interface CanvasDoc {
+  nodes: CanvasNode[];
+  edges: CanvasEdge[];
+  viewport?: CanvasViewport;
 }
