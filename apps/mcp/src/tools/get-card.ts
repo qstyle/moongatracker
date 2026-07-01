@@ -1,11 +1,21 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
-import {
-  formatCardKey,
-  parseCardNumber,
-  type BoardSummaryDto,
-  type CardDto,
-} from '@moongatracker/shared-types';
+import type { BoardSummaryDto, CardDto } from '@moongatracker/shared-types';
 import { apiGet } from '../api-client.js';
+
+/** First 4 letters/digits of the board name, uppercased. Falls back to "BRD". */
+function boardPrefix(name: string): string {
+  const cleaned = name.replace(/[^\p{L}\p{N}]/gu, '').slice(0, 4);
+  return cleaned ? cleaned.toUpperCase() : 'BRD';
+}
+
+function formatCardKey(boardName: string, boardSeq: number, cardNumber: number): string {
+  return `${boardPrefix(boardName)}${boardSeq}-${cardNumber}`;
+}
+
+function parseCardNumber(key: string): number | null {
+  const tail = key.slice(key.lastIndexOf('-') + 1);
+  return /^\d+$/.test(tail) ? Number(tail) : null;
+}
 
 export const getCardTool: Tool = {
   name: 'get_card',

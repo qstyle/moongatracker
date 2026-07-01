@@ -10,7 +10,9 @@
         "outputPath": "dist/apps/mcp",
         "main": "apps/mcp/src/main.ts",
         "tsConfig": "apps/mcp/tsconfig.app.json",
-        "assets": []
+        "assets": [
+          { "input": "skills/moongatracker", "glob": "SKILL.md", "output": "." }
+        ]
       }
     }
   }
