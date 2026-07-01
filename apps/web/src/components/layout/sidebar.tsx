@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useRoute, useLocation } from 'wouter';
 import { RiFolderOpenLine, RiKanbanView, RiBookOpenLine, RiLayoutMasonryLine, RiSunLine, RiMoonLine } from '@remixicon/react';
+import { LogoMark } from '@/components/brand/logo';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/lib/use-theme';
 import { Input } from '@/components/ui/input';
@@ -122,7 +123,12 @@ export function Sidebar() {
   return (
     <div className="flex h-dvh w-55 shrink-0 flex-col border-r border-border bg-background">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <div className="text-xs font-semibold uppercase tracking-[0.15em] text-foreground">Moongatracker</div>
+        <div className="flex items-center gap-1.5">
+          <LogoMark className="size-5" />
+          <span className="text-xs font-semibold tracking-tight text-foreground">
+            <span className="text-primary">m</span>oonga tracker
+          </span>
+        </div>
         <Button variant="ghost" size="icon-sm" onClick={toggle}>
           {theme === 'dark' ? <RiSunLine /> : <RiMoonLine />}
         </Button>

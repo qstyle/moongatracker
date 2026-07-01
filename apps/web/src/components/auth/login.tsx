@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'wouter';
-import { RiTBoxLine } from '@remixicon/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { LogoMark } from '@/components/brand/logo';
 import { login } from '../../api/auth';
 
 export function Login() {
@@ -29,10 +29,10 @@ export function Login() {
     <div className="flex h-dvh items-center justify-center bg-background px-4">
       <form onSubmit={submit} className="w-full max-w-xs border border-border bg-card">
         <div className="flex items-center gap-2.5 border-b border-border px-4 py-3">
-          <div className="flex size-6 items-center justify-center bg-primary text-primary-foreground">
-            <RiTBoxLine className="size-4" />
-          </div>
-          <div className="text-sm font-semibold tracking-tight">moongatracker</div>
+          <LogoMark className="size-6" />
+          <span className="text-sm font-semibold tracking-tight">
+            <span className="text-primary">m</span>oonga tracker
+          </span>
         </div>
 
         <div className="flex flex-col gap-3 p-4">
