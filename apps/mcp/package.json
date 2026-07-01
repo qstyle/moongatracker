@@ -5,7 +5,7 @@
   "type": "module",
   "types": false,
   "bin": {
-    "moongatracker-mcp": "./src/main.js"
+    "moongatracker-mcp": "src/main.js"
   },
   "files": ["src", "SKILL.md"],
   "engines": {
