@@ -10,9 +10,13 @@ import { AuthResponse } from '@moongatracker/shared-types';
 
 interface UserRow {
   id: string;
-  email: string;
+  username: string;
   name: string | null;
   passwordHash: string;
+}
+
+function normalizeUsername(value: string): string {
+  return value.trim().toLowerCase();
 }
 
 @Injectable()
@@ -23,33 +27,29 @@ export class AuthService {
   ) {}
 
   private toResponse(user: UserRow): AuthResponse {
-    const accessToken = this.jwt.sign({ sub: user.id, email: user.email });
+    const accessToken = this.jwt.sign({ sub: user.id, username: user.username });
     return {
       accessToken,
-      user: { id: user.id, email: user.email, name: user.name },
+      user: { id: user.id, username: user.username, name: user.name },
     };
   }
 
-  async register(
-    email: string,
-    password: string,
-    name?: string,
-  ): Promise<AuthResponse> {
-    const existing = await this.prisma.user.findUnique({ where: { email } });
-    if (existing) throw new ConflictException('Email already in use');
+  async register(username: string, password: string): Promise<AuthResponse> {
+    const uname = normalizeUsername(username);
+    const existing = await this.prisma.user.findUnique({
+      where: { username: uname },
+    });
+    if (existing) throw new ConflictException('Username already in use');
 
     const passwordHash = await bcrypt.hash(password, 10);
 
     const { user } = await this.prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
-        data: { email, passwordHash, name: name ?? null },
+        data: { username: uname, passwordHash, name: null },
       });
-      const projectName = name
-        ? `${name}'s project`
-        : email.split('@')[0] + "'s project";
       await tx.project.create({
         data: {
-          name: projectName,
+          name: `${uname}'s project`,
           memberships: { create: { userId: user.id } },
         },
       });
@@ -59,8 +59,11 @@ export class AuthService {
     return this.toResponse(user);
   }
 
-  async login(email: string, password: string): Promise<AuthResponse> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+  async login(username: string, password: string): Promise<AuthResponse> {
+    const uname = normalizeUsername(username);
+    const user = await this.prisma.user.findUnique({
+      where: { username: uname },
+    });
     if (!user) throw new UnauthorizedException('Invalid credentials');
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) throw new UnauthorizedException('Invalid credentials');

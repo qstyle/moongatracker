@@ -36,9 +36,9 @@ export class UnifiedAuthGuard implements CanActivate {
     try {
       const payload = await this.jwt.verifyAsync<{
         sub: string;
-        email: string;
+        username: string;
       }>(rawToken);
-      req.user = { type: 'user', sub: payload.sub, email: payload.email };
+      req.user = { type: 'user', sub: payload.sub, username: payload.username };
       return true;
     } catch {
       // fall through to ApiToken lookup
