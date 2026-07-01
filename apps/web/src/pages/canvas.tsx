@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRoute, useLocation } from 'wouter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -66,6 +66,7 @@ function CanvasInner({ projectId }: { projectId: string }) {
   );
   const [editing, setEditing] = useState(false);
   const { screenToFlowPosition } = useReactFlow();
+  const flowWrapperRef = useRef<HTMLDivElement>(null);
 
   const lockedByOther = !!holder && holder.userId !== myId;
   const lockStale = !!holder && Date.now() - holder.lockedAt > STALE_MS;
@@ -242,6 +243,23 @@ function CanvasInner({ projectId }: { projectId: string }) {
               {holder!.name} редактирует
             </span>
           )}
+          {canEdit && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const rect = flowWrapperRef.current?.getBoundingClientRect();
+                if (!rect) return;
+                const center = screenToFlowPosition({
+                  x: rect.left + rect.width / 2,
+                  y: rect.top + rect.height / 2,
+                });
+                createNode(projectId, { x: center.x, y: center.y, text: 'Новая нода' }).then(invalidate);
+              }}
+            >
+              + Нода
+            </Button>
+          )}
           {!editing ? (
             <Button
               size="sm"
@@ -258,6 +276,7 @@ function CanvasInner({ projectId }: { projectId: string }) {
         </div>
       </div>
       <div
+        ref={flowWrapperRef}
         className="flex-1"
         onDoubleClick={(e) => {
           if (!canEdit) return;
