@@ -5,7 +5,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { assertMembership, PrismaService } from '@moongatracker/data-access';
+import {
+  assertMembership,
+  PrismaService,
+  RequestActor,
+} from '@moongatracker/data-access';
 import {
   isValidHexColor,
   MEMBER_COLOR_PALETTE,
@@ -19,6 +23,27 @@ import { buildStarterWiki } from '../wiki/starter-wiki';
 @Injectable()
 export class ProjectsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  /** Projects visible to the caller: an agent token sees only its own
+   * project; a human user sees the projects they are a member of. */
+  async listForActor(actor: RequestActor): Promise<ProjectDto[]> {
+    if (actor?.type === 'agent') {
+      const project = await this.prisma.project.findUnique({
+        where: { id: actor.projectId },
+      });
+      return project
+        ? [
+            {
+              id: project.id,
+              name: project.name,
+              ownerId: project.ownerId,
+              createdAt: project.createdAt.toISOString(),
+            },
+          ]
+        : [];
+    }
+    return this.listForUser(actor.sub);
+  }
 
   async listForUser(userId: string): Promise<ProjectDto[]> {
     const memberships = await this.prisma.membership.findMany({

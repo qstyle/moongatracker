@@ -58,6 +58,58 @@ describe('member colors', () => {
     });
   });
 
+  describe('listForActor', () => {
+    const project = {
+      id: 'p1',
+      name: 'checker',
+      ownerId: 'u1',
+      createdAt: NOW,
+    };
+
+    it('returns only the token project for an agent (no membership scan)', async () => {
+      const prisma = {
+        project: { findUnique: jest.fn().mockResolvedValue(project) },
+        membership: { findMany: jest.fn() },
+      } as any;
+      const svc = new ProjectsService(prisma);
+
+      const result = await svc.listForActor({
+        type: 'agent',
+        projectId: 'p1',
+      } as any);
+
+      expect(result).toEqual([
+        {
+          id: 'p1',
+          name: 'checker',
+          ownerId: 'u1',
+          createdAt: NOW.toISOString(),
+        },
+      ]);
+      expect(prisma.project.findUnique).toHaveBeenCalledWith({
+        where: { id: 'p1' },
+      });
+      expect(prisma.membership.findMany).not.toHaveBeenCalled();
+    });
+
+    it('lists membership projects for a human user', async () => {
+      const prisma = {
+        membership: {
+          findMany: jest.fn().mockResolvedValue([{ project }]),
+        },
+      } as any;
+      const svc = new ProjectsService(prisma);
+
+      const result = await svc.listForActor({ type: 'user', sub: 'u1' } as any);
+
+      expect(result).toHaveLength(1);
+      expect(prisma.membership.findMany).toHaveBeenCalledWith({
+        where: { userId: 'u1' },
+        include: { project: true },
+      });
+    });
+  });
+
   describe('updateMemberColor owner gate', () => {
     function makePrisma(ownerId: string | null) {
       return {

@@ -9,13 +9,14 @@ moongatracker is a shared human+agent kanban. You act through the MCP tools, nev
 
 ## Golden rule: discovery-first, never hardcode IDs
 
-Boards and columns are per-project rows in the DB — their IDs and titles differ across instances and boards. Always resolve IDs at runtime:
+Projects, boards and columns are per-instance rows in the DB — their IDs differ everywhere. Always resolve IDs at runtime, top-down:
 
-1. `list_projects(projectId)` → boards in the workspace (each has `id`, `name`).
-2. Inspect the board's cards with `list_cards(boardId)` — each card carries its `columnId`; the set of columns and their order come from the board.
-3. Match a column by its human title / order (lifecycle below), then pass the resolved `columnId` to `create_card` / `move_card` / `update_card`.
+1. `list_projects()` → the projects (workspaces) this token can access. **No arguments — start here** to get a `projectId`.
+2. `list_boards(projectId)` → the boards of that project (each has `id`, `name`).
+3. `list_cards(boardId)` → the cards, each carrying its `columnId`.
+4. Match a column by its human title / order (lifecycle below), then pass the resolved `columnId` to `create_card` / `move_card` / `update_card`.
 
-Never invent a column id or reuse one from another board.
+Never invent an id or reuse one from another board.
 
 ## Card lifecycle
 
@@ -33,7 +34,8 @@ Titles/order are the source of truth (they may be localized, e.g. «Идеи», 
 
 | Tool | Use it to |
 |------|-----------|
-| `list_projects` | list boards in a project (workspace) |
+| `list_projects` | list the projects this token can access (no args — discovery entry point) |
+| `list_boards` | list the boards of a project (workspace) |
 | `list_cards` | list cards on a board (optionally by column) |
 | `get_card` | full card with comments + history |
 | `create_card` | create a card (resolve `boardId` + `columnId` first) |

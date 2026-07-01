@@ -11,6 +11,7 @@ import {
   Request,
 } from '@nestjs/common';
 import { MemberDto, ProjectDto } from '@moongatracker/shared-types';
+import { RequestActor } from '@moongatracker/data-access';
 import { ProjectsService } from './projects.service';
 import { AddMemberDto } from './dto/add-member.dto';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -23,9 +24,9 @@ export class ProjectsController {
 
   @Get()
   listForUser(
-    @Request() req: { user: { sub: string } },
+    @Request() req: { user: RequestActor },
   ): Promise<ProjectDto[]> {
-    return this.projects.listForUser(req.user.sub);
+    return this.projects.listForActor(req.user);
   }
 
   @Post()

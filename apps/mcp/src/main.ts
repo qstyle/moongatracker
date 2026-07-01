@@ -6,6 +6,7 @@ import {
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { listProjectsTool, listProjects } from './tools/list-projects.js';
+import { listBoardsTool, listBoards } from './tools/list-boards.js';
 import { listCardsTool, listCards } from './tools/list-cards.js';
 import { getCardTool, getCard } from './tools/get-card.js';
 import { createCardTool, createCard } from './tools/create-card.js';
@@ -20,12 +21,13 @@ import { updateWikiPageTool, updateWikiPage } from './tools/update-wiki-page.js'
 import { getCanvasTool, getCanvas } from './tools/get-canvas.js';
 
 const server = new Server(
-  { name: 'moongatracker', version: '0.1.0' },
+  { name: 'moongatracker', version: '0.2.0' },
   { capabilities: { tools: {} } },
 );
 
 const tools = [
   listProjectsTool,
+  listBoardsTool,
   listCardsTool,
   getCardTool,
   createCardTool,
@@ -48,7 +50,10 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
     let text: string;
     switch (name) {
       case 'list_projects':
-        text = await listProjects(args as { projectId: string });
+        text = await listProjects();
+        break;
+      case 'list_boards':
+        text = await listBoards(args as { projectId: string });
         break;
       case 'list_cards':
         text = await listCards(args as { boardId: string; columnId?: string });

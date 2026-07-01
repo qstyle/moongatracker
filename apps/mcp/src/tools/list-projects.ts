@@ -1,24 +1,18 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { apiGet } from '../api-client.js';
-import type { BoardSummaryDto } from '@moongatracker/shared-types';
+import type { ProjectDto } from '@moongatracker/shared-types';
 
 export const listProjectsTool: Tool = {
   name: 'list_projects',
-  description: 'List all boards in a project (workspace)',
+  description:
+    'List the projects (workspaces) this token can access. Takes no arguments — the entry point for discovery: call it first to get a projectId, then list_boards.',
   inputSchema: {
     type: 'object',
-    properties: {
-      projectId: { type: 'string', description: 'Project (workspace) ID' },
-    },
-    required: ['projectId'],
+    properties: {},
   },
 };
 
-export async function listProjects(args: {
-  projectId: string;
-}): Promise<string> {
-  const boards = await apiGet<BoardSummaryDto[]>(
-    `/api/projects/${args.projectId}/boards`,
-  );
-  return JSON.stringify(boards, null, 2);
+export async function listProjects(): Promise<string> {
+  const projects = await apiGet<ProjectDto[]>('/api/projects');
+  return JSON.stringify(projects, null, 2);
 }
