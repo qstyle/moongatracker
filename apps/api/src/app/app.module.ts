@@ -12,6 +12,7 @@ import { CommentsModule } from '../comments/comments.module';
 import { EventsModule } from '../events/events.module';
 import { AttachmentsModule } from '../attachments/attachments.module';
 import { WikiModule } from '../wiki/wiki.module';
+import { CanvasModule } from '../canvas/canvas.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -41,6 +42,7 @@ const staticModules: DynamicModule[] =
     EventsModule,
     AttachmentsModule,
     WikiModule,
+    CanvasModule,
   ],
   controllers: [AppController],
   providers: [AppService],
