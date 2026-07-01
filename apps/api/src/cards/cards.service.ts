@@ -1,5 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@moongatracker/data-access';
+import {
+  assertBoardAccess,
+  assertCardAccess,
+  PrismaService,
+  RequestActor,
+} from '@moongatracker/data-access';
 import { CardDto } from '@moongatracker/shared-types';
 import { ActivityService } from '../activity/activity.service';
 import { toCardDto } from './card.mapper';
@@ -14,6 +19,7 @@ export class CardsService {
   ) {}
 
   async create(dto: CreateCardDto, user?: any): Promise<CardDto> {
+    await assertBoardAccess(this.prisma, user, dto.boardId);
     const authorType = user?.type === 'agent' ? 'agent' : 'user';
     const authorId =
       user?.type === 'agent' ? (user.tokenId ?? null) : (user?.sub ?? null);
@@ -60,7 +66,12 @@ export class CardsService {
     return toCardDto(card);
   }
 
-  async getByBoardAndNumber(boardId: string, number: number): Promise<CardDto> {
+  async getByBoardAndNumber(
+    boardId: string,
+    number: number,
+    actor: RequestActor,
+  ): Promise<CardDto> {
+    await assertBoardAccess(this.prisma, actor, boardId);
     const card = await this.prisma.card.findUnique({
       where: { boardId_number: { boardId, number } },
       include: {
@@ -72,7 +83,8 @@ export class CardsService {
     return toCardDto(card);
   }
 
-  async getById(id: string): Promise<CardDto> {
+  async getById(id: string, actor: RequestActor): Promise<CardDto> {
+    await assertCardAccess(this.prisma, actor, id);
     const card = await this.prisma.card.findUnique({
       where: { id },
       include: {
@@ -84,7 +96,7 @@ export class CardsService {
   }
 
   async update(id: string, dto: UpdateCardDto, user?: any): Promise<CardDto> {
-    await this.ensureExists(id);
+    await assertCardAccess(this.prisma, user, id);
 
     let existing: Awaited<ReturnType<typeof this.prisma.card.findUnique>> =
       null;
@@ -126,13 +138,8 @@ export class CardsService {
     return toCardDto(card);
   }
 
-  async remove(id: string): Promise<void> {
-    await this.ensureExists(id);
+  async remove(id: string, actor: RequestActor): Promise<void> {
+    await assertCardAccess(this.prisma, actor, id);
     await this.prisma.card.delete({ where: { id } });
-  }
-
-  private async ensureExists(id: string): Promise<void> {
-    const found = await this.prisma.card.findUnique({ where: { id } });
-    if (!found) throw new NotFoundException(`Card ${id} not found`);
   }
 }

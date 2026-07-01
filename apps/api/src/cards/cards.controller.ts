@@ -27,13 +27,14 @@ export class CardsController {
   getByNumber(
     @Param('boardId') boardId: string,
     @Param('number') number: string,
+    @Req() req: any,
   ): Promise<CardDto> {
-    return this.cards.getByBoardAndNumber(boardId, Number(number));
+    return this.cards.getByBoardAndNumber(boardId, Number(number), req.user);
   }
 
   @Get(':id')
-  getById(@Param('id') id: string): Promise<CardDto> {
-    return this.cards.getById(id);
+  getById(@Param('id') id: string, @Req() req: any): Promise<CardDto> {
+    return this.cards.getById(id, req.user);
   }
 
   @Patch(':id')
@@ -47,7 +48,7 @@ export class CardsController {
 
   @Delete(':id')
   @HttpCode(204)
-  remove(@Param('id') id: string): Promise<void> {
-    return this.cards.remove(id);
+  remove(@Param('id') id: string, @Req() req: any): Promise<void> {
+    return this.cards.remove(id, req.user);
   }
 }

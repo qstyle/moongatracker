@@ -8,8 +8,11 @@ export class CommentsController {
   constructor(private readonly comments: CommentsService) {}
 
   @Get()
-  list(@Param('cardId') cardId: string): Promise<CommentDto[]> {
-    return this.comments.list(cardId);
+  list(
+    @Param('cardId') cardId: string,
+    @Req() req: any,
+  ): Promise<CommentDto[]> {
+    return this.comments.list(cardId, req.user);
   }
 
   @Post()

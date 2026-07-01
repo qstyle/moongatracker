@@ -1,5 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@moongatracker/data-access';
+import { Injectable } from '@nestjs/common';
+import {
+  assertCardAccess,
+  PrismaService,
+  RequestActor,
+} from '@moongatracker/data-access';
 import { CommentDto } from '@moongatracker/shared-types';
 import { ActivityService } from '../activity/activity.service';
 import { toCommentDto } from './comment.mapper';
@@ -11,7 +15,8 @@ export class CommentsService {
     private readonly activity: ActivityService,
   ) {}
 
-  async list(cardId: string): Promise<CommentDto[]> {
+  async list(cardId: string, actor: RequestActor): Promise<CommentDto[]> {
+    await assertCardAccess(this.prisma, actor, cardId);
     const rows = await this.prisma.comment.findMany({
       where: { cardId },
       orderBy: { createdAt: 'asc' },
@@ -20,8 +25,7 @@ export class CommentsService {
   }
 
   async create(cardId: string, body: string, user?: any): Promise<CommentDto> {
-    const card = await this.prisma.card.findUnique({ where: { id: cardId } });
-    if (!card) throw new NotFoundException(`Card ${cardId} not found`);
+    await assertCardAccess(this.prisma, user, cardId);
 
     const authorType = user?.type === 'agent' ? 'agent' : 'user';
     const authorId =
