@@ -38,6 +38,7 @@ export class CardsService {
           number: (numberAgg._max.number ?? 0) + 1,
           title: dto.title,
           body: dto.body ?? null,
+          priority: dto.priority ?? null,
           order: (orderAgg._max.order ?? -1) + 1,
           authorType,
           authorId,

@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@moongatracker/data-access';
-import { assertMembership } from '@moongatracker/data-access';
+import {
+  assertProjectAccess,
+  PrismaService,
+  RequestActor,
+} from '@moongatracker/data-access';
 import { ActivityDto } from '@moongatracker/shared-types';
 
 @Injectable()
@@ -27,13 +30,16 @@ export class ActivityService {
     });
   }
 
-  async listForCard(cardId: string, userId: string): Promise<ActivityDto[]> {
+  async listForCard(
+    cardId: string,
+    actor: RequestActor,
+  ): Promise<ActivityDto[]> {
     const card = await this.prisma.card.findUnique({
       where: { id: cardId },
       include: { board: true },
     });
     if (!card) throw new NotFoundException('Card not found');
-    await assertMembership(this.prisma, userId, card.board.projectId);
+    await assertProjectAccess(this.prisma, actor, card.board.projectId);
 
     const activities = await this.prisma.activity.findMany({
       where: { cardId },
@@ -52,13 +58,17 @@ export class ActivityService {
     }));
   }
 
-  async revert(activityId: string, userId: string): Promise<void> {
+  async revert(activityId: string, actor: RequestActor): Promise<void> {
     const activity = await this.prisma.activity.findUnique({
       where: { id: activityId },
       include: { card: { include: { board: true } } },
     });
     if (!activity) throw new NotFoundException('Activity not found');
-    await assertMembership(this.prisma, userId, activity.card.board.projectId);
+    await assertProjectAccess(
+      this.prisma,
+      actor,
+      activity.card.board.projectId,
+    );
 
     if (!activity.before || activity.action === 'revert') return;
 
@@ -85,8 +95,9 @@ export class ActivityService {
     await this.prisma.activity.create({
       data: {
         cardId: activity.cardId,
-        actorType: 'user',
-        actorId: userId,
+        actorType: actor.type === 'agent' ? 'agent' : 'user',
+        actorId:
+          actor.type === 'agent' ? (actor.tokenId ?? '') : actor.sub,
         action: 'revert',
         after: { revertedActivityId: activityId },
       },

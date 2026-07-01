@@ -11,12 +11,12 @@ export class ActivityController {
     @Param('cardId') cardId: string,
     @Req() req: any,
   ): Promise<ActivityDto[]> {
-    return this.activity.listForCard(cardId, req.user.sub);
+    return this.activity.listForCard(cardId, req.user);
   }
 
   @Post('activity/:id/revert')
   @HttpCode(204)
   revert(@Param('id') id: string, @Req() req: any): Promise<void> {
-    return this.activity.revert(id, req.user.sub);
+    return this.activity.revert(id, req.user);
   }
 }

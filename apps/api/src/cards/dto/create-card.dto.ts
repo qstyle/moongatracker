@@ -1,5 +1,11 @@
-import { IsString, IsOptional, MinLength, MaxLength } from 'class-validator';
-import { CreateCardInput } from '@moongatracker/shared-types';
+import {
+  IsString,
+  IsOptional,
+  IsIn,
+  MinLength,
+  MaxLength,
+} from 'class-validator';
+import { CardPriority, CreateCardInput } from '@moongatracker/shared-types';
 
 export class CreateCardDto implements CreateCardInput {
   @IsString()
@@ -19,4 +25,8 @@ export class CreateCardDto implements CreateCardInput {
   @IsString()
   @MaxLength(2000)
   body?: string | null;
+
+  @IsOptional()
+  @IsIn(['urgent', 'normal', 'low'])
+  priority?: CardPriority | null;
 }
