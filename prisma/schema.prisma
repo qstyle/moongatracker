@@ -15,8 +15,7 @@ model Project {
   boards       Board[]
   apiTokens    ApiToken[]
   wikiSections WikiSection[]
-  canvasNodes  CanvasNode[]
-  canvasEdges  CanvasEdge[]
+  canvas       Canvas?
 }
 
 model Membership {
@@ -94,7 +93,6 @@ model Card {
   comments     Comment[]
   activities   Activity[]
   attachments  Attachment[]
-  canvasNode   CanvasNode?
 
   @@unique([boardId, number])
 }
@@ -155,38 +153,12 @@ model WikiPage {
   section    WikiSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 }
 
-model CanvasNode {
-  id        String   @id @default(cuid())
-  projectId String
-  text      String   @default("")
-  x         Float
-  y         Float
-  width     Float    @default(240)
-  height    Float    @default(120)
-  color     String?
-  cardId    String?  @unique
-  createdAt DateTime @default(now())
+// Весь холст проекта — один JSON-документ (как пример React Flow save/restore).
+// data = { nodes: RFNode[], edges: RFEdge[], viewport?: { x, y, zoom } }.
+// Связь ноды с карточкой хранится внутри node.data.cardId (резолвится на чтении).
+model Canvas {
+  projectId String   @id
+  data      Json     @default("{}")
   updatedAt DateTime @updatedAt
-  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  card      Card?       @relation(fields: [cardId], references: [id], onDelete: SetNull)
-  outEdges  CanvasEdge[] @relation("CanvasEdgeSource")
-  inEdges   CanvasEdge[] @relation("CanvasEdgeTarget")
-
-  @@index([projectId])
-}
-
-model CanvasEdge {
-  id           String   @id @default(cuid())
-  projectId    String
-  sourceNodeId String
-  targetNodeId String
-  label        String?
-  createdAt    DateTime @default(now())
-  project Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  source  CanvasNode @relation("CanvasEdgeSource", fields: [sourceNodeId], references: [id], onDelete: Cascade)
-  target  CanvasNode @relation("CanvasEdgeTarget", fields: [targetNodeId], references: [id], onDelete: Cascade)
-
-  @@index([projectId])
-  @@index([sourceNodeId])
-  @@index([targetNodeId])
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }

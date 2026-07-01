@@ -8,6 +8,7 @@ import { SettingsPage } from '../pages/settings';
 import { WikiPage } from '../pages/wiki';
 import { CanvasPage } from '../pages/canvas';
 import { AppLayout } from '../components/layout/app-layout';
+// NOTE: CanvasPage rebuilt in V2-6; route kept below.
 
 export function App() {
   const token = useSyncExternalStore(onAuthChange, getToken, getToken);
