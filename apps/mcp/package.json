@@ -1,6 +1,20 @@
 {
   "name": "@moongatracker/mcp",
-  "version": "0.0.1",
-  "private": true,
-  "type": "module"
+  "version": "0.1.0",
+  "description": "MCP server for the moongatracker kanban board",
+  "type": "module",
+  "types": false,
+  "bin": {
+    "moongatracker-mcp": "./src/main.js"
+  },
+  "files": ["src", "SKILL.md"],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0"
+  }
 }

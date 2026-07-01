@@ -2,7 +2,11 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "../../dist/apps/mcp",
-    "types": ["node"]
+    "types": ["node"],
+    "emitDeclarationOnly": false,
+    "declaration": false,
+    "declarationMap": false,
+    "composite": false
   },
   "exclude": ["**/*.spec.ts"],
   "references": [

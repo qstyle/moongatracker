@@ -250,6 +250,18 @@ export function SettingsPage() {
 
         <TabsContent value="tokens">
           <div className="max-w-lg space-y-6">
+            <div className="space-y-2 rounded border border-border/60 bg-muted/30 p-4 text-sm">
+              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Как подключить агента</div>
+              <p className="text-muted-foreground">
+                Создайте токен ниже, затем добавьте MCP-сервер в своего агента (Claude Code / Cursor):
+              </p>
+              <pre className="overflow-x-auto rounded bg-muted px-2 py-1.5 text-xs font-mono text-foreground">{`npx -y @moongatracker/mcp
+MOONGATRACKER_API_URL=${window.location.origin}
+MOONGATRACKER_API_TOKEN=<токен>`}</pre>
+              <p className="text-muted-foreground">
+                Полная инструкция — <span className="text-foreground">docs/CONNECT_MCP.md</span>.
+              </p>
+            </div>
             {createdToken && (
               <div className="space-y-2 rounded border border-amber-500/40 bg-amber-500/10 p-4">
                 <div className="text-xs font-semibold uppercase tracking-wider text-amber-400">Скопируйте токен — больше не будет показан</div>
