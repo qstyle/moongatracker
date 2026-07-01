@@ -59,7 +59,7 @@ export class ProjectsController {
     @Body() dto: AddMemberDto,
     @Req() req: any,
   ): Promise<MemberDto> {
-    return this.projects.addMember(projectId, dto.email, req.user.sub);
+    return this.projects.addMember(projectId, dto.username, req.user.sub);
   }
 
   @Delete(':projectId')
