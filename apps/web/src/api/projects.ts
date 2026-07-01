@@ -32,12 +32,12 @@ export function fetchProjectMembers(projectId: string): Promise<MemberDto[]> {
 
 export function addMember(
   projectId: string,
-  username: string,
+  email: string,
 ): Promise<MemberDto> {
   return apiFetch(`/api/projects/${projectId}/members`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username }),
+    body: JSON.stringify({ email }),
   }).then((r) => asJson<MemberDto>(r));
 }
 

@@ -11,12 +11,12 @@ export class AuthController {
   @Public()
   @Post('register')
   register(@Body() dto: RegisterDto): Promise<AuthResponse> {
-    return this.auth.register(dto.username, dto.password);
+    return this.auth.register(dto.email, dto.password, dto.name);
   }
 
   @Public()
   @Post('login')
   login(@Body() dto: LoginDto): Promise<AuthResponse> {
-    return this.auth.login(dto.username, dto.password);
+    return this.auth.login(dto.email, dto.password);
   }
 }

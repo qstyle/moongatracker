@@ -15,7 +15,6 @@ import {
 } from '@moongatracker/shared-types';
 import { buildOnboardingCards } from '../boards/onboarding';
 import { buildStarterWiki } from '../wiki/starter-wiki';
-import { normalizeUsername } from '../common/username';
 
 @Injectable()
 export class ProjectsService {
@@ -89,7 +88,7 @@ export class ProjectsService {
     });
     return memberships.map((m) => ({
       userId: m.user.id,
-      username: m.user.username,
+      email: m.user.email,
       name: m.user.name ?? null,
       color: m.color,
       createdAt: m.createdAt.toISOString(),
@@ -98,17 +97,16 @@ export class ProjectsService {
 
   async addMember(
     projectId: string,
-    username: string,
+    email: string,
     callerUserId: string,
   ): Promise<MemberDto> {
     await assertMembership(this.prisma, callerUserId, projectId);
 
-    const uname = normalizeUsername(username);
     const user = await this.prisma.user.findUnique({
-      where: { username: uname },
+      where: { email },
     });
     if (!user)
-      throw new NotFoundException(`User with username ${uname} not found`);
+      throw new NotFoundException(`User with email ${email} not found`);
 
     const existing = await this.prisma.membership.findUnique({
       where: { projectId_userId: { projectId, userId: user.id } },
@@ -128,7 +126,7 @@ export class ProjectsService {
 
     return {
       userId: membership.userId,
-      username: membership.user.username,
+      email: membership.user.email,
       name: membership.user.name ?? null,
       color: membership.color,
       createdAt: membership.createdAt.toISOString(),
@@ -168,7 +166,7 @@ export class ProjectsService {
     });
     return {
       userId: membership!.userId,
-      username: membership!.user.username,
+      email: membership!.user.email,
       name: membership!.user.name ?? null,
       color: membership!.color,
       createdAt: membership!.createdAt.toISOString(),

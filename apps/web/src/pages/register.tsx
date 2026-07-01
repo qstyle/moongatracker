@@ -7,7 +7,7 @@ import { register } from '../api/auth';
 
 export function RegisterPage() {
   const [, navigate] = useLocation();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,7 +17,7 @@ export function RegisterPage() {
     setLoading(true);
     setError('');
     try {
-      await register(username.trim(), password);
+      await register(email.trim(), password);
       navigate('/');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Registration failed');
@@ -32,8 +32,8 @@ export function RegisterPage() {
         <div className="text-sm font-semibold uppercase tracking-wider">Регистрация</div>
         {error && <div className="text-sm text-destructive">{error}</div>}
         <div className="flex flex-col gap-1">
-          <Label>Логин</Label>
-          <Input type="text" value={username} required minLength={3} onChange={(e) => setUsername(e.target.value)} />
+          <Label>Email</Label>
+          <Input type="email" value={email} required onChange={(e) => setEmail(e.target.value)} />
         </div>
         <div className="flex flex-col gap-1">
           <Label>Пароль (мин. 6 символов)</Label>

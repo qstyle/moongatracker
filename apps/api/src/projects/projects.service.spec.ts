@@ -34,12 +34,12 @@ describe('member colors', () => {
               userId: 'u2',
               color: data.color,
               createdAt: NOW,
-              user: { username: 'bob', name: null },
+              user: { email: 'b@b.com', name: null },
             };
           },
         },
         user: {
-          findUnique: async () => ({ id: 'u2', username: 'bob', name: null }),
+          findUnique: async () => ({ id: 'u2', email: 'b@b.com', name: null }),
         },
       } as any;
 
@@ -52,7 +52,7 @@ describe('member colors', () => {
         return calls === 1 ? { id: 'caller-m' } : null;
       };
 
-      const result = await service.addMember('p1', 'bob', 'caller');
+      const result = await service.addMember('p1', 'b@b.com', 'caller');
       expect(createdColor).toBe(MEMBER_COLOR_PALETTE[1]);
       expect(result.color).toBe(MEMBER_COLOR_PALETTE[1]);
     });
@@ -84,7 +84,7 @@ describe('member colors', () => {
         userId: 'u2',
         color: '#123456',
         createdAt: NOW,
-        user: { username: 'bob', name: null },
+        user: { email: 'b@b.com', name: null },
       });
       const service = new ProjectsService(prisma);
       const result = await service.updateMemberColor(

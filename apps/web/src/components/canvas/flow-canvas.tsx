@@ -118,7 +118,7 @@ export function FlowCanvas({ projectId }: { projectId: string }) {
       editingRef.current = true;
       acquire({
         userId: myId ?? 'anon',
-        name: me?.name || me?.username || 'Аноним',
+        name: me?.name || me?.email || 'Аноним',
         color: me?.color || '#2563eb',
       });
     } else {

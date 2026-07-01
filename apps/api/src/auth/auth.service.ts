@@ -7,11 +7,10 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '@moongatracker/data-access';
 import { AuthResponse } from '@moongatracker/shared-types';
-import { normalizeUsername } from '../common/username';
 
 interface UserRow {
   id: string;
-  username: string;
+  email: string;
   name: string | null;
   passwordHash: string;
 }
@@ -24,29 +23,33 @@ export class AuthService {
   ) {}
 
   private toResponse(user: UserRow): AuthResponse {
-    const accessToken = this.jwt.sign({ sub: user.id, username: user.username });
+    const accessToken = this.jwt.sign({ sub: user.id, email: user.email });
     return {
       accessToken,
-      user: { id: user.id, username: user.username, name: user.name },
+      user: { id: user.id, email: user.email, name: user.name },
     };
   }
 
-  async register(username: string, password: string): Promise<AuthResponse> {
-    const uname = normalizeUsername(username);
-    const existing = await this.prisma.user.findUnique({
-      where: { username: uname },
-    });
-    if (existing) throw new ConflictException('Username already in use');
+  async register(
+    email: string,
+    password: string,
+    name?: string,
+  ): Promise<AuthResponse> {
+    const existing = await this.prisma.user.findUnique({ where: { email } });
+    if (existing) throw new ConflictException('Email already in use');
 
     const passwordHash = await bcrypt.hash(password, 10);
 
     const { user } = await this.prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
-        data: { username: uname, passwordHash, name: null },
+        data: { email, passwordHash, name: name ?? null },
       });
+      const projectName = name
+        ? `${name}'s project`
+        : email.split('@')[0] + "'s project";
       await tx.project.create({
         data: {
-          name: `${uname}'s project`,
+          name: projectName,
           memberships: { create: { userId: user.id } },
         },
       });
@@ -56,11 +59,8 @@ export class AuthService {
     return this.toResponse(user);
   }
 
-  async login(username: string, password: string): Promise<AuthResponse> {
-    const uname = normalizeUsername(username);
-    const user = await this.prisma.user.findUnique({
-      where: { username: uname },
-    });
+  async login(email: string, password: string): Promise<AuthResponse> {
+    const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) throw new UnauthorizedException('Invalid credentials');
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) throw new UnauthorizedException('Invalid credentials');

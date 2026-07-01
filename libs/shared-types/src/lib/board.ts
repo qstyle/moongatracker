@@ -82,7 +82,7 @@ export interface ProjectDto {
 
 export interface MemberDto {
   userId: string;
-  username: string;
+  email: string;
   name: string | null;
   color: string;
   createdAt: string;

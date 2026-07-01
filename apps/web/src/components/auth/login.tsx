@@ -7,7 +7,7 @@ import { LogoMark } from '@/components/brand/logo';
 import { login } from '../../api/auth';
 
 export function Login() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -17,9 +17,9 @@ export function Login() {
     setError(null);
     setBusy(true);
     try {
-      await login(username.trim(), password);
+      await login(email.trim(), password);
     } catch {
-      setError('Неверный логин или пароль');
+      setError('Неверная почта или пароль');
     } finally {
       setBusy(false);
     }
@@ -37,8 +37,8 @@ export function Login() {
 
         <div className="flex flex-col gap-3 p-4">
           <div className="flex flex-col gap-1">
-            <Label>логин</Label>
-            <Input type="text" autoFocus value={username} onChange={(e) => setUsername(e.target.value)} />
+            <Label>почта</Label>
+            <Input type="email" autoFocus value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
 
           <div className="flex flex-col gap-1">
@@ -48,7 +48,7 @@ export function Login() {
 
           {error && <div className="text-sm text-destructive">{error}</div>}
 
-          <Button type="submit" disabled={busy || !password || !username}>войти</Button>
+          <Button type="submit" disabled={busy || !password || !email}>войти</Button>
           <Button variant="link" asChild>
             <Link href="/register">Нет аккаунта? Зарегистрироваться</Link>
           </Button>

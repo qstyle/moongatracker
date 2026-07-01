@@ -1,26 +1,29 @@
-import { IsString, Matches, MaxLength, MinLength } from 'class-validator';
-import { USERNAME_MESSAGE, USERNAME_RE } from '../../common/username';
+import {
+  IsEmail,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class RegisterDto {
-  @IsString()
-  @MinLength(3)
-  @MaxLength(30)
-  @Matches(USERNAME_RE, {
-    message: USERNAME_MESSAGE,
-  })
-  username!: string;
+  @IsEmail()
+  email!: string;
 
   @IsString()
   @MinLength(6)
   @MaxLength(100)
   password!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  name?: string;
 }
 
 export class LoginDto {
-  @IsString()
-  @MinLength(3)
-  @MaxLength(30)
-  username!: string;
+  @IsEmail()
+  email!: string;
 
   @IsString()
   @MinLength(1)

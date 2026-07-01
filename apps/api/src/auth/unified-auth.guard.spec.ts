@@ -33,7 +33,7 @@ describe('UnifiedAuthGuard', () => {
   });
 
   it('accepts valid JWT and sets req.user.type=user', async () => {
-    const payload = { sub: 'u1', username: 'alice' } as any;
+    const payload = { sub: 'u1', email: 'a@b.com' } as any;
     const jwt = { verifyAsync: jest.fn().mockResolvedValue(payload) } as any;
     const prisma = { apiToken: { findUnique: jest.fn() } } as any;
     const { ctx, req } = makeCtx('valid-jwt');
@@ -45,7 +45,7 @@ describe('UnifiedAuthGuard', () => {
     expect(await guard.canActivate(ctx)).toBe(true);
     expect(req.user).toMatchObject({
       sub: 'u1',
-      username: 'alice',
+      email: 'a@b.com',
       type: 'user',
     });
   });
