@@ -53,6 +53,8 @@ import type { LinkedCardDto } from '@moongatracker/shared-types';
 const nodeTypes = { markdown: MarkdownNode };
 
 const STALE_MS = 2 * 60 * 1000;
+/** Простой без действий, после которого лок редактирования снимается автоматически. */
+const IDLE_RELEASE_MS = 30 * 1000;
 
 type DialogKind = 'create' | 'link' | null;
 
@@ -64,13 +66,14 @@ function CanvasInner({ projectId }: { projectId: string }) {
     projectId,
     queryClient,
   );
-  const [editing, setEditing] = useState(false);
   const { screenToFlowPosition } = useReactFlow();
   const flowWrapperRef = useRef<HTMLDivElement>(null);
 
   const lockedByOther = !!holder && holder.userId !== myId;
   const lockStale = !!holder && Date.now() - holder.lockedAt > STALE_MS;
-  const canEdit = editing && !(lockedByOther && !lockStale);
+  // Редактирование включается автоматически при первом действии; выключается по
+  // простою/уходу. Интерактив разрешён, пока холст не держит кто-то другой.
+  const canEdit = !(lockedByOther && !lockStale);
 
   // Dialog state
   const [dialogKind, setDialogKind] = useState<DialogKind>(null);
@@ -89,6 +92,47 @@ function CanvasInner({ projectId }: { projectId: string }) {
     queryFn: () => fetchProjectMembers(projectId),
     enabled: !!projectId,
   });
+
+  // Держим ли мы лок прямо сейчас (взят автоматически при последнем действии).
+  const editingRef = useRef(false);
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const stopEditing = useCallback(() => {
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    idleTimerRef.current = null;
+    if (editingRef.current) {
+      editingRef.current = false;
+      release();
+    }
+  }, [release]);
+
+  /**
+   * Вызывается перед/вместе с любым редактирующим действием: берёт лок (если ещё
+   * не держим), шлёт heartbeat и перезапускает таймер авто-снятия по простою.
+   * Возвращает false, если холст сейчас редактирует кто-то другой.
+   */
+  const touchEditing = useCallback(() => {
+    if (lockedByOther && !lockStale) return false;
+    if (!editingRef.current) {
+      editingRef.current = true;
+      if (myId) {
+        const me = members.find((m) => m.userId === myId);
+        acquire({
+          userId: myId,
+          name: me?.name ?? me?.email ?? 'Аноним',
+          color: me?.color ?? '#2563eb',
+        });
+      }
+    } else {
+      heartbeat();
+    }
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    idleTimerRef.current = setTimeout(stopEditing, IDLE_RELEASE_MS);
+    return true;
+  }, [lockedByOther, lockStale, myId, members, acquire, heartbeat, stopEditing]);
+
+  // Снять лок при размонтировании страницы.
+  useEffect(() => () => stopEditing(), [stopEditing]);
 
   const { data: boards = [] } = useQuery({
     queryKey: ['boards', projectId],
@@ -110,12 +154,6 @@ function CanvasInner({ projectId }: { projectId: string }) {
     }
   }, [data, projectId, queryClient]);
 
-  useEffect(() => {
-    if (!canEdit) return;
-    const t = setInterval(heartbeat, 30000);
-    return () => clearInterval(t);
-  }, [canEdit, heartbeat]);
-
   const openCard = useCallback(
     (card: LinkedCardDto) => {
       navigate(`/boards/${card.boardId}/cards/${card.id}`);
@@ -128,12 +166,16 @@ function CanvasInner({ projectId }: { projectId: string }) {
     [queryClient, projectId],
   );
 
-  const openDialog = useCallback((kind: DialogKind, nodeId: string) => {
-    setActiveNodeId(nodeId);
-    setSelectedBoardId('');
-    setSelectedCardId('');
-    setDialogKind(kind);
-  }, []);
+  const openDialog = useCallback(
+    (kind: DialogKind, nodeId: string) => {
+      touchEditing();
+      setActiveNodeId(nodeId);
+      setSelectedBoardId('');
+      setSelectedCardId('');
+      setDialogKind(kind);
+    },
+    [touchEditing],
+  );
 
   const closeDialog = useCallback(() => {
     setDialogKind(null);
@@ -144,17 +186,19 @@ function CanvasInner({ projectId }: { projectId: string }) {
 
   const handleCreateTask = useCallback(async () => {
     if (!activeNodeId || !selectedBoardId) return;
+    touchEditing();
     await createTaskFromNode(activeNodeId, selectedBoardId);
     await invalidate();
     closeDialog();
-  }, [activeNodeId, selectedBoardId, invalidate, closeDialog]);
+  }, [activeNodeId, selectedBoardId, invalidate, closeDialog, touchEditing]);
 
   const handleLinkTask = useCallback(async () => {
     if (!activeNodeId || !selectedCardId) return;
+    touchEditing();
     await linkTask(activeNodeId, selectedCardId);
     await invalidate();
     closeDialog();
-  }, [activeNodeId, selectedCardId, invalidate, closeDialog]);
+  }, [activeNodeId, selectedCardId, invalidate, closeDialog, touchEditing]);
 
   const handleUnlinkTask = useCallback(
     async (nodeId: string) => {
@@ -184,18 +228,36 @@ function CanvasInner({ projectId }: { projectId: string }) {
               ? {
                   onCreateTask: () => openDialog('create', n.id),
                   onLinkTask: () => openDialog('link', n.id),
-                  onUnlinkTask: () => handleUnlinkTask(n.id),
-                  onEditText: (text: string) =>
-                    updateNode(n.id, { text }).then(invalidate),
-                  onSetColor: (color: string | null) =>
-                    updateNode(n.id, { color }).then(invalidate),
-                  onDeleteNode: () => deleteNode(n.id).then(invalidate),
+                  onUnlinkTask: () => {
+                    touchEditing();
+                    handleUnlinkTask(n.id);
+                  },
+                  onEditText: (text: string) => {
+                    touchEditing();
+                    updateNode(n.id, { text }).then(invalidate);
+                  },
+                  onSetColor: (color: string | null) => {
+                    touchEditing();
+                    updateNode(n.id, { color }).then(invalidate);
+                  },
+                  onDeleteNode: () => {
+                    touchEditing();
+                    deleteNode(n.id).then(invalidate);
+                  },
                 }
               : {}),
           } satisfies MarkdownNodeData,
         }),
       ),
-    [data, canEdit, openCard, openDialog, handleUnlinkTask, invalidate],
+    [
+      data,
+      canEdit,
+      openCard,
+      openDialog,
+      handleUnlinkTask,
+      invalidate,
+      touchEditing,
+    ],
   );
 
   const rfEdges: Edge[] = useMemo(
@@ -210,19 +272,20 @@ function CanvasInner({ projectId }: { projectId: string }) {
     [data, canEdit],
   );
 
-  const onEdit = async () => {
-    if (!myId) return;
-    const me = members.find((m) => m.userId === myId);
-    const name = me?.name ?? me?.email ?? 'Аноним';
-    const color = me?.color ?? '#2563eb';
-    const ok = await acquire({ userId: myId, name, color });
-    setEditing(ok);
-  };
-
-  const onDone = () => {
-    release();
-    setEditing(false);
-  };
+  const addNodeAtCenter = useCallback(() => {
+    if (!touchEditing()) return;
+    const rect = flowWrapperRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const center = screenToFlowPosition({
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+    });
+    createNode(projectId, {
+      x: center.x,
+      y: center.y,
+      text: 'Новая нода',
+    }).then(invalidate);
+  }, [touchEditing, screenToFlowPosition, projectId, invalidate]);
 
   if (isLoading) return <div className="p-6">Загрузка…</div>;
 
@@ -234,58 +297,35 @@ function CanvasInner({ projectId }: { projectId: string }) {
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-2 border-b p-2">
         <h1 className="text-sm font-semibold">Холст</h1>
-        <div className="ml-auto flex items-center gap-2">
-          {lockedByOther && !lockStale && (
-            <span
-              className="rounded px-2 py-1 text-xs text-white"
-              style={{ background: holder!.color }}
-            >
-              {holder!.name} редактирует
-            </span>
-          )}
-          {canEdit && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                const rect = flowWrapperRef.current?.getBoundingClientRect();
-                if (!rect) return;
-                const center = screenToFlowPosition({
-                  x: rect.left + rect.width / 2,
-                  y: rect.top + rect.height / 2,
-                });
-                createNode(projectId, { x: center.x, y: center.y, text: 'Новая нода' }).then(invalidate);
-              }}
-            >
-              + Нода
-            </Button>
-          )}
-          {!editing ? (
-            <Button
-              size="sm"
-              onClick={onEdit}
-              disabled={lockedByOther && !lockStale}
-            >
-              {lockedByOther && lockStale ? 'Перехватить' : 'Редактировать'}
-            </Button>
-          ) : (
-            <Button size="sm" variant="secondary" onClick={onDone}>
-              Готово
-            </Button>
-          )}
-        </div>
+        {lockedByOther && !lockStale && (
+          <span
+            className="ml-auto rounded px-2 py-1 text-xs text-white"
+            style={{ background: holder!.color }}
+          >
+            {holder!.name} редактирует
+          </span>
+        )}
       </div>
       <div
         ref={flowWrapperRef}
-        className="flex-1"
+        className="relative flex-1"
         onDoubleClick={(e) => {
-          if (!canEdit) return;
+          if (!touchEditing()) return;
           const pos = screenToFlowPosition({ x: e.clientX, y: e.clientY });
           createNode(projectId, { x: pos.x, y: pos.y, text: 'Новая нода' }).then(
             invalidate,
           );
         }}
       >
+        {canEdit && (
+          <Button
+            size="sm"
+            className="absolute left-4 top-4 z-10 shadow-md"
+            onClick={addNodeAtCenter}
+          >
+            + Нода
+          </Button>
+        )}
         <ReactFlow
           nodes={rfNodes}
           edges={rfEdges}
@@ -295,22 +335,23 @@ function CanvasInner({ projectId }: { projectId: string }) {
           elementsSelectable
           fitView
           onNodeDragStop={(_, node) => {
-            if (canEdit)
-              updateNode(node.id, {
-                x: node.position.x,
-                y: node.position.y,
-              });
+            if (!touchEditing()) return;
+            updateNode(node.id, {
+              x: node.position.x,
+              y: node.position.y,
+            });
           }}
           onConnect={(c) => {
-            if (canEdit && c.source && c.target)
+            if (!touchEditing()) return;
+            if (c.source && c.target)
               createEdge(projectId, {
                 sourceNodeId: c.source,
                 targetNodeId: c.target,
               }).then(invalidate);
           }}
           onEdgesDelete={(edges) => {
-            if (canEdit)
-              Promise.all(edges.map((e) => deleteEdge(e.id))).then(invalidate);
+            if (!touchEditing()) return;
+            Promise.all(edges.map((e) => deleteEdge(e.id))).then(invalidate);
           }}
         >
           <Background />
