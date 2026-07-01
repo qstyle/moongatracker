@@ -29,7 +29,7 @@ export function SettingsPage() {
   const [newTokenName, setNewTokenName] = useState('');
   const [newTokenScopes, setNewTokenScopes] = useState<string[]>(['cards:read', 'cards:write']);
   const [creatingToken, setCreatingToken] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteUsername, setInviteUsername] = useState('');
   const [inviting, setInviting] = useState(false);
   const [inviteError, setInviteError] = useState('');
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
@@ -166,19 +166,19 @@ export function SettingsPage() {
               <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Пригласить участника</div>
               <form onSubmit={async (e) => {
                 e.preventDefault();
-                if (!activeProject || !inviteEmail.trim()) return;
+                if (!activeProject || !inviteUsername.trim()) return;
                 setInviting(true);
                 setInviteError('');
                 try {
-                  await addMember(activeProject.id, inviteEmail.trim());
-                  setInviteEmail('');
+                  await addMember(activeProject.id, inviteUsername.trim());
+                  setInviteUsername('');
                   queryClient.invalidateQueries({ queryKey: ['members', activeProject.id] });
                 } catch (err: unknown) {
                   setInviteError(err instanceof Error ? err.message : 'Ошибка приглашения');
                 } finally { setInviting(false); }
               }} className="flex gap-2">
-                <Input type="email" placeholder="email@example.com" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
-                <Button type="submit" disabled={inviting || !inviteEmail.trim()}>{inviting ? '…' : 'Добавить'}</Button>
+                <Input type="text" placeholder="логин" value={inviteUsername} onChange={(e) => setInviteUsername(e.target.value)} />
+                <Button type="submit" disabled={inviting || !inviteUsername.trim()}>{inviting ? '…' : 'Добавить'}</Button>
               </form>
               {inviteError && <div className="text-sm text-destructive">{inviteError}</div>}
             </div>
@@ -188,7 +188,7 @@ export function SettingsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Цвет</TableHead>
-                    <TableHead>Email</TableHead>
+                    <TableHead>Логин</TableHead>
                     <TableHead>Добавлен</TableHead>
                     <TableHead />
                   </TableRow>
@@ -232,7 +232,7 @@ export function SettingsPage() {
                           />
                         )}
                       </TableCell>
-                      <TableCell>{m.email}</TableCell>
+                      <TableCell>{m.username}</TableCell>
                       <TableCell>{new Date(m.createdAt).toLocaleDateString('ru')}</TableCell>
                       <TableCell>
                         <Button variant="ghost" size="sm" onClick={async () => {

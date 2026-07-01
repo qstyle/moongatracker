@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'wouter';
 import { RiTBoxLine } from '@remixicon/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { login } from '../../api/auth';
 
 export function Login() {
-  const [email, setEmail] = useState('admin@moongatracker.local');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -16,9 +17,9 @@ export function Login() {
     setError(null);
     setBusy(true);
     try {
-      await login(email.trim(), password);
+      await login(username.trim(), password);
     } catch {
-      setError('Неверная почта или пароль');
+      setError('Неверный логин или пароль');
     } finally {
       setBusy(false);
     }
@@ -36,18 +37,21 @@ export function Login() {
 
         <div className="flex flex-col gap-3 p-4">
           <div className="flex flex-col gap-1">
-            <Label>почта</Label>
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Label>логин</Label>
+            <Input type="text" autoFocus value={username} onChange={(e) => setUsername(e.target.value)} />
           </div>
 
           <div className="flex flex-col gap-1">
             <Label>пароль</Label>
-            <Input type="password" autoFocus value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
 
           {error && <div className="text-sm text-destructive">{error}</div>}
 
-          <Button type="submit" disabled={busy || !password}>войти</Button>
+          <Button type="submit" disabled={busy || !password || !username}>войти</Button>
+          <Button variant="link" asChild>
+            <Link href="/register">Нет аккаунта? Зарегистрироваться</Link>
+          </Button>
         </div>
       </form>
     </div>

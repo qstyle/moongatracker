@@ -7,9 +7,8 @@ import { register } from '../api/auth';
 
 export function RegisterPage() {
   const [, navigate] = useLocation();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -18,7 +17,7 @@ export function RegisterPage() {
     setLoading(true);
     setError('');
     try {
-      await register(email, password, name || undefined);
+      await register(username.trim(), password);
       navigate('/');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Registration failed');
@@ -33,12 +32,8 @@ export function RegisterPage() {
         <div className="text-sm font-semibold uppercase tracking-wider">Регистрация</div>
         {error && <div className="text-sm text-destructive">{error}</div>}
         <div className="flex flex-col gap-1">
-          <Label>Имя (необязательно)</Label>
-          <Input type="text" value={name} onChange={(e) => setName(e.target.value)} />
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label>Email</Label>
-          <Input type="email" value={email} required onChange={(e) => setEmail(e.target.value)} />
+          <Label>Логин</Label>
+          <Input type="text" value={username} required minLength={3} onChange={(e) => setUsername(e.target.value)} />
         </div>
         <div className="flex flex-col gap-1">
           <Label>Пароль (мин. 6 символов)</Label>
