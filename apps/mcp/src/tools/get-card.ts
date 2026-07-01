@@ -2,6 +2,7 @@ import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import type { BoardSummaryDto, CardDto } from '@moongatracker/shared-types';
 import { apiGet } from '../api-client.js';
 
+// Inlined from libs/shared-types/src/lib/card-key.ts — keep in sync manually.
 /** First 4 letters/digits of the board name, uppercased. Falls back to "BRD". */
 function boardPrefix(name: string): string {
   const cleaned = name.replace(/[^\p{L}\p{N}]/gu, '').slice(0, 4);
