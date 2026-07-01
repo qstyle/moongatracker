@@ -5,7 +5,7 @@ const user = { type: 'user', sub: 'u1' } as any;
 const agent = { type: 'agent', projectId: 'p1', tokenId: 't1' } as any;
 
 function makePrisma(overrides: any = {}) {
-  return {
+  const prisma: any = {
     membership: { findUnique: jest.fn().mockResolvedValue({ id: 'm1' }) },
     canvasNode: {
       findMany: jest.fn().mockResolvedValue([]),
@@ -16,11 +16,17 @@ function makePrisma(overrides: any = {}) {
     },
     canvasEdge: { findMany: jest.fn().mockResolvedValue([]) },
     column: { findFirst: jest.fn() },
-    card: { create: jest.fn(), findUnique: jest.fn(), aggregate: jest.fn().mockResolvedValue({ _max: { order: null } }) },
+    card: {
+      create: jest.fn(),
+      findUnique: jest.fn(),
+      aggregate: jest.fn().mockResolvedValue({ _max: { order: null, number: null } }),
+    },
     board: { findUnique: jest.fn() },
-    $transaction: jest.fn((fn: any) => fn(makePrisma(overrides))),
     ...overrides,
-  } as any;
+  };
+  // Транзакция получает тот же mock-prisma, чтобы моки card.* внутри $transaction сработали.
+  prisma.$transaction = jest.fn((fn: any) => fn(prisma));
+  return prisma;
 }
 
 describe('CanvasService', () => {

@@ -179,21 +179,32 @@ export class CanvasService {
     });
     if (!firstColumn) throw new BadRequestException('Board has no columns');
 
-    const maxCard = await this.prisma.card.aggregate({
-      where: { boardId: dto.boardId, columnId: firstColumn.id },
-      _max: { order: true },
-    });
     const title = (node?.text ?? '').trim().split('\n')[0].slice(0, 200) || 'Без названия';
 
-    const card = await this.prisma.card.create({
-      data: {
-        boardId: dto.boardId,
-        columnId: firstColumn.id,
-        title,
-        order: (maxCard._max.order ?? -1) + 1,
-        authorType: user?.type === 'agent' ? 'agent' : 'user',
-        authorId: user?.sub ?? null,
-      },
+    // order (per column) и number (per board) — как в CardsService.create;
+    // number обязателен и уникален per board (@@unique([boardId, number])).
+    const card = await this.prisma.$transaction(async (tx) => {
+      const [orderAgg, numberAgg] = await Promise.all([
+        tx.card.aggregate({
+          where: { boardId: dto.boardId, columnId: firstColumn.id },
+          _max: { order: true },
+        }),
+        tx.card.aggregate({
+          where: { boardId: dto.boardId },
+          _max: { number: true },
+        }),
+      ]);
+      return tx.card.create({
+        data: {
+          boardId: dto.boardId,
+          columnId: firstColumn.id,
+          number: (numberAgg._max.number ?? 0) + 1,
+          title,
+          order: (orderAgg._max.order ?? -1) + 1,
+          authorType: user?.type === 'agent' ? 'agent' : 'user',
+          authorId: user?.sub ?? null,
+        },
+      });
     });
     const updated = await this.prisma.canvasNode.update({
       where: { id: nodeId },
