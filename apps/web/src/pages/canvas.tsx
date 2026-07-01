@@ -13,6 +13,20 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { getCurrentUserId } from '../api/client';
 import { useCanvasSocket } from '../api/socket';
 import {
@@ -21,7 +35,11 @@ import {
   createNode,
   updateNode,
   createEdge,
+  createTaskFromNode,
+  linkTask,
+  unlinkTask,
 } from '../api/canvas';
+import { fetchBoards, fetchBoard } from '../api/boards';
 import {
   MarkdownNode,
   type MarkdownNodeData,
@@ -32,6 +50,8 @@ import type { LinkedCardDto } from '@moongatracker/shared-types';
 const nodeTypes = { markdown: MarkdownNode };
 
 const STALE_MS = 2 * 60 * 1000;
+
+type DialogKind = 'create' | 'link' | null;
 
 function CanvasInner({ projectId }: { projectId: string }) {
   const [, navigate] = useLocation();
@@ -48,10 +68,28 @@ function CanvasInner({ projectId }: { projectId: string }) {
   const lockStale = !!holder && Date.now() - holder.lockedAt > STALE_MS;
   const canEdit = editing && !(lockedByOther && !lockStale);
 
+  // Dialog state
+  const [dialogKind, setDialogKind] = useState<DialogKind>(null);
+  const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
+  const [selectedBoardId, setSelectedBoardId] = useState('');
+  const [selectedCardId, setSelectedCardId] = useState('');
+
   const { data, isLoading } = useQuery({
     queryKey: ['canvas', projectId],
     queryFn: () => fetchCanvas(projectId),
     enabled: !!projectId,
+  });
+
+  const { data: boards = [] } = useQuery({
+    queryKey: ['boards', projectId],
+    queryFn: () => fetchBoards(projectId),
+    enabled: !!projectId && dialogKind !== null,
+  });
+
+  const { data: selectedBoard } = useQuery({
+    queryKey: ['board', selectedBoardId],
+    queryFn: () => fetchBoard(selectedBoardId),
+    enabled: !!selectedBoardId && dialogKind === 'link',
   });
 
   useEffect(() => {
@@ -75,6 +113,47 @@ function CanvasInner({ projectId }: { projectId: string }) {
     [navigate],
   );
 
+  const invalidate = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: ['canvas', projectId] }),
+    [queryClient, projectId],
+  );
+
+  const openDialog = useCallback((kind: DialogKind, nodeId: string) => {
+    setActiveNodeId(nodeId);
+    setSelectedBoardId('');
+    setSelectedCardId('');
+    setDialogKind(kind);
+  }, []);
+
+  const closeDialog = useCallback(() => {
+    setDialogKind(null);
+    setActiveNodeId(null);
+    setSelectedBoardId('');
+    setSelectedCardId('');
+  }, []);
+
+  const handleCreateTask = useCallback(async () => {
+    if (!activeNodeId || !selectedBoardId) return;
+    await createTaskFromNode(activeNodeId, selectedBoardId);
+    await invalidate();
+    closeDialog();
+  }, [activeNodeId, selectedBoardId, invalidate, closeDialog]);
+
+  const handleLinkTask = useCallback(async () => {
+    if (!activeNodeId || !selectedCardId) return;
+    await linkTask(activeNodeId, selectedCardId);
+    await invalidate();
+    closeDialog();
+  }, [activeNodeId, selectedCardId, invalidate, closeDialog]);
+
+  const handleUnlinkTask = useCallback(
+    async (nodeId: string) => {
+      await unlinkTask(nodeId);
+      await invalidate();
+    },
+    [invalidate],
+  );
+
   const rfNodes: Node[] = useMemo(
     () =>
       (data?.nodes ?? []).map(
@@ -91,10 +170,17 @@ function CanvasInner({ projectId }: { projectId: string }) {
             card: n.card,
             editable: canEdit,
             onOpenCard: openCard,
+            ...(canEdit
+              ? {
+                  onCreateTask: () => openDialog('create', n.id),
+                  onLinkTask: () => openDialog('link', n.id),
+                  onUnlinkTask: () => handleUnlinkTask(n.id),
+                }
+              : {}),
           } satisfies MarkdownNodeData,
         }),
       ),
-    [data, canEdit, openCard],
+    [data, canEdit, openCard, openDialog, handleUnlinkTask],
   );
 
   const rfEdges: Edge[] = useMemo(
@@ -106,11 +192,6 @@ function CanvasInner({ projectId }: { projectId: string }) {
         label: e.label ?? undefined,
       })),
     [data],
-  );
-
-  const invalidate = useCallback(
-    () => queryClient.invalidateQueries({ queryKey: ['canvas', projectId] }),
-    [queryClient, projectId],
   );
 
   const onEdit = async () => {
@@ -125,6 +206,10 @@ function CanvasInner({ projectId }: { projectId: string }) {
   };
 
   if (isLoading) return <div className="p-6">Загрузка…</div>;
+
+  const boardCards = selectedBoard?.columns.flatMap((c) =>
+    c.cards.map((card) => ({ ...card, columnTitle: c.title })),
+  ) ?? [];
 
   return (
     <div className="flex h-full flex-col">
@@ -192,6 +277,77 @@ function CanvasInner({ projectId }: { projectId: string }) {
           <MiniMap />
         </ReactFlow>
       </div>
+
+      {/* Create task dialog */}
+      <Dialog open={dialogKind === 'create'} onOpenChange={(open) => !open && closeDialog()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Создать задачу</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-1">
+            <p className="text-xs text-muted-foreground">Выберите доску, в которой будет создана задача из этой ноды.</p>
+            <Select value={selectedBoardId} onValueChange={setSelectedBoardId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Выберите доску…" />
+              </SelectTrigger>
+              <SelectContent>
+                {boards.map((b) => (
+                  <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={closeDialog}>Отмена</Button>
+            <Button disabled={!selectedBoardId} onClick={handleCreateTask}>Создать</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Link task dialog */}
+      <Dialog open={dialogKind === 'link'} onOpenChange={(open) => !open && closeDialog()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Привязать задачу</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-1">
+            <div>
+              <p className="mb-1.5 text-xs text-muted-foreground">Доска</p>
+              <Select value={selectedBoardId} onValueChange={(v) => { setSelectedBoardId(v); setSelectedCardId(''); }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите доску…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {boards.map((b) => (
+                    <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {selectedBoardId && (
+              <div>
+                <p className="mb-1.5 text-xs text-muted-foreground">Карточка</p>
+                <Select value={selectedCardId} onValueChange={setSelectedCardId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите карточку…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {boardCards.map((card) => (
+                      <SelectItem key={card.id} value={card.id}>
+                        {card.title} · {card.columnTitle}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={closeDialog}>Отмена</Button>
+            <Button disabled={!selectedCardId} onClick={handleLinkTask}>Привязать</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

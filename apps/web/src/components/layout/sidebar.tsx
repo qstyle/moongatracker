@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useRoute, useLocation } from 'wouter';
-import { RiFolderOpenLine, RiKanbanView, RiBookOpenLine, RiSunLine, RiMoonLine } from '@remixicon/react';
+import { RiFolderOpenLine, RiKanbanView, RiBookOpenLine, RiLayoutMasonryLine, RiSunLine, RiMoonLine } from '@remixicon/react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/lib/use-theme';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,7 @@ function ProjectSection({ project, activeBoardId }: { project: ProjectDto; activ
   const [boardName, setBoardName] = useState('');
   const queryClient = useQueryClient();
   const [wikiActive] = useRoute(`/projects/${project.id}/wiki`);
+  const [canvasActive] = useRoute(`/projects/${project.id}/canvas`);
 
   async function submitBoard() {
     const name = boardName.trim();
@@ -49,6 +50,18 @@ function ProjectSection({ project, activeBoardId }: { project: ProjectDto; activ
         >
           <RiBookOpenLine size={11} className="shrink-0" />
           <div className="truncate">Вики</div>
+        </Link>
+        <Link
+          href={`/projects/${project.id}/canvas`}
+          className={[
+            'flex items-center gap-1.5 rounded px-2 py-1 text-sm transition-colors',
+            canvasActive
+              ? 'bg-muted text-foreground'
+              : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
+          ].join(' ')}
+        >
+          <RiLayoutMasonryLine size={11} className="shrink-0" />
+          <div className="truncate">Холст</div>
         </Link>
         {boards.map((board) => (
           <Link

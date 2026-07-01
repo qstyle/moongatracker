@@ -6,6 +6,7 @@ import { RegisterPage } from '../pages/register';
 import { BoardPage } from '../pages/board';
 import { SettingsPage } from '../pages/settings';
 import { WikiPage } from '../pages/wiki';
+import { CanvasPage } from '../pages/canvas';
 import { AppLayout } from '../components/layout/app-layout';
 
 export function App() {
@@ -29,6 +30,7 @@ export function App() {
         <Route path="/boards/:boardId/cards/:cardKey" component={BoardPage} />
         <Route path="/boards/:boardId" component={BoardPage} />
         <Route path="/projects/:projectId/wiki" component={WikiPage} />
+        <Route path="/projects/:projectId/canvas" component={CanvasPage} />
         <Route path="/settings" component={SettingsPage} />
         <Route>
           <Redirect to="/boards/select" />
