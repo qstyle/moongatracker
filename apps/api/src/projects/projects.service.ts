@@ -15,6 +15,7 @@ import {
 } from '@moongatracker/shared-types';
 import { buildOnboardingCards } from '../boards/onboarding';
 import { buildStarterWiki } from '../wiki/starter-wiki';
+import { normalizeUsername } from '../common/username';
 
 @Injectable()
 export class ProjectsService {
@@ -102,7 +103,7 @@ export class ProjectsService {
   ): Promise<MemberDto> {
     await assertMembership(this.prisma, callerUserId, projectId);
 
-    const uname = username.trim().toLowerCase();
+    const uname = normalizeUsername(username);
     const user = await this.prisma.user.findUnique({
       where: { username: uname },
     });

@@ -7,16 +7,13 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '@moongatracker/data-access';
 import { AuthResponse } from '@moongatracker/shared-types';
+import { normalizeUsername } from '../common/username';
 
 interface UserRow {
   id: string;
   username: string;
   name: string | null;
   passwordHash: string;
-}
-
-function normalizeUsername(value: string): string {
-  return value.trim().toLowerCase();
 }
 
 @Injectable()
