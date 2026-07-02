@@ -339,7 +339,7 @@ MOONGATRACKER_API_TOKEN=${tokenValue}`;
               </Button>
             </div>
 
-            {tokens.length > 0 && (
+            {tokens.some((t) => !t.revokedAt) && (
               <div className="space-y-2">
                 <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Токены</div>
                 <Table>
@@ -352,20 +352,16 @@ MOONGATRACKER_API_TOKEN=${tokenValue}`;
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {tokens.map((t: ApiTokenDto) => (
-                      <TableRow key={t.id} style={{opacity: t.revokedAt ? 0.4 : 1}}>
+                    {tokens.filter((t: ApiTokenDto) => !t.revokedAt).map((t: ApiTokenDto) => (
+                      <TableRow key={t.id}>
                         <TableCell>{t.name}</TableCell>
                         <TableCell>{t.scopes.join(', ')}</TableCell>
                         <TableCell>{t.lastUsedAt ? new Date(t.lastUsedAt).toLocaleDateString('ru') : '—'}</TableCell>
                         <TableCell>
-                          {!t.revokedAt ? (
-                            <Button variant="ghost" size="sm" onClick={async () => {
-                              await revokeToken(t.id);
-                              await refetchTokens();
-                            }}>Отозвать</Button>
-                          ) : (
-                            <div className="text-xs text-muted-foreground">Отозван</div>
-                          )}
+                          <Button variant="ghost" size="sm" onClick={async () => {
+                            await revokeToken(t.id);
+                            await refetchTokens();
+                          }}>Отозвать</Button>
                         </TableCell>
                       </TableRow>
                     ))}
