@@ -1,10 +1,9 @@
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { assertMembership, PrismaService } from '@moongatracker/data-access';
+import { assertProjectAccess, PrismaService } from '@moongatracker/data-access';
 import {
   WikiPageDto,
   WikiPageSummaryDto,
@@ -50,14 +49,9 @@ function toPageDto(page: WikiPageRow): WikiPageDto {
 export class WikiService {
   constructor(private readonly prisma: PrismaService) {}
 
-  /** Доступ к проекту: участник (user) или агент с токеном этого проекта. */
+  /** Доступ к проекту: участник (user) или агент, чей токен покрывает проект. */
   private async assertAccess(user: any, projectId: string): Promise<void> {
-    if (user?.type === 'agent') {
-      if (user.projectId !== projectId)
-        throw new ForbiddenException('Token is not scoped to this project');
-      return;
-    }
-    await assertMembership(this.prisma, user.sub, projectId);
+    await assertProjectAccess(this.prisma, user, projectId);
   }
 
   private actor(user: any): { authorType: string; authorId: string | null } {

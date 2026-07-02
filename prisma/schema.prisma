@@ -37,18 +37,24 @@ model User {
   passwordHash String
   createdAt    DateTime     @default(now())
   memberships  Membership[]
+  apiTokens    ApiToken[]
 }
 
 model ApiToken {
   id         String    @id @default(cuid())
-  projectId  String
+  // Owner of the token. Auth is anchored here: the token grants access to all
+  // of this user's projects (via Membership). Nullable only for legacy tokens.
+  userId     String?
+  // Kept for history / legacy single-project tokens; no longer the auth anchor.
+  projectId  String?
   name       String
   tokenHash  String    @unique
   scopes     String[]
   lastUsedAt DateTime?
   createdAt  DateTime  @default(now())
   revokedAt  DateTime?
-  project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user       User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project    Project?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model Board {

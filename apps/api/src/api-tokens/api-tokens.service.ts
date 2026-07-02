@@ -8,7 +8,8 @@ import {
 
 function toDto(row: {
   id: string;
-  projectId: string;
+  userId: string | null;
+  projectId: string | null;
   name: string;
   scopes: string[];
   lastUsedAt: Date | null;
@@ -17,6 +18,7 @@ function toDto(row: {
 }): ApiTokenDto {
   return {
     id: row.id,
+    userId: row.userId,
     projectId: row.projectId,
     name: row.name,
     scopes: row.scopes,
@@ -30,8 +32,9 @@ function toDto(row: {
 export class ApiTokensService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /** Mint a user-scoped token: it can access all of the owner's projects. */
   async create(
-    projectId: string,
+    userId: string,
     name: string,
     scopes: string[],
   ): Promise<CreateApiTokenResponse> {
@@ -41,22 +44,22 @@ export class ApiTokensService {
       .update(rawToken)
       .digest('hex');
     const row = await this.prisma.apiToken.create({
-      data: { projectId, name, tokenHash, scopes },
+      data: { userId, name, tokenHash, scopes },
     });
     return { ...toDto(row), token: rawToken };
   }
 
-  async list(projectId: string): Promise<ApiTokenDto[]> {
+  async listForUser(userId: string): Promise<ApiTokenDto[]> {
     const rows = await this.prisma.apiToken.findMany({
-      where: { projectId },
+      where: { userId },
       orderBy: { createdAt: 'desc' },
     });
     return rows.map(toDto);
   }
 
-  async revoke(projectId: string, id: string): Promise<void> {
+  async revoke(userId: string, id: string): Promise<void> {
     const updated = await this.prisma.apiToken.updateMany({
-      where: { id, projectId, revokedAt: null },
+      where: { id, userId, revokedAt: null },
       data: { revokedAt: new Date() },
     });
     if (updated.count === 0) {
