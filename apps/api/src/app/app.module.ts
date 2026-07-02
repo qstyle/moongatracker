@@ -24,6 +24,11 @@ const staticModules: DynamicModule[] =
         ServeStaticModule.forRoot({
           rootPath: join(process.cwd(), 'apps/web/dist'),
           exclude: ['/api/{*path}'],
+          // SPA fallback: serve index.html for any unmatched non-API GET so
+          // that direct links / F5 on client-side routes (/login, /settings,
+          // /boards/:id, ...) load the app instead of a JSON 404. On the
+          // Fastify driver this fallback is gated behind `fallthrough`.
+          serveStaticOptions: { fallthrough: true },
         }),
       ]
     : [];

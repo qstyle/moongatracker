@@ -4,6 +4,7 @@ import { getToken, onAuthChange } from '../api/client';
 import { LoginPage } from '../pages/login';
 import { RegisterPage } from '../pages/register';
 import { BoardPage } from '../pages/board';
+import { BoardSelectPage } from '../pages/board-select';
 import { SettingsPage } from '../pages/settings';
 import { WikiPage } from '../pages/wiki';
 import { CanvasPage } from '../pages/canvas';
@@ -28,6 +29,7 @@ export function App() {
   return (
     <AppLayout>
       <Switch>
+        <Route path="/boards/select" component={BoardSelectPage} />
         <Route path="/boards/:boardId/cards/:cardKey" component={BoardPage} />
         <Route path="/boards/:boardId" component={BoardPage} />
         <Route path="/projects/:projectId/wiki" component={WikiPage} />

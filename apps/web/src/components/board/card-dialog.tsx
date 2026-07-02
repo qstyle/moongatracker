@@ -226,6 +226,7 @@ export function CardDialog({
                       <Button
                         variant="ghost"
                         size="icon-xs"
+                        aria-label="Удалить вложение"
                         onClick={async () => { await deleteAttachment(a.id); refetchAttachments(); onChanged(); }}
                       >
                         ×
@@ -251,17 +252,29 @@ export function CardDialog({
 
               <TabsContent value="comments">
                 <div className="flex flex-col gap-2">
-                  {(comments.data ?? []).map((c) => (
-                    <div key={c.id} className="border border-border bg-background px-2.5 py-2">
-                      <div className="mb-1 flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
-                        <div className={c.authorType === 'agent' ? 'text-primary' : 'text-muted-foreground'}>
-                          {c.authorType === 'agent' ? 'агент' : 'человек'}
+                  {(comments.data ?? []).map((c) => {
+                    // Resolve the comment author (name/color) from the board's
+                    // actor list, mirroring how the card author is shown.
+                    const commentAuthor = resolve({
+                      type: c.authorType,
+                      id: c.authorId,
+                      name: null,
+                    });
+                    return (
+                      <div key={c.id} className="border border-border bg-background px-2.5 py-2">
+                        <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                          {commentAuthor && (
+                            <>
+                              <ActorAvatar actor={commentAuthor} size="xs" />
+                              <span className="text-foreground">{commentAuthor.name}</span>
+                            </>
+                          )}
+                          <span className="tabular-nums">{new Date(c.createdAt).toLocaleString('ru-RU')}</span>
                         </div>
-                        <div>{new Date(c.createdAt).toLocaleString()}</div>
+                        <div className="text-sm leading-relaxed text-foreground">{c.body}</div>
                       </div>
-                      <div className="text-sm leading-relaxed text-foreground">{c.body}</div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   {comments.data?.length === 0 && (
                     <div className="text-xs text-muted-foreground/50">пока пусто</div>
                   )}
@@ -275,7 +288,7 @@ export function CardDialog({
                     onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); postComment(); } }}
                   />
                   <Button type="button" size="sm" onClick={postComment} disabled={!commentBody.trim()}>
-                    отпр
+                    Отправить
                   </Button>
                 </div>
               </TabsContent>

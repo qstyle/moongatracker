@@ -80,7 +80,7 @@ function ProjectSection({ project, activeBoardId }: { project: ProjectDto; activ
           </Link>
         ))}
         {addingBoard ? (
-          <div className="py-1 pr-1">
+          <div className="flex flex-col gap-1.5 py-1 pr-1">
             <Input
               autoFocus
               value={boardName}
@@ -88,9 +88,13 @@ function ProjectSection({ project, activeBoardId }: { project: ProjectDto; activ
               onChange={(e) => setBoardName(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') submitBoard();
-                if (e.key === 'Escape') setAddingBoard(false);
+                if (e.key === 'Escape') { setBoardName(''); setAddingBoard(false); }
               }}
             />
+            <div className="flex gap-1.5">
+              <Button size="sm" onClick={submitBoard} disabled={!boardName.trim()}>Создать</Button>
+              <Button variant="ghost" size="sm" onClick={() => { setBoardName(''); setAddingBoard(false); }}>Отмена</Button>
+            </div>
           </div>
         ) : (
           <Button variant="ghost" size="sm" onClick={() => setAddingBoard(true)}>+ Новая доска</Button>
@@ -100,7 +104,13 @@ function ProjectSection({ project, activeBoardId }: { project: ProjectDto; activ
   );
 }
 
-export function Sidebar() {
+export function Sidebar({
+  mobileOpen = false,
+  onClose,
+}: {
+  mobileOpen?: boolean;
+  onClose?: () => void;
+} = {}) {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
   const [addingProject, setAddingProject] = useState(false);
@@ -121,7 +131,18 @@ export function Sidebar() {
   }
 
   return (
-    <div className="flex h-dvh w-55 shrink-0 flex-col border-r border-border bg-background">
+    <div
+      // Off-canvas drawer on mobile (fixed + slide), static column on md+.
+      className={[
+        'flex h-dvh w-55 shrink-0 flex-col border-r border-border bg-background',
+        'fixed inset-y-0 left-0 z-50 transition-transform md:static md:z-auto md:translate-x-0',
+        mobileOpen ? 'translate-x-0' : '-translate-x-full',
+      ].join(' ')}
+      // On mobile, close the drawer after navigating via any link.
+      onClick={(e) => {
+        if ((e.target as HTMLElement).closest('a')) onClose?.();
+      }}
+    >
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-1.5">
           <LogoMark className="size-5" />
@@ -129,7 +150,12 @@ export function Sidebar() {
             <span className="text-primary">m</span>oonga tracker
           </span>
         </div>
-        <Button variant="ghost" size="icon-sm" onClick={toggle}>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label={theme === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему'}
+          onClick={toggle}
+        >
           {theme === 'dark' ? <RiSunLine /> : <RiMoonLine />}
         </Button>
       </div>
@@ -138,7 +164,7 @@ export function Sidebar() {
           <ProjectSection key={project.id} project={project} activeBoardId={activeBoardId} />
         ))}
         {addingProject ? (
-          <div className="px-2 py-1">
+          <div className="flex flex-col gap-1.5 px-2 py-1">
             <Input
               autoFocus
               value={projectName}
@@ -146,9 +172,13 @@ export function Sidebar() {
               onChange={(e) => setProjectName(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') submitProject();
-                if (e.key === 'Escape') setAddingProject(false);
+                if (e.key === 'Escape') { setProjectName(''); setAddingProject(false); }
               }}
             />
+            <div className="flex gap-1.5">
+              <Button size="sm" onClick={submitProject} disabled={!projectName.trim()}>Создать</Button>
+              <Button variant="ghost" size="sm" onClick={() => { setProjectName(''); setAddingProject(false); }}>Отмена</Button>
+            </div>
           </div>
         ) : (
           <Button variant="ghost" size="sm" onClick={() => setAddingProject(true)}>+ Новый проект</Button>
