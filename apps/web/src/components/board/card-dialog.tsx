@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { deleteCard, updateCard } from '../../api/cards';
@@ -143,16 +143,16 @@ export function CardDialog({
   }
 
   return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="flex h-[85dvh] max-h-[90dvh] w-full max-w-[calc(100%-2rem)] flex-col gap-0 p-0 sm:max-w-4xl">
-        <DialogHeader className="flex-row items-center gap-1.5 space-y-0 border-b border-border px-4 py-2.5">
-          <DialogTitle className="font-mono text-sm tracking-wide">{cardKey}</DialogTitle>
+    <Sheet open onOpenChange={(open) => !open && onClose()}>
+      <SheetContent side="right" className="gap-0 p-0 sm:max-w-3xl">
+        <SheetHeader className="pr-12">
+          <SheetTitle>{cardKey}</SheetTitle>
           <Button type="button" variant="ghost" size="icon-xs" onClick={copyLink} title="Скопировать ссылку на карточку">
             {copied ? <RiCheckLine className="text-emerald-500" /> : <RiFileCopyLine />}
           </Button>
-        </DialogHeader>
+        </SheetHeader>
 
-        <ScrollArea className="flex-1">
+        <ScrollArea className="min-h-0 flex-1">
           <div className="flex flex-col gap-5 p-4">
             <Input value={title} autoFocus onChange={(e) => setTitle(e.target.value)} />
             <Textarea value={body} rows={4} placeholder="Описание…" onChange={(e) => setBody(e.target.value)} />
@@ -271,7 +271,7 @@ export function CardDialog({
                           )}
                           <span className="tabular-nums">{new Date(c.createdAt).toLocaleString('ru-RU')}</span>
                         </div>
-                        <div className="text-sm leading-relaxed text-foreground">{c.body}</div>
+                        <div className="whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">{c.body}</div>
                       </div>
                     );
                   })}
@@ -325,7 +325,7 @@ export function CardDialog({
           </div>
         </ScrollArea>
 
-        <DialogFooter className="flex items-center justify-between border-t border-border px-4 py-2.5 sm:justify-between">
+        <SheetFooter>
           <Button type="button" variant="ghost" size="sm" onClick={remove} disabled={busy}>
             <RiDeleteBin6Line />
             удалить
@@ -334,8 +334,8 @@ export function CardDialog({
             <Button type="button" variant="ghost" size="sm" onClick={onClose}>отмена</Button>
             <Button type="button" size="sm" onClick={save} disabled={busy || !title.trim()}>сохранить</Button>
           </div>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
