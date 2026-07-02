@@ -16,12 +16,13 @@ import { commentCardTool, commentCard } from './tools/comment-card.js';
 import { listActivityTool, listActivity } from './tools/list-activity.js';
 import { listWikiTool, listWiki } from './tools/list-wiki.js';
 import { getWikiPageTool, getWikiPage } from './tools/get-wiki-page.js';
+import { createWikiSectionTool, createWikiSection } from './tools/create-wiki-section.js';
 import { createWikiPageTool, createWikiPage } from './tools/create-wiki-page.js';
 import { updateWikiPageTool, updateWikiPage } from './tools/update-wiki-page.js';
 import { getCanvasTool, getCanvas } from './tools/get-canvas.js';
 
 const server = new Server(
-  { name: 'moongatracker', version: '0.2.0' },
+  { name: 'moongatracker', version: '0.3.0' },
   { capabilities: { tools: {} } },
 );
 
@@ -37,6 +38,7 @@ const tools = [
   listActivityTool,
   listWikiTool,
   getWikiPageTool,
+  createWikiSectionTool,
   createWikiPageTool,
   updateWikiPageTool,
   getCanvasTool,
@@ -97,6 +99,11 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
         break;
       case 'get_wiki_page':
         text = await getWikiPage(args as { pageId: string });
+        break;
+      case 'create_wiki_section':
+        text = await createWikiSection(
+          args as { projectId: string; title: string },
+        );
         break;
       case 'create_wiki_page':
         text = await createWikiPage(
