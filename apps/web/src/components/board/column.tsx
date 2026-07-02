@@ -87,11 +87,16 @@ export function Column({
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button type="button" variant="ghost" size="icon-sm">
+              <Button type="button" variant="ghost" size="icon-sm" aria-label="Меню колонки">
                 <RiMoreLine />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => { setRenameValue(column.title); setRenaming(true); }}
+              >
+                Переименовать
+              </DropdownMenuItem>
               <DropdownMenuItem disabled={count > 0} onClick={handleDelete}>
                 Удалить
               </DropdownMenuItem>

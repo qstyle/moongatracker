@@ -151,10 +151,10 @@ export function Board({ board, onChanged }: { board: BoardDto; onChanged: () => 
   }
 
   return (
-    <div className="flex h-dvh flex-col bg-background text-foreground">
+    <div className="flex h-full flex-col bg-background text-foreground">
       <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-3">
         <div className="flex items-center gap-3">
-          <div className="flex size-6 items-center justify-center bg-primary text-primary-foreground">
+          <div className="flex size-6 items-center justify-center bg-primary text-primary-foreground" aria-hidden>
             <RiTBoxLine className="size-4" />
           </div>
           {editingName ? (
