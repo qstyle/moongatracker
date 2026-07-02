@@ -144,7 +144,7 @@ export function CardDialog({
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="flex max-h-[90dvh] max-w-lg flex-col gap-0 p-0">
+      <DialogContent className="flex h-[85dvh] max-h-[90dvh] w-full max-w-[calc(100%-2rem)] flex-col gap-0 p-0 sm:max-w-4xl">
         <DialogHeader className="flex-row items-center gap-1.5 space-y-0 border-b border-border px-4 py-2.5">
           <DialogTitle className="font-mono text-sm tracking-wide">{cardKey}</DialogTitle>
           <Button type="button" variant="ghost" size="icon-xs" onClick={copyLink} title="Скопировать ссылку на карточку">
