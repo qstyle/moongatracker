@@ -25,7 +25,10 @@ export function SettingsPage() {
   const [projectName, setProjectName] = useState('');
   const [saving, setSaving] = useState(false);
   const queryClient = useQueryClient();
+  const [tab, setTab] = useState('project');
   const [createdToken, setCreatedToken] = useState<string | null>(null);
+  const [revealToken, setRevealToken] = useState(false);
+  const [connCopied, setConnCopied] = useState(false);
   const [newTokenName, setNewTokenName] = useState('');
   const [newTokenScopes, setNewTokenScopes] = useState<string[]>(['cards:read', 'cards:write']);
   const [creatingToken, setCreatingToken] = useState(false);
@@ -94,7 +97,7 @@ export function SettingsPage() {
     <div className="h-full overflow-y-auto p-6">
       <div className="mb-6 text-sm font-semibold uppercase tracking-wider">Настройки</div>
 
-      {projects.length > 1 && (
+      {projects.length > 1 && tab !== 'tokens' && (
         <div className="mb-6 flex items-center gap-2">
           <Label>Проект:</Label>
           <div className="w-50">
@@ -112,7 +115,7 @@ export function SettingsPage() {
         </div>
       )}
 
-      <Tabs defaultValue="project">
+      <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="project">Проект</TabsTrigger>
           <TabsTrigger value="members">Участники</TabsTrigger>
@@ -250,29 +253,55 @@ export function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="tokens">
-          <div className="max-w-lg space-y-6">
-            <div className="space-y-2 rounded border border-border/60 bg-muted/30 p-4 text-sm">
-              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Как подключить агента</div>
-              <p className="text-muted-foreground">
-                Создайте токен ниже, затем добавьте MCP-сервер в своего агента (Claude Code / Cursor):
-              </p>
-              <pre className="overflow-x-auto rounded bg-muted px-2 py-1.5 text-xs font-mono text-foreground">{`npx -y @moongatracker/mcp
+          {(() => {
+            const hasActiveToken = tokens.some((t) => !t.revokedAt);
+            const tokenValue = createdToken ?? '<ВАШ_ТОКЕН>';
+            const connectionString = `npx -y @moongatracker/mcp
 MOONGATRACKER_API_URL=${window.location.origin}
-MOONGATRACKER_API_TOKEN=<токен>`}</pre>
+MOONGATRACKER_API_TOKEN=${tokenValue}`;
+            const showConnection = !!createdToken || hasActiveToken;
+            return (
+          <div className="max-w-lg space-y-6">
+            {createdToken && (
+              <div className="space-y-2 rounded border border-amber-500/40 bg-amber-500/10 p-4">
+                <div className="text-xs font-semibold uppercase tracking-wider text-amber-400">Новый токен — скопируйте, больше не будет показан</div>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 break-all rounded bg-muted px-2 py-1.5 text-sm text-foreground font-mono">
+                    {revealToken ? createdToken : '•'.repeat(48)}
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => setRevealToken((v) => !v)}>
+                    {revealToken ? 'Скрыть' : 'Показать'}
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => navigator.clipboard.writeText(createdToken)}>Копировать</Button>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => { setCreatedToken(null); setRevealToken(false); }}>Закрыть</Button>
+              </div>
+            )}
+
+            <div className="space-y-2 rounded border border-border/60 bg-muted/30 p-4 text-sm">
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Строка подключения</div>
+                {showConnection && (
+                  <Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(connectionString); setConnCopied(true); setTimeout(() => setConnCopied(false), 1500); }}>
+                    {connCopied ? 'Скопировано' : 'Копировать'}
+                  </Button>
+                )}
+              </div>
+              <p className="text-muted-foreground">
+                Добавьте MCP-сервер в своего агента (Claude Code / Cursor):
+              </p>
+              <pre className="overflow-x-auto rounded bg-muted px-2 py-1.5 text-xs font-mono text-foreground">{connectionString}</pre>
+              {!createdToken && (
+                <p className="text-xs text-muted-foreground">
+                  {hasActiveToken
+                    ? 'Значение токена показывается один раз при создании. Если потеряли — создайте новый ниже.'
+                    : 'Создайте токен ниже — он подставится в строку подключения.'}
+                </p>
+              )}
               <p className="text-muted-foreground">
                 Полная инструкция — <span className="text-foreground">docs/CONNECT_MCP.md</span>.
               </p>
             </div>
-            {createdToken && (
-              <div className="space-y-2 rounded border border-amber-500/40 bg-amber-500/10 p-4">
-                <div className="text-xs font-semibold uppercase tracking-wider text-amber-400">Скопируйте токен — больше не будет показан</div>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 break-all rounded bg-muted px-2 py-1.5 text-sm text-foreground font-mono">{createdToken}</div>
-                  <Button variant="outline" size="sm" onClick={() => navigator.clipboard.writeText(createdToken)}>Копировать</Button>
-                </div>
-                <Button variant="ghost" size="sm" onClick={() => setCreatedToken(null)}>Закрыть</Button>
-              </div>
-            )}
 
             <div className="space-y-3">
               <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Новый токен</div>
@@ -345,6 +374,8 @@ MOONGATRACKER_API_TOKEN=<токен>`}</pre>
               </div>
             )}
           </div>
+            );
+          })()}
         </TabsContent>
       </Tabs>
 
