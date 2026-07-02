@@ -28,6 +28,10 @@ export class ProjectsService {
    * project; a human user sees the projects they are a member of. */
   async listForActor(actor: RequestActor): Promise<ProjectDto[]> {
     if (actor?.type === 'agent') {
+      // User-scoped token: every project the owner is a member of.
+      if (actor.userId) return this.listForUser(actor.userId);
+      // Legacy single-project token.
+      if (!actor.projectId) return [];
       const project = await this.prisma.project.findUnique({
         where: { id: actor.projectId },
       });

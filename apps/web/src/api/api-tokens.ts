@@ -4,26 +4,24 @@ import type {
   CreateApiTokenResponse,
 } from '@moongatracker/shared-types';
 
-export function fetchTokens(projectId: string): Promise<ApiTokenDto[]> {
-  return apiFetch(`/api/projects/${projectId}/api-tokens`).then((r) =>
-    asJson<ApiTokenDto[]>(r),
-  );
+// Tokens are user-scoped: one token grants access to all of the owner's projects.
+export function fetchTokens(): Promise<ApiTokenDto[]> {
+  return apiFetch(`/api/api-tokens`).then((r) => asJson<ApiTokenDto[]>(r));
 }
 
 export function createToken(
-  projectId: string,
   name: string,
   scopes: string[],
 ): Promise<CreateApiTokenResponse> {
-  return apiFetch(`/api/projects/${projectId}/api-tokens`, {
+  return apiFetch(`/api/api-tokens`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, scopes }),
   }).then((r) => asJson<CreateApiTokenResponse>(r));
 }
 
-export function revokeToken(projectId: string, id: string): Promise<void> {
-  return apiFetch(`/api/projects/${projectId}/api-tokens/${id}`, {
+export function revokeToken(id: string): Promise<void> {
+  return apiFetch(`/api/api-tokens/${id}`, {
     method: 'DELETE',
   }).then((r) => asJson<void>(r));
 }

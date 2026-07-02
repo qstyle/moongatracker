@@ -16,32 +16,34 @@ import {
 import { ApiTokensService } from './api-tokens.service';
 import { CreateApiTokenDto } from './dto/create-api-token.dto';
 
-@Controller()
+// Tokens are owned by a user and grant access to all of that user's projects,
+// so token management lives at the user level (not nested under a project).
+@Controller('api-tokens')
 export class ApiTokensController {
   constructor(private readonly apiTokens: ApiTokensService) {}
 
-  @Post('projects/:projectId/api-tokens')
+  @Post()
   create(
-    @Param('projectId') projectId: string,
     @Body() dto: CreateApiTokenDto,
     @Req() req: any,
   ): Promise<CreateApiTokenResponse> {
-    if (req.user?.type === 'agent')
+    if (req.user?.type !== 'user')
       throw new ForbiddenException('Agents cannot create tokens');
-    return this.apiTokens.create(projectId, dto.name, dto.scopes);
+    return this.apiTokens.create(req.user.sub, dto.name, dto.scopes);
   }
 
-  @Get('projects/:projectId/api-tokens')
-  list(@Param('projectId') projectId: string): Promise<ApiTokenDto[]> {
-    return this.apiTokens.list(projectId);
+  @Get()
+  list(@Req() req: any): Promise<ApiTokenDto[]> {
+    if (req.user?.type !== 'user')
+      throw new ForbiddenException('Agents cannot list tokens');
+    return this.apiTokens.listForUser(req.user.sub);
   }
 
-  @Delete('projects/:projectId/api-tokens/:id')
+  @Delete(':id')
   @HttpCode(204)
-  revoke(
-    @Param('projectId') projectId: string,
-    @Param('id') id: string,
-  ): Promise<void> {
-    return this.apiTokens.revoke(projectId, id);
+  revoke(@Param('id') id: string, @Req() req: any): Promise<void> {
+    if (req.user?.type !== 'user')
+      throw new ForbiddenException('Agents cannot revoke tokens');
+    return this.apiTokens.revoke(req.user.sub, id);
   }
 }

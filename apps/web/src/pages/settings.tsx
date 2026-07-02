@@ -60,10 +60,11 @@ export function SettingsPage() {
     queryFn: () => fetchProjectMembers(activeProject!.id),
     enabled: !!activeProject,
   });
+  // Tokens are user-scoped (one token → all of the user's projects), so the
+  // list no longer depends on the selected project.
   const { data: tokens = [], refetch: refetchTokens } = useQuery({
-    queryKey: ['tokens', activeProject?.id],
-    queryFn: () => fetchTokens(activeProject!.id),
-    enabled: !!activeProject,
+    queryKey: ['tokens'],
+    queryFn: () => fetchTokens(),
   });
 
   async function handleRenameProject(e: React.FormEvent) {
@@ -290,13 +291,15 @@ MOONGATRACKER_API_TOKEN=<токен>`}</pre>
                   </div>
                 ))}
               </div>
+              <p className="text-xs text-muted-foreground">
+                Токен даёт доступ ко всем вашим проектам.
+              </p>
               <Button
                 disabled={creatingToken || !newTokenName.trim() || newTokenScopes.length === 0}
                 onClick={async () => {
-                  if (!activeProject) return;
                   setCreatingToken(true);
                   try {
-                    const resp = await createToken(activeProject.id, newTokenName.trim(), newTokenScopes);
+                    const resp = await createToken(newTokenName.trim(), newTokenScopes);
                     setCreatedToken(resp.token);
                     setNewTokenName('');
                     await refetchTokens();
@@ -328,8 +331,7 @@ MOONGATRACKER_API_TOKEN=<токен>`}</pre>
                         <TableCell>
                           {!t.revokedAt ? (
                             <Button variant="ghost" size="sm" onClick={async () => {
-                              if (!activeProject) return;
-                              await revokeToken(activeProject.id, t.id);
+                              await revokeToken(t.id);
                               await refetchTokens();
                             }}>Отозвать</Button>
                           ) : (

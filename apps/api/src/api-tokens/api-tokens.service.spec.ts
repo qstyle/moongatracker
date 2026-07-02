@@ -19,22 +19,23 @@ describe('ApiTokensService', () => {
       },
     } as any;
     const svc = new ApiTokensService(prisma);
-    const result = await svc.create('org1', 'ci', ['cards:read']);
+    const result = await svc.create('user1', 'ci', ['cards:read']);
 
     expect(result.token).toHaveLength(64);
     expect(stored.tokenHash).toBe(
       crypto.createHash('sha256').update(result.token).digest('hex'),
     );
     expect(result.token).not.toBe(stored.tokenHash);
-    expect(stored.projectId).toBe('org1');
+    // Token is anchored to the owning user, not a single project.
+    expect(stored.userId).toBe('user1');
   });
 
-  it('revoke() soft-deletes by orgId and id', async () => {
+  it('revoke() soft-deletes by userId and id', async () => {
     const updateMany = jest.fn().mockResolvedValue({ count: 1 });
     const svc = new ApiTokensService({ apiToken: { updateMany } } as any);
-    await svc.revoke('org1', 'tok1');
+    await svc.revoke('user1', 'tok1');
     expect(updateMany).toHaveBeenCalledWith({
-      where: { id: 'tok1', projectId: 'org1', revokedAt: null },
+      where: { id: 'tok1', userId: 'user1', revokedAt: null },
       data: expect.objectContaining({ revokedAt: expect.any(Date) }),
     });
   });
@@ -42,6 +43,6 @@ describe('ApiTokensService', () => {
   it('revoke() throws NotFoundException when token not found', async () => {
     const updateMany = jest.fn().mockResolvedValue({ count: 0 });
     const svc = new ApiTokensService({ apiToken: { updateMany } } as any);
-    await expect(svc.revoke('org1', 'missing')).rejects.toThrow('not found');
+    await expect(svc.revoke('user1', 'missing')).rejects.toThrow('not found');
   });
 });

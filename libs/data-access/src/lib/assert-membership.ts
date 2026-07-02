@@ -15,12 +15,22 @@ export async function assertMembership(
 /** The authenticated subject attached to the request by UnifiedAuthGuard. */
 export type RequestActor =
   | { type: 'user'; sub: string; email?: string }
-  | { type: 'agent'; projectId: string; tokenId?: string; scopes?: string[] };
+  | {
+      type: 'agent';
+      /** Owner of the token. When set, the token can access all of this user's
+       * projects (checked via membership). */
+      userId?: string | null;
+      /** Legacy single-project anchor (tokens minted before user-scoping). */
+      projectId?: string | null;
+      tokenId?: string;
+      scopes?: string[];
+    };
 
 /**
  * Authorize any subject (human user or agent token) against a project.
- * Users are checked via membership; agent tokens are scoped to a single
- * project at mint time, so we only verify the token targets that project.
+ * Users are checked via membership. A user-scoped agent token is checked via
+ * the owner's membership (grants access to all of the owner's projects); a
+ * legacy token is limited to the single project it was minted for.
  */
 export async function assertProjectAccess(
   prisma: PrismaService,
@@ -28,10 +38,17 @@ export async function assertProjectAccess(
   projectId: string,
 ): Promise<void> {
   if (actor?.type === 'agent') {
-    if (actor.projectId !== projectId) {
-      throw new ForbiddenException('Token is not scoped to this project');
+    if (actor.userId) {
+      await assertMembership(prisma, actor.userId, projectId);
+      return;
     }
-    return;
+    if (actor.projectId) {
+      if (actor.projectId !== projectId) {
+        throw new ForbiddenException('Token is not scoped to this project');
+      }
+      return;
+    }
+    throw new ForbiddenException('Token has no scope');
   }
   if (!actor?.sub) throw new ForbiddenException('Not authenticated');
   await assertMembership(prisma, actor.sub, projectId);

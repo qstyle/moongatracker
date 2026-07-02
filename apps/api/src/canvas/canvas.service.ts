@@ -3,7 +3,11 @@ import {
   ForbiddenException,
   Injectable,
 } from '@nestjs/common';
-import { assertMembership, PrismaService } from '@moongatracker/data-access';
+import {
+  assertMembership,
+  assertProjectAccess,
+  PrismaService,
+} from '@moongatracker/data-access';
 import {
   CanvasDoc,
   CanvasNode,
@@ -43,12 +47,7 @@ export class CanvasService {
   constructor(private readonly prisma: PrismaService) {}
 
   private async assertRead(user: any, projectId: string): Promise<void> {
-    if (user?.type === 'agent') {
-      if (user.projectId !== projectId)
-        throw new ForbiddenException('Token is not scoped to this project');
-      return;
-    }
-    await assertMembership(this.prisma, user.sub, projectId);
+    await assertProjectAccess(this.prisma, user, projectId);
   }
 
   private async assertWrite(user: any, projectId: string): Promise<void> {
