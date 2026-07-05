@@ -69,6 +69,18 @@ Activity  { id, cardId, actorType, actorId, action, before, after, createdAt } /
 
 `authorType` / `actorType` явно различают человека и агента — для UI-маркеров и аудита.
 
+> **Актуализация (источник правды — `prisma/schema.prisma`).** Реализация разошлась
+> с этим черновиком:
+> - **Верхний тенант — `Project`** (не `Organization`), доступ через `Membership`.
+>   Отдельной сущности `Organization` нет; `User.role` не реализован.
+> - **Колонки свободные:** `Column { boardId, title, order }` — без `key` и фиксированного
+>   набора статусов. Карточка ссылается на `columnId`. «Идеи/Разработка» — это названия
+>   колонок/досок, а не enum.
+> - **`Label`/`CardLabel` удалены** (в бэклоге — вернуть). Лейблов сейчас нет.
+> - `ApiToken.scopes String[]` (массив), плюс `revokedAt`.
+> - **Добавлены:** `Attachment` (S3), `WikiSection`/`WikiPage`, `Canvas`, `Proposal`
+>   (человеко-гейт), `TelegramLink`/`TelegramLinkCode`, `NotificationPreferences`.
+
 ## 5. Жизненный цикл карточки
 
 Один набор статусов, две «доски» = два сохранённых view:

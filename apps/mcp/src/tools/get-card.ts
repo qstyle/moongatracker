@@ -1,5 +1,10 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
-import type { BoardSummaryDto, CardDto } from '@moongatracker/shared-types';
+import type {
+  ActivityDto,
+  BoardSummaryDto,
+  CardDto,
+  CommentDto,
+} from '@moongatracker/shared-types';
 import { apiGet } from '../api-client.js';
 
 // Inlined from libs/shared-types/src/lib/card-key.ts — keep in sync manually.
@@ -21,8 +26,8 @@ function parseCardNumber(key: string): number | null {
 export const getCardTool: Tool = {
   name: 'get_card',
   description:
-    'Получить карточку одним из способов: по внутреннему ID (cardId); ' +
-    'по доске и номеру (boardId + number); ' +
+    'Получить полную карточку (с комментариями и историей) одним из способов: ' +
+    'по внутреннему ID (cardId); по доске и номеру (boardId + number); ' +
     'или по человекочитаемому ключу вида "РАЗР2-15" в рамках проекта (key + projectId).',
   inputSchema: {
     type: 'object',
@@ -81,5 +86,11 @@ export async function getCard(args: {
   }
 
   const card = await apiGet<CardDto>(path);
-  return JSON.stringify(card, null, 2);
+  // Enrich with the card's comments and activity history so a single call
+  // gives the agent full context (matches the documented behaviour).
+  const [comments, activity] = await Promise.all([
+    apiGet<CommentDto[]>(`/api/cards/${card.id}/comments`),
+    apiGet<ActivityDto[]>(`/api/cards/${card.id}/activity`),
+  ]);
+  return JSON.stringify({ ...card, comments, activity }, null, 2);
 }
