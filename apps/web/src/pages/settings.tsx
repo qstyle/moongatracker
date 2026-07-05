@@ -15,6 +15,7 @@ import { fetchBoards, deleteBoard } from '../api/boards';
 import { fetchTokens, createToken, revokeToken } from '../api/api-tokens';
 import { fetchMe, updateMyName } from '../api/users';
 import { fetchTelegramStatus, createTelegramLinkCode, unlinkTelegram, fetchNotificationPrefs, updateNotificationPrefs } from '../api/telegram';
+import { fetchPendingProposals, approveProposal, rejectProposal } from '../api/proposals';
 import { getCurrentUserId } from '../api/client';
 import { MEMBER_COLOR_PALETTE } from '@moongatracker/shared-types';
 import type { ApiTokenDto, NotificationPreferences } from '@moongatracker/shared-types';
@@ -58,6 +59,19 @@ export function SettingsPage() {
     queryKey: ['notification-prefs'],
     queryFn: fetchNotificationPrefs,
   });
+  const { data: proposals = [] } = useQuery({
+    queryKey: ['proposals-pending'],
+    queryFn: fetchPendingProposals,
+  });
+
+  async function handleProposalDecision(id: string, decision: 'approve' | 'reject') {
+    try {
+      await (decision === 'approve' ? approveProposal(id) : rejectProposal(id));
+    } finally {
+      queryClient.invalidateQueries({ queryKey: ['proposals-pending'] });
+      queryClient.invalidateQueries({ queryKey: ['boards'] });
+    }
+  }
 
   async function handleToggleNotify(key: keyof NotificationPreferences, checked: boolean) {
     // Optimistically flip the toggle, then persist; roll back on failure.
@@ -153,7 +167,7 @@ export function SettingsPage() {
     <div className="h-full overflow-y-auto p-6">
       <div className="mb-6 text-sm font-semibold uppercase tracking-wider">Настройки</div>
 
-      {projects.length > 1 && tab !== 'tokens' && tab !== 'profile' && tab !== 'notifications' && (
+      {projects.length > 1 && tab !== 'tokens' && tab !== 'profile' && tab !== 'notifications' && tab !== 'proposals' && (
         <div className="mb-6 flex items-center gap-2">
           <Label>Проект:</Label>
           <div className="w-50">
@@ -175,6 +189,9 @@ export function SettingsPage() {
         <TabsList>
           <TabsTrigger value="profile">Профиль</TabsTrigger>
           <TabsTrigger value="notifications">Оповещения</TabsTrigger>
+          <TabsTrigger value="proposals">
+            Согласования{proposals.length > 0 ? ` (${proposals.length})` : ''}
+          </TabsTrigger>
           <TabsTrigger value="project">Проект</TabsTrigger>
           <TabsTrigger value="members">Участники</TabsTrigger>
           <TabsTrigger value="tokens">AI-агенты</TabsTrigger>
@@ -194,6 +211,35 @@ export function SettingsPage() {
                 Имя отображается во всех канбанах — как автор и исполнитель карточек и в комментариях.
               </p>
             </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="proposals">
+          <div className="max-w-lg space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Агенты не удаляют карточки напрямую — они предлагают, а вы подтверждаете.
+            </p>
+            {proposals.length === 0 ? (
+              <div className="rounded border border-border/60 bg-muted/30 p-4 text-sm text-muted-foreground">
+                Нет запросов, ожидающих решения.
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {proposals.map((p) => (
+                  <div key={p.id} className="space-y-2 rounded border border-border/60 p-3">
+                    <div className="text-sm">
+                      <span className="text-muted-foreground">Удалить карточку </span>
+                      <span className="font-medium text-foreground">{p.cardKey ?? '—'} «{p.cardTitle ?? '—'}»</span>
+                    </div>
+                    {p.reason && <div className="text-xs text-muted-foreground">Причина: {p.reason}</div>}
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => handleProposalDecision(p.id, 'approve')}>Одобрить</Button>
+                      <Button size="sm" variant="outline" onClick={() => handleProposalDecision(p.id, 'reject')}>Отклонить</Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </TabsContent>
 

@@ -16,6 +16,29 @@ model Project {
   apiTokens    ApiToken[]
   wikiSections WikiSection[]
   canvas       Canvas?
+  proposals    Proposal[]
+}
+
+// A pending, human-gated request from an agent (or user) to perform an
+// irreversible action (v1: card deletion). The project owner approves or
+// rejects — in-app or via Telegram inline buttons. The record is the audit
+// trail; the target card is deleted only on approval.
+model Proposal {
+  id           String    @id @default(cuid())
+  projectId    String
+  cardId       String?
+  action       String // 'delete_card'
+  reason       String?
+  payload      Json? // context snapshot, e.g. { cardTitle, cardKey }
+  status       String    @default("pending") // pending | approved | rejected
+  actorType    String // 'agent' | 'user'
+  actorId      String?
+  resolvedById String?
+  resolvedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  project      Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, status])
 }
 
 model Membership {
