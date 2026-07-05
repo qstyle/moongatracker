@@ -73,8 +73,8 @@ export function IntegrationsCard() {
           const curvature = i === 1 ? 0 : (i - 1) * 70;
           return (
             <Fragment key={idx}>
-              <AnimatedBeam containerRef={container} fromRef={r} toRef={center} curvature={curvature} duration={2.5} delay={idx * 0.15} />
-              <AnimatedBeam containerRef={container} fromRef={r} toRef={center} curvature={curvature} duration={2.5} delay={idx * 0.15 + 1.25} reverse />
+              <AnimatedBeam containerRef={container} fromRef={r} toRef={center} curvature={curvature} duration={2.5} delay={idx * 0.15} gradientStartColor="oklch(0.66 0.20 17)" gradientStopColor="oklch(0.514 0.222 16.935)" />
+              <AnimatedBeam containerRef={container} fromRef={r} toRef={center} curvature={curvature} duration={2.5} delay={idx * 0.15 + 1.25} reverse gradientStartColor="oklch(0.66 0.20 17)" gradientStopColor="oklch(0.514 0.222 16.935)" />
             </Fragment>
           );
         })}
