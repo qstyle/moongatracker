@@ -1,15 +1,10 @@
-import { render } from '@testing-library/react';
-
+import { render, screen } from '@testing-library/react';
 import App from './app';
 
 describe('App', () => {
-  it('should render successfully', () => {
-    const { baseElement } = render(<App />);
-    expect(baseElement).toBeTruthy();
-  });
-
-  it('should render the skeleton cards', () => {
-    const { getByText } = render(<App />);
-    expect(getByText('1')).toBeTruthy();
+  it('рендерит хедер и hero-заголовок', () => {
+    render(<App />);
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toMatch(/полноправный участник/i);
+    expect(screen.getAllByText(/moongatracker/i).length).toBeGreaterThan(0);
   });
 });
