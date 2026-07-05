@@ -21,6 +21,9 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  // Let OnModuleDestroy fire on SIGTERM/SIGINT so the Telegram bot stops
+  // long-polling and Prisma disconnects cleanly.
+  app.enableShutdownHooks();
   const port = process.env.PORT ? Number(process.env.PORT) : 3020;
   await app.listen(port, '0.0.0.0');
   console.log(`api listening on http://localhost:${port}/api`);

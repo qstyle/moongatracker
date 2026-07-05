@@ -5,3 +5,5 @@ export * from './lib/api-token.js';
 export * from './lib/wiki.js';
 export * from './lib/member-colors.js';
 export * from './lib/canvas.js';
+export * from './lib/telegram.js';
+export * from './lib/notifications.js';

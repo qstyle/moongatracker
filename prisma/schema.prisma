@@ -31,13 +31,53 @@ model Membership {
 }
 
 model User {
-  id           String       @id @default(cuid())
-  email        String       @unique
-  name         String?
-  passwordHash String
-  createdAt    DateTime     @default(now())
-  memberships  Membership[]
-  apiTokens    ApiToken[]
+  id                String             @id @default(cuid())
+  email             String             @unique
+  name              String?
+  passwordHash      String
+  createdAt         DateTime           @default(now())
+  memberships       Membership[]
+  apiTokens         ApiToken[]
+  telegramLink      TelegramLink?
+  telegramLinkCodes TelegramLinkCode[]
+  notificationPrefs NotificationPreferences?
+}
+
+// Per-user toggles for which notifications to deliver. One row per user; an
+// absent row means "everything on" (defaults), so existing users keep receiving
+// notifications without a backfill. Channel-agnostic — currently gates Telegram.
+model NotificationPreferences {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  cardMoved           Boolean  @default(true)
+  cardAssigned        Boolean  @default(true)
+  cardCommented       Boolean  @default(true)
+  cardAssignedToAgent Boolean  @default(true)
+  updatedAt           DateTime @updatedAt
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Links a user's account to a Telegram chat so the bot can DM them about
+// movements of "their" cards (authored / assigned). One TG chat per user.
+// chatId is stored as String (not BigInt) — the schema has no other BigInt and
+// bigint is not JSON-serializable; grammy's numeric chat.id is stringified.
+model TelegramLink {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  chatId    String   @unique
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Short-lived one-time code for the deep-link onboarding
+// (t.me/<bot>?start=<code>). Consumed by the bot's /start handler.
+model TelegramLinkCode {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model ApiToken {

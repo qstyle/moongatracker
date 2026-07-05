@@ -29,3 +29,10 @@ export class LoginDto {
   @MinLength(1)
   password!: string;
 }
+
+export class UpdateMeDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(80)
+  name!: string;
+}

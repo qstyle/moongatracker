@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   assertCardAccess,
   PrismaService,
@@ -6,6 +7,7 @@ import {
 } from '@moongatracker/data-access';
 import { CommentDto } from '@moongatracker/shared-types';
 import { ActivityService } from '../activity/activity.service';
+import { CARD_COMMENTED } from '../telegram/telegram.events';
 import { toCommentDto } from './comment.mapper';
 
 @Injectable()
@@ -13,6 +15,7 @@ export class CommentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly activity: ActivityService,
+    private readonly events: EventEmitter2,
   ) {}
 
   async list(cardId: string, actor: RequestActor): Promise<CommentDto[]> {
@@ -45,6 +48,14 @@ export class CommentsService {
         { body },
       );
     }
+
+    this.events.emit(CARD_COMMENTED, {
+      cardId,
+      actor:
+        user?.type === 'agent'
+          ? { type: 'agent', id: user.tokenId ?? null }
+          : { type: 'user', id: user?.sub ?? null },
+    });
 
     return toCommentDto(created);
   }

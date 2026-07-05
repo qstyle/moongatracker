@@ -1,5 +1,6 @@
 import { join } from 'path';
 import { DynamicModule, Module } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ProjectsModule } from '../projects/projects.module';
 import { BoardsModule } from '../boards/boards.module';
@@ -13,6 +14,7 @@ import { EventsModule } from '../events/events.module';
 import { AttachmentsModule } from '../attachments/attachments.module';
 import { WikiModule } from '../wiki/wiki.module';
 import { CanvasModule } from '../canvas/canvas.module';
+import { TelegramModule } from '../telegram/telegram.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -36,6 +38,7 @@ const staticModules: DynamicModule[] =
 @Module({
   imports: [
     ...staticModules,
+    EventEmitterModule.forRoot(),
     ProjectsModule,
     BoardsModule,
     ColumnsModule,
@@ -48,6 +51,7 @@ const staticModules: DynamicModule[] =
     AttachmentsModule,
     WikiModule,
     CanvasModule,
+    TelegramModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -14,9 +13,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/compon
 import { fetchProjects, updateProject, deleteProject, fetchProjectMembers, addMember, removeMember, updateMemberColor } from '../api/projects';
 import { fetchBoards, deleteBoard } from '../api/boards';
 import { fetchTokens, createToken, revokeToken } from '../api/api-tokens';
+import { fetchMe, updateMyName } from '../api/users';
+import { fetchTelegramStatus, createTelegramLinkCode, unlinkTelegram, fetchNotificationPrefs, updateNotificationPrefs } from '../api/telegram';
 import { getCurrentUserId } from '../api/client';
 import { MEMBER_COLOR_PALETTE } from '@moongatracker/shared-types';
-import type { ApiTokenDto } from '@moongatracker/shared-types';
+import type { ApiTokenDto, NotificationPreferences } from '@moongatracker/shared-types';
 import { cn } from '../lib/utils';
 
 type DeleteTarget = { kind: 'board'; id: string; name: string } | { kind: 'project'; id: string; name: string } | null;
@@ -37,11 +38,66 @@ export function SettingsPage() {
   const [inviteError, setInviteError] = useState('');
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget>(null);
+  const [displayName, setDisplayName] = useState('');
+  const [savingName, setSavingName] = useState(false);
+  const [linkUrl, setLinkUrl] = useState<string | null>(null);
+  const [linking, setLinking] = useState(false);
+  const [linkError, setLinkError] = useState('');
 
   const { data: projects = [] } = useQuery({ queryKey: ['projects'], queryFn: fetchProjects });
   const activeProject = projects.find((p) => p.id === activeProjectId) ?? projects[0];
   const currentUserId = getCurrentUserId();
   const isOwner = !!activeProject && activeProject.ownerId === currentUserId;
+
+  const { data: me } = useQuery({ queryKey: ['me'], queryFn: fetchMe });
+  const { data: telegram, refetch: refetchTelegram } = useQuery({
+    queryKey: ['telegram'],
+    queryFn: fetchTelegramStatus,
+  });
+  const { data: notifyPrefs } = useQuery({
+    queryKey: ['notification-prefs'],
+    queryFn: fetchNotificationPrefs,
+  });
+
+  async function handleToggleNotify(key: keyof NotificationPreferences, checked: boolean) {
+    // Optimistically flip the toggle, then persist; roll back on failure.
+    queryClient.setQueryData<NotificationPreferences>(['notification-prefs'], (prev) =>
+      prev ? { ...prev, [key]: checked } : prev,
+    );
+    try {
+      await updateNotificationPrefs({ [key]: checked });
+    } finally {
+      queryClient.invalidateQueries({ queryKey: ['notification-prefs'] });
+    }
+  }
+
+  async function handleSaveName(e: React.FormEvent) {
+    e.preventDefault();
+    if (!displayName.trim()) return;
+    setSavingName(true);
+    try {
+      await updateMyName(displayName.trim());
+      queryClient.invalidateQueries({ queryKey: ['me'] });
+      setDisplayName('');
+    } finally { setSavingName(false); }
+  }
+
+  async function handleConnectTelegram() {
+    setLinking(true);
+    setLinkError('');
+    try {
+      const resp = await createTelegramLinkCode();
+      setLinkUrl(resp.url);
+    } catch {
+      setLinkError('Telegram-бот не настроен на сервере.');
+    } finally { setLinking(false); }
+  }
+
+  async function handleUnlinkTelegram() {
+    await unlinkTelegram();
+    setLinkUrl(null);
+    refetchTelegram();
+  }
 
   async function handleChangeColor(userId: string, color: string) {
     if (!activeProject) return;
@@ -97,7 +153,7 @@ export function SettingsPage() {
     <div className="h-full overflow-y-auto p-6">
       <div className="mb-6 text-sm font-semibold uppercase tracking-wider">Настройки</div>
 
-      {projects.length > 1 && tab !== 'tokens' && (
+      {projects.length > 1 && tab !== 'tokens' && tab !== 'profile' && tab !== 'notifications' && (
         <div className="mb-6 flex items-center gap-2">
           <Label>Проект:</Label>
           <div className="w-50">
@@ -117,10 +173,84 @@ export function SettingsPage() {
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
+          <TabsTrigger value="profile">Профиль</TabsTrigger>
+          <TabsTrigger value="notifications">Оповещения</TabsTrigger>
           <TabsTrigger value="project">Проект</TabsTrigger>
           <TabsTrigger value="members">Участники</TabsTrigger>
           <TabsTrigger value="tokens">AI-агенты</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="profile">
+          <div className="max-w-sm space-y-8">
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                Текущее имя: <div className="inline text-foreground">{me?.name?.trim() ? me.name : 'не задано'}</div>
+              </div>
+              <form onSubmit={handleSaveName} className="flex gap-2">
+                <Input placeholder="Ваше имя" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+                <Button type="submit" disabled={savingName || !displayName.trim()}>{savingName ? '…' : 'Сохранить'}</Button>
+              </form>
+              <p className="text-xs text-muted-foreground">
+                Имя отображается во всех канбанах — как автор и исполнитель карточек и в комментариях.
+              </p>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="notifications">
+          <div className="max-w-sm space-y-8">
+            <div className="space-y-3">
+              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Telegram</div>
+              {telegram?.connected ? (
+                <div className="space-y-2">
+                  <div className="text-sm text-foreground">✅ Подключён — уведомления о ваших карточках приходят в Telegram.</div>
+                  <Button variant="outline" size="sm" onClick={handleUnlinkTelegram}>Отключить</Button>
+                </div>
+              ) : linkUrl ? (
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    Откройте ссылку и нажмите «Start» в боте, затем вернитесь и проверьте подключение:
+                  </p>
+                  <a href={linkUrl} target="_blank" rel="noreferrer" className="block break-all text-sm text-primary underline">{linkUrl}</a>
+                  <Button variant="outline" size="sm" onClick={() => refetchTelegram()}>Проверить подключение</Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    Подключите Telegram, чтобы получать уведомления о движениях карточек, где вы автор или исполнитель.
+                  </p>
+                  <Button onClick={handleConnectTelegram} disabled={linking}>{linking ? '…' : 'Подключить Telegram'}</Button>
+                  {linkError && <div className="text-sm text-destructive">{linkError}</div>}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Присылать уведомления о</div>
+              {!telegram?.connected && (
+                <p className="text-xs text-muted-foreground">Уведомления приходят только в Telegram — подключите его выше.</p>
+              )}
+              <div className="space-y-2.5">
+                {([
+                  ['cardAssigned', 'Мне назначили карточку'],
+                  ['cardMoved', 'Переместили мою карточку'],
+                  ['cardCommented', 'Комментарий к моей карточке'],
+                  ['cardAssignedToAgent', 'Мою карточку назначили агенту'],
+                ] as const).map(([key, label]) => (
+                  <div key={key} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`notify-${key}`}
+                      checked={notifyPrefs?.[key] ?? true}
+                      disabled={!telegram?.connected || !notifyPrefs}
+                      onCheckedChange={(checked) => handleToggleNotify(key, checked === true)}
+                    />
+                    <Label htmlFor={`notify-${key}`}>{label}</Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </TabsContent>
 
         <TabsContent value="project">
           <div className="max-w-sm space-y-8">
