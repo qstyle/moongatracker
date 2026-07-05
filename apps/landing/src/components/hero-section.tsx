@@ -1,14 +1,14 @@
 import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollNav } from '@/components/scroll-nav';
-import { CardDriftCanvas } from '@/components/card-drift-canvas';
+import { DotGridCanvas } from '@/components/dot-grid-canvas';
 import { APP_URL } from '@/lib/constants';
 
 export function HeroCard() {
   return (
     <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-background">
-      {/* Фон: канбан-карточки медленно всплывают (idea → done) */}
-      <CardDriftCanvas className="pointer-events-none absolute inset-0 h-full w-full" />
+      {/* Фон: дышащая сетка точек (розовые волны) */}
+      <DotGridCanvas className="pointer-events-none absolute inset-0 h-full w-full" />
       {/* Мягкое свечение primary для глубины */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_35%,color-mix(in_oklch,var(--primary)_12%,transparent),transparent)]" />
       {/* Wash по центру — читаемость заголовка поверх карточек */}
