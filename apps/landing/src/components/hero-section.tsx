@@ -1,13 +1,18 @@
 import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollNav } from '@/components/scroll-nav';
+import { CardDriftCanvas } from '@/components/card-drift-canvas';
 import { APP_URL } from '@/lib/constants';
 
 export function HeroCard() {
   return (
     <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-background">
-      {/* Слот фоновой анимации (визуалка — из стиля moongatracker). Мягкое свечение primary. */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_35%,color-mix(in_oklch,var(--primary)_18%,transparent),transparent)]" />
+      {/* Фон: канбан-карточки медленно всплывают (idea → done) */}
+      <CardDriftCanvas className="pointer-events-none absolute inset-0 h-full w-full" />
+      {/* Мягкое свечение primary для глубины */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_35%,color-mix(in_oklch,var(--primary)_12%,transparent),transparent)]" />
+      {/* Wash по центру — читаемость заголовка поверх карточек */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_55%_at_50%_45%,var(--background),transparent)]" />
 
       <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center px-6 text-center">
         <span className="mb-5 inline-flex items-center gap-2 border border-border px-3 py-1 text-xs text-muted-foreground">
