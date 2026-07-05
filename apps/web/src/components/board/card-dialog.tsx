@@ -16,6 +16,7 @@ import { addComment, listComments } from '../../api/comments';
 import { fetchActivity, revertActivity } from '../../api/activity';
 import { deleteAttachment, listAttachments, uploadAttachment } from '../../api/attachments';
 import { useBoardActors } from '../../lib/use-board-actors';
+import { Markdown } from '../markdown';
 import { ActorAvatar } from './actor-avatar';
 
 export function CardDialog({
@@ -33,6 +34,8 @@ export function CardDialog({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState(card.title);
   const [body, setBody] = useState(card.body ?? '');
+  // Start in preview when there's already content to read; empty cards open in edit.
+  const [bodyEdit, setBodyEdit] = useState(!(card.body ?? '').trim());
   const [priority, setPriority] = useState<CardPriority | null>(card.priority);
   const [busy, setBusy] = useState(false);
   const [commentBody, setCommentBody] = useState('');
@@ -155,7 +158,31 @@ export function CardDialog({
         <ScrollArea className="min-h-0 flex-1">
           <div className="flex flex-col gap-5 p-4">
             <Input value={title} autoFocus onChange={(e) => setTitle(e.target.value)} />
-            <Textarea value={body} rows={4} placeholder="Описание…" onChange={(e) => setBody(e.target.value)} />
+
+            <div>
+              <div className="mb-1.5 flex items-center justify-between">
+                <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">описание</div>
+                {body.trim() && (
+                  <Button type="button" variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => setBodyEdit((v) => !v)}>
+                    {bodyEdit ? 'Просмотр' : 'Правка'}
+                  </Button>
+                )}
+              </div>
+              {bodyEdit ? (
+                <Textarea value={body} rows={4} placeholder="Описание… (поддерживается Markdown)" onChange={(e) => setBody(e.target.value)} />
+              ) : (
+                <div
+                  className="min-h-9 cursor-text rounded-md border border-transparent px-1 hover:border-border"
+                  onClick={() => setBodyEdit(true)}
+                >
+                  {body.trim() ? (
+                    <Markdown>{body}</Markdown>
+                  ) : (
+                    <span className="text-sm text-muted-foreground/50">Нет описания</span>
+                  )}
+                </div>
+              )}
+            </div>
 
             <div>
               <div className="mb-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">приоритет</div>
@@ -271,7 +298,7 @@ export function CardDialog({
                           )}
                           <span className="tabular-nums">{new Date(c.createdAt).toLocaleString('ru-RU')}</span>
                         </div>
-                        <div className="whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">{c.body}</div>
+                        <Markdown className="break-words">{c.body}</Markdown>
                       </div>
                     );
                   })}
