@@ -5,8 +5,8 @@ interface DotGridCanvasProps {
   gap?: number;
 }
 
-// Фон Hero: сетка точек, которые «дышат» розовыми волнами (радиальная + диагональная).
-// Цвет — из токена --primary. Уважает prefers-reduced-motion.
+// Фон Hero: сетка точек, которые «дышат» розовыми волнами и подсвечиваются
+// рядом с курсором (спотлайт следует за мышью). Цвет — из токена --primary.
 export function DotGridCanvas({ className, gap = 30 }: DotGridCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -23,14 +23,22 @@ export function DotGridCanvas({ className, gap = 30 }: DotGridCanvasProps) {
 
     let width = 0;
     let height = 0;
+    let left = 0;
+    let top = 0;
     let raf = 0;
     const start = performance.now();
+
+    // радиус влияния курсора и его позиция (по умолчанию — за экраном)
+    const R = 170;
+    const mouse = { x: -9999, y: -9999 };
 
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       width = rect.width;
       height = rect.height;
+      left = rect.left;
+      top = rect.top;
       canvas.width = Math.max(1, Math.floor(width * dpr));
       canvas.height = Math.max(1, Math.floor(height * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -47,11 +55,18 @@ export function DotGridCanvas({ className, gap = 30 }: DotGridCanvasProps) {
           const dx = x - cx;
           const dy = y - cy;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          const wave = Math.sin(dist * 0.012 - t * 1.6) * 0.5 + 0.5; // радиальная волна от центра
+          const wave = Math.sin(dist * 0.012 - t * 1.6) * 0.5 + 0.5; // радиальная волна
           const drift = Math.sin((x + y) * 0.02 + t * 0.7) * 0.5 + 0.5; // диагональное «дыхание»
-          const m = reduce ? 0.3 : wave * 0.6 + drift * 0.4;
-          ctx.globalAlpha = 0.05 + m * 0.28;
-          const r = 0.9 + m * 1.4;
+          const m = reduce ? 0.35 : wave * 0.6 + drift * 0.4;
+
+          // подсветка рядом с курсором (плавный спад)
+          const mdx = x - mouse.x;
+          const mdy = y - mouse.y;
+          const md = Math.sqrt(mdx * mdx + mdy * mdy);
+          const infl = md < R ? (1 - md / R) ** 2 : 0;
+
+          ctx.globalAlpha = Math.min(1, 0.07 + m * 0.3 + infl * 0.55);
+          const r = 1 + m * 1.4 + infl * 2.4;
           ctx.beginPath();
           ctx.arc(x, y, r, 0, Math.PI * 2);
           ctx.fill();
@@ -59,6 +74,15 @@ export function DotGridCanvas({ className, gap = 30 }: DotGridCanvasProps) {
       }
       ctx.globalAlpha = 1;
       if (!reduce) raf = requestAnimationFrame(draw);
+    };
+
+    const onMove = (e: PointerEvent) => {
+      mouse.x = e.clientX - left;
+      mouse.y = e.clientY - top;
+    };
+    const onLeave = () => {
+      mouse.x = -9999;
+      mouse.y = -9999;
     };
 
     resize();
@@ -70,10 +94,14 @@ export function DotGridCanvas({ className, gap = 30 }: DotGridCanvasProps) {
       if (reduce) draw(performance.now());
     });
     ro.observe(canvas);
+    window.addEventListener('pointermove', onMove, { passive: true });
+    window.addEventListener('pointerleave', onLeave);
 
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerleave', onLeave);
     };
   }, [gap]);
 
