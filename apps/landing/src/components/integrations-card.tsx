@@ -36,7 +36,7 @@ export function IntegrationsCard() {
   const right = [rest, n8n, ws];
 
   return (
-    <div id="integrations" className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden bg-card px-6 py-16">
+    <div id="integrations" className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden bg-transparent px-6 py-16">
       <ScrollNav dir="up" label="Назад" className="absolute inset-x-0 top-24 z-20 mx-auto w-fit" />
       <div data-fade-on-scroll className="mb-10 max-w-xl text-center">
         <h2 className="text-balance font-heading text-3xl font-semibold tracking-tight md:text-4xl">

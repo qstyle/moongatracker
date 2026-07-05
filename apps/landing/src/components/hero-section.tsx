@@ -1,20 +1,12 @@
 import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollNav } from '@/components/scroll-nav';
-import { DotGridCanvas } from '@/components/dot-grid-canvas';
 import { APP_URL } from '@/lib/constants';
 
 export function HeroCard() {
   return (
-    <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-background">
-      {/* Фон: дышащая сетка точек (розовые волны) */}
-      <DotGridCanvas className="pointer-events-none absolute inset-0 h-full w-full" />
-      {/* Мягкое свечение primary для глубины */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_35%,color-mix(in_oklch,var(--primary)_12%,transparent),transparent)]" />
-      {/* Wash по центру — читаемость заголовка поверх карточек */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_55%_at_50%_45%,var(--background),transparent)]" />
-
-      <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center px-6 text-center">
+    <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-transparent">
+      <div data-fade-on-scroll className="relative z-10 mx-auto flex max-w-4xl flex-col items-center px-6 text-center">
         <span className="mb-5 inline-flex items-center gap-2 border border-border px-3 py-1 text-xs text-muted-foreground">
           канбан для человека и AI-агента
         </span>

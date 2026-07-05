@@ -26,7 +26,7 @@ export function Header() {
   return (
     <header>
       <nav data-state={menuState && 'active'} className="fixed z-20 w-full pt-2">
-        <div className={cn('mx-auto max-w-7xl px-6 transition-all duration-300 lg:px-12', scrolled && 'bg-background/60 backdrop-blur-2xl')}>
+        <div className="mx-auto max-w-7xl px-6 transition-all duration-300 lg:px-12">
           <motion.div className={cn('relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-6', scrolled && 'lg:py-4')}>
             <div className="flex w-full items-center justify-between gap-12 lg:w-auto">
               <a href="/" aria-label="home" className="flex items-center">
