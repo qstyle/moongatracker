@@ -19,6 +19,7 @@ import {
   proposeCardDeletion,
 } from './tools/propose-card-deletion.js';
 import { commentCardTool, commentCard } from './tools/comment-card.js';
+import { listCommentsTool, listComments } from './tools/list-comments.js';
 import { listActivityTool, listActivity } from './tools/list-activity.js';
 import { listWikiTool, listWiki } from './tools/list-wiki.js';
 import { getWikiPageTool, getWikiPage } from './tools/get-wiki-page.js';
@@ -44,6 +45,7 @@ const tools = [
   assignCardTool,
   proposeCardDeletionTool,
   commentCardTool,
+  listCommentsTool,
   listActivityTool,
   listWikiTool,
   getWikiPageTool,
@@ -112,6 +114,9 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
         break;
       case 'comment_card':
         text = await commentCard(args as { cardId: string; body: string });
+        break;
+      case 'list_comments':
+        text = await listComments(args as { cardId: string });
         break;
       case 'list_activity':
         text = await listActivity(args as { cardId: string });
