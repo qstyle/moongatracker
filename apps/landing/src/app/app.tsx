@@ -1,7 +1,7 @@
 import ReactLenis from 'lenis/react';
 import { Header } from '@/components/header';
 import { DotGridCanvas } from '@/components/dot-grid-canvas';
-import { ScrollNav } from '@/components/scroll-nav';
+import { StackNav } from '@/components/stack-nav';
 import { StickyCardStack } from '@/components/sticky-card-stack';
 import { HeroCard } from '@/components/hero-section';
 import { HowItWorksCard } from '@/components/how-it-works-section';
@@ -25,9 +25,8 @@ export function App() {
           <IntegrationsCard />
           <PricingCard />
         </StickyCardStack>
-        {/* Единая навигация — одна и та же на всех экранах, включая Hero */}
-        <ScrollNav dir="up" label="Назад" className="fixed inset-x-0 top-24 z-30 mx-auto w-fit" />
-        <ScrollNav dir="down" label="Листайте вниз" className="fixed inset-x-0 bottom-6 z-30 mx-auto w-fit" />
+        {/* Единая навигация: «Назад» скрыта на первом экране, «Листайте вниз» — на последнем */}
+        <StackNav total={5} />
       </ReactLenis>
     </>
   );
