@@ -5,6 +5,7 @@ import {
   OnModuleDestroy,
 } from '@nestjs/common';
 import { Bot } from 'grammy';
+import { ProposalsService } from '../proposals/proposals.service';
 import { TelegramLinkService } from './telegram-link.service';
 
 /**
@@ -19,7 +20,10 @@ export class TelegramService implements OnApplicationBootstrap, OnModuleDestroy 
   private bot: Bot | null = null;
   private botUsername: string | null = null;
 
-  constructor(private readonly links: TelegramLinkService) {}
+  constructor(
+    private readonly links: TelegramLinkService,
+    private readonly proposals: ProposalsService,
+  ) {}
 
   get enabled(): boolean {
     return this.token.length > 0;
@@ -50,6 +54,27 @@ export class TelegramService implements OnApplicationBootstrap, OnModuleDestroy 
           await ctx.reply('❌ Код недействителен. Проверьте ссылку.');
         }
       });
+      // Approve/reject buttons on proposal messages (callback_data
+      // "approve:<id>" / "reject:<id>").
+      bot.callbackQuery(/^(approve|reject):(.+)$/, async (ctx) => {
+        const [, verb, proposalId] = ctx.match as RegExpMatchArray;
+        const chatId = String(ctx.chat?.id ?? ctx.from.id);
+        const decision = verb === 'approve' ? 'approved' : 'rejected';
+        const result = await this.proposals.decideFromChat(
+          proposalId,
+          decision,
+          chatId,
+        );
+        await ctx.answerCallbackQuery({ text: result.text });
+        if (result.ok) {
+          try {
+            await ctx.editMessageReplyMarkup(); // drop the buttons
+          } catch {
+            /* message may be too old to edit — ignore */
+          }
+        }
+      });
+
       bot.catch((err) =>
         this.logger.error(`Bot error: ${err.error}`, err.stack),
       );
@@ -82,6 +107,31 @@ export class TelegramService implements OnApplicationBootstrap, OnModuleDestroy 
       await this.bot.api.sendMessage(chatId, text);
     } catch (err) {
       this.logger.warn(`Failed to send message to ${chatId}: ${String(err)}`);
+    }
+  }
+
+  /** Send a message carrying inline Approve/Reject buttons for a proposal. */
+  async sendApprovalRequest(
+    chatId: string,
+    text: string,
+    proposalId: string,
+  ): Promise<void> {
+    if (!this.bot) return;
+    try {
+      await this.bot.api.sendMessage(chatId, text, {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: '✅ Одобрить', callback_data: `approve:${proposalId}` },
+              { text: '❌ Отклонить', callback_data: `reject:${proposalId}` },
+            ],
+          ],
+        },
+      });
+    } catch (err) {
+      this.logger.warn(
+        `Failed to send approval request to ${chatId}: ${String(err)}`,
+      );
     }
   }
 }

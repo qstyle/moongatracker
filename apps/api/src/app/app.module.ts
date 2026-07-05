@@ -15,6 +15,7 @@ import { AttachmentsModule } from '../attachments/attachments.module';
 import { WikiModule } from '../wiki/wiki.module';
 import { CanvasModule } from '../canvas/canvas.module';
 import { TelegramModule } from '../telegram/telegram.module';
+import { ProposalsModule } from '../proposals/proposals.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -51,6 +52,7 @@ const staticModules: DynamicModule[] =
     AttachmentsModule,
     WikiModule,
     CanvasModule,
+    ProposalsModule,
     TelegramModule,
   ],
   controllers: [AppController],

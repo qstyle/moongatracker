@@ -7,6 +7,7 @@
 export const CARD_MOVED = 'card.moved';
 export const CARD_ASSIGNED = 'card.assigned';
 export const CARD_COMMENTED = 'card.commented';
+export const PROPOSAL_CREATED = 'proposal.created';
 
 /** Who performed the action — used to avoid notifying people about their own. */
 export interface EventActor {
@@ -30,4 +31,8 @@ export interface CardAssignedPayload {
 export interface CardCommentedPayload {
   cardId: string;
   actor: EventActor;
+}
+
+export interface ProposalCreatedPayload {
+  proposalId: string;
 }

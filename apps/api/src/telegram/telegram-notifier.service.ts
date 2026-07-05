@@ -10,10 +10,12 @@ import {
   CARD_ASSIGNED,
   CARD_COMMENTED,
   CARD_MOVED,
+  PROPOSAL_CREATED,
   CardAssignedPayload,
   CardCommentedPayload,
   CardMovedPayload,
   EventActor,
+  ProposalCreatedPayload,
 } from './telegram.events';
 
 /**
@@ -123,6 +125,32 @@ export class TelegramNotifierService {
       `${who ? ` · ${who}` : ''}` +
       this.link(ctx);
     await this.deliver(recipients, text, 'cardCommented');
+  }
+
+  @OnEvent(PROPOSAL_CREATED)
+  async handleProposalCreated(payload: ProposalCreatedPayload): Promise<void> {
+    const p = await this.prisma.proposal.findUnique({
+      where: { id: payload.proposalId },
+      include: { project: true },
+    });
+    if (!p || p.status !== 'pending') return;
+    const ownerId = p.project.ownerId;
+    if (!ownerId) return; // ownerless project → in-app approval only
+    const link = await this.prisma.telegramLink.findUnique({
+      where: { userId: ownerId },
+    });
+    if (!link) return;
+
+    const data = (p.payload ?? {}) as { cardTitle?: string; cardKey?: string };
+    const who = await this.actorName({
+      type: p.actorType === 'agent' ? 'agent' : 'user',
+      id: p.actorId,
+    });
+    const text =
+      `🔔 Запрос на удаление карточки ${data.cardKey ?? ''} «${data.cardTitle ?? ''}»` +
+      (p.reason ? `\nПричина: ${p.reason}` : '') +
+      (who ? `\nОт: ${who}` : '');
+    await this.telegram.sendApprovalRequest(link.chatId, text, p.id);
   }
 
   private async cardContext(cardId: string): Promise<CardContext | null> {
