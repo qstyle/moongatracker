@@ -11,7 +11,7 @@ const PLANS = [
 
 export function PricingCard() {
   return (
-    <div id="pricing" className="relative flex h-full w-full items-center overflow-y-auto bg-card/40 backdrop-blur-md px-6 py-16">
+    <div id="pricing" className="relative flex h-full w-full items-center overflow-y-auto bg-card/30 px-6 py-16">
       <ScrollNav dir="up" label="Назад" className="absolute inset-x-0 top-24 z-20 mx-auto w-fit" />
       <div data-fade-on-scroll className="mx-auto w-full max-w-4xl">
         <div className="mx-auto mb-10 max-w-xl text-center">
