@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
-import { useScroll, motion } from 'motion/react';
+import { useState } from 'react';
+import { motion } from 'motion/react';
 import { Menu, X } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { APP_URL } from '@/lib/constants';
 
 const menuItems = [
@@ -15,19 +14,12 @@ const menuItems = [
 
 export function Header() {
   const [menuState, setMenuState] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const { scrollYProgress } = useScroll();
-
-  useEffect(() => {
-    const unsub = scrollYProgress.on('change', (v) => setScrolled(v > 0.05));
-    return () => unsub();
-  }, [scrollYProgress]);
 
   return (
     <header>
       <nav data-state={menuState && 'active'} className="fixed z-20 w-full pt-2">
-        <div className="mx-auto max-w-7xl px-6 transition-all duration-300 lg:px-12">
-          <motion.div className={cn('relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-6', scrolled && 'lg:py-4')}>
+        <div className="mx-auto max-w-7xl px-6 lg:px-12">
+          <motion.div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-6">
             <div className="flex w-full items-center justify-between gap-12 lg:w-auto">
               <a href="/" aria-label="home" className="flex items-center">
                 <Logo />

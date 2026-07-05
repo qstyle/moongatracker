@@ -5,7 +5,7 @@ import { APP_URL } from '@/lib/constants';
 
 export function HeroCard() {
   return (
-    <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-transparent">
+    <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-card/40 backdrop-blur-md">
       <div data-fade-on-scroll className="relative z-10 mx-auto flex max-w-4xl flex-col items-center px-6 text-center">
         <span className="mb-5 inline-flex items-center gap-2 border border-border px-3 py-1 text-xs text-muted-foreground">
           канбан для человека и AI-агента
