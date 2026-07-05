@@ -1,19 +1,47 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
+import { useLenis } from 'lenis/react';
 import { Menu, X } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { APP_URL } from '@/lib/constants';
 
+// index — номер экрана в стеке, к которому ведёт пункт (Hero = 0).
 const menuItems = [
-  { name: 'Как работает', href: '#how' },
-  { name: 'Демо', href: '#demo' },
-  { name: 'Интеграции', href: '#integrations' },
-  { name: 'Тарифы', href: '#pricing' },
+  { name: 'Как работает', index: 1 },
+  { name: 'Демо', index: 2 },
+  { name: 'Интеграции', index: 3 },
+  { name: 'Тарифы', index: 4 },
 ];
 
 export function Header() {
   const [menuState, setMenuState] = useState(false);
+  const [active, setActive] = useState(0);
+
+  const lenis = useLenis((l) =>
+    setActive(Math.round(l.scroll / (window.innerHeight || 1))),
+  );
+
+  const goTo = (i: number) => {
+    const y = i * window.innerHeight;
+    if (lenis) {
+      lenis.scrollTo(y, {
+        duration: 0.9,
+        lock: true,
+        easing: (t: number) => 1 - Math.pow(1 - t, 3),
+      });
+    } else {
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+    setMenuState(false);
+  };
+
+  const itemClass = (i: number) =>
+    cn(
+      'block cursor-pointer duration-150',
+      active === i ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
+    );
 
   return (
     <header>
@@ -35,10 +63,10 @@ export function Header() {
               <div className="hidden lg:block">
                 <ul className="flex gap-8 text-sm">
                   {menuItems.map((item) => (
-                    <li key={item.href}>
-                      <a href={item.href} className="text-muted-foreground hover:text-foreground block duration-150">
+                    <li key={item.name}>
+                      <button type="button" onClick={() => goTo(item.index)} className={itemClass(item.index)}>
                         {item.name}
-                      </a>
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -48,10 +76,10 @@ export function Header() {
               <div className="lg:hidden">
                 <ul className="space-y-6 text-base">
                   {menuItems.map((item) => (
-                    <li key={item.href}>
-                      <a href={item.href} className="text-muted-foreground hover:text-foreground block duration-150">
+                    <li key={item.name}>
+                      <button type="button" onClick={() => goTo(item.index)} className={itemClass(item.index)}>
                         {item.name}
-                      </a>
+                      </button>
                     </li>
                   ))}
                 </ul>
