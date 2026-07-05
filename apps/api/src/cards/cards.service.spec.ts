@@ -157,3 +157,92 @@ describe('CardsService — project-scope authorization', () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 });
+
+describe('CardsService — self-assign & inbox', () => {
+  const NOW = new Date('2025-01-01T00:00:00.000Z');
+
+  function cardRow(over: Record<string, unknown> = {}) {
+    return {
+      id: 'c1',
+      boardId: 'b1',
+      columnId: 'col1',
+      number: 1,
+      title: 't',
+      body: null,
+      priority: null,
+      authorType: 'user',
+      authorId: 'u1',
+      assigneeType: null,
+      assigneeId: null,
+      order: 0,
+      createdAt: NOW,
+      updatedAt: NOW,
+      ...over,
+    };
+  }
+
+  it('update() resolves assigneeId "me" to the agent token id', async () => {
+    let updateData: any;
+    const prisma = {
+      board: { findUnique: jest.fn().mockResolvedValue({ id: 'b1', projectId: 'p1' }) },
+      membership: { findUnique: jest.fn().mockResolvedValue({ id: 'm1' }) },
+      card: {
+        findUnique: jest
+          .fn()
+          .mockResolvedValueOnce({ id: 'c1', board: { id: 'b1', projectId: 'p1' } }) // assertCardAccess
+          .mockResolvedValueOnce(cardRow()), // existing
+        update: jest.fn().mockImplementation(({ data }: any) => {
+          updateData = data;
+          return cardRow({ assigneeType: 'agent', assigneeId: 'tok1' });
+        }),
+      },
+    } as any;
+    const svc = new CardsService(prisma, { record: jest.fn() } as any, { emit: jest.fn() } as any);
+
+    await svc.update('c1', { assigneeId: 'me' } as any, {
+      type: 'agent',
+      tokenId: 'tok1',
+      userId: 'u1',
+    } as any);
+
+    expect(updateData.assigneeId).toBe('tok1');
+    expect(updateData.assigneeType).toBe('agent');
+  });
+
+  it('listAssignedTo() returns cards assigned to the agent across accessible projects', async () => {
+    const prisma = {
+      membership: { findMany: jest.fn().mockResolvedValue([{ projectId: 'p1' }, { projectId: 'p2' }]) },
+      card: {
+        findMany: jest.fn().mockResolvedValue([cardRow({ assigneeType: 'agent', assigneeId: 'tok1' })]),
+      },
+    } as any;
+    const svc = new CardsService(prisma, { record: jest.fn() } as any, { emit: jest.fn() } as any);
+
+    const result = await svc.listAssignedTo({ type: 'agent', userId: 'u1', tokenId: 'tok1' } as any);
+
+    expect(prisma.card.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          assigneeType: 'agent',
+          assigneeId: 'tok1',
+          board: { projectId: { in: ['p1', 'p2'] } },
+        }),
+      }),
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe('c1');
+  });
+
+  it('listAssignedTo() returns [] when the actor has no accessible projects', async () => {
+    const prisma = {
+      membership: { findMany: jest.fn().mockResolvedValue([]) },
+      card: { findMany: jest.fn() },
+    } as any;
+    const svc = new CardsService(prisma, { record: jest.fn() } as any, { emit: jest.fn() } as any);
+
+    const result = await svc.listAssignedTo({ type: 'user', sub: 'lonely' } as any);
+
+    expect(result).toEqual([]);
+    expect(prisma.card.findMany).not.toHaveBeenCalled();
+  });
+});

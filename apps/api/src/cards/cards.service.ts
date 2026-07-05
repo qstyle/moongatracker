@@ -31,6 +31,46 @@ export class CardsService {
       : { type: 'user', id: user?.sub ?? null };
   }
 
+  /** Project ids the actor can access (member of, or legacy token scope). */
+  private async accessibleProjectIds(
+    actor: RequestActor | undefined,
+  ): Promise<string[]> {
+    if (actor?.type === 'agent') {
+      if (actor.userId) {
+        const ms = await this.prisma.membership.findMany({
+          where: { userId: actor.userId },
+          select: { projectId: true },
+        });
+        return ms.map((m) => m.projectId);
+      }
+      return actor.projectId ? [actor.projectId] : [];
+    }
+    if (!actor?.sub) return [];
+    const ms = await this.prisma.membership.findMany({
+      where: { userId: actor.sub },
+      select: { projectId: true },
+    });
+    return ms.map((m) => m.projectId);
+  }
+
+  /** Cards assigned to the caller across every project they can access. */
+  async listAssignedTo(actor: RequestActor): Promise<CardDto[]> {
+    const { type, id } = this.actorOf(actor);
+    if (!id) return [];
+    const projectIds = await this.accessibleProjectIds(actor);
+    if (!projectIds.length) return [];
+    const cards = await this.prisma.card.findMany({
+      where: {
+        assigneeType: type,
+        assigneeId: id,
+        board: { projectId: { in: projectIds } },
+      },
+      include: { _count: { select: { attachments: true } } },
+      orderBy: { updatedAt: 'desc' },
+    });
+    return cards.map(toCardDto);
+  }
+
   async create(dto: CreateCardDto, user?: any): Promise<CardDto> {
     await assertBoardAccess(this.prisma, user, dto.boardId);
     const authorType = user?.type === 'agent' ? 'agent' : 'user';
@@ -110,6 +150,14 @@ export class CardsService {
 
   async update(id: string, dto: UpdateCardDto, user?: any): Promise<CardDto> {
     await assertCardAccess(this.prisma, user, id);
+
+    // Sentinel: assigneeId "me" self-assigns to the caller (agent or user) so an
+    // agent can claim a card without knowing its own token id.
+    if (dto.assigneeId === 'me') {
+      const self = this.actorOf(user);
+      dto.assigneeId = self.id;
+      dto.assigneeType = self.type;
+    }
 
     // Always load the prior state: needed both for the agent activity trace and
     // to diff column/assignee changes for Telegram notifications.
