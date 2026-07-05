@@ -8,10 +8,12 @@ import {
 import { listProjectsTool, listProjects } from './tools/list-projects.js';
 import { listBoardsTool, listBoards } from './tools/list-boards.js';
 import { listCardsTool, listCards } from './tools/list-cards.js';
+import { listMyCardsTool, listMyCards } from './tools/list-my-cards.js';
 import { getCardTool, getCard } from './tools/get-card.js';
 import { createCardTool, createCard } from './tools/create-card.js';
 import { moveCardTool, moveCard } from './tools/move-card.js';
 import { updateCardTool, updateCard } from './tools/update-card.js';
+import { assignCardTool, assignCard } from './tools/assign-card.js';
 import { commentCardTool, commentCard } from './tools/comment-card.js';
 import { listActivityTool, listActivity } from './tools/list-activity.js';
 import { listWikiTool, listWiki } from './tools/list-wiki.js';
@@ -30,10 +32,12 @@ const tools = [
   listProjectsTool,
   listBoardsTool,
   listCardsTool,
+  listMyCardsTool,
   getCardTool,
   createCardTool,
   moveCardTool,
   updateCardTool,
+  assignCardTool,
   commentCardTool,
   listActivityTool,
   listWikiTool,
@@ -60,6 +64,9 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       case 'list_cards':
         text = await listCards(args as { boardId: string; columnId?: string });
         break;
+      case 'list_my_cards':
+        text = await listMyCards();
+        break;
       case 'get_card':
         text = await getCard(
           args as {
@@ -85,8 +92,13 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
             body?: string;
             priority?: 'urgent' | 'normal' | 'low';
             columnId?: string;
+            assigneeType?: 'user' | 'agent';
+            assigneeId?: string;
           },
         );
+        break;
+      case 'assign_card':
+        text = await assignCard(args as { cardId: string; target: 'me' | 'none' });
         break;
       case 'comment_card':
         text = await commentCard(args as { cardId: string; body: string });

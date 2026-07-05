@@ -32,6 +32,13 @@ export class CardsController {
     return this.cards.getByBoardAndNumber(boardId, Number(number), req.user);
   }
 
+  // Caller's inbox: cards assigned to them across every accessible project.
+  // Declared before ':id' so "assigned" is not captured as a card id.
+  @Get('assigned')
+  listAssigned(@Req() req: any): Promise<CardDto[]> {
+    return this.cards.listAssignedTo(req.user);
+  }
+
   @Get(':id')
   getById(@Param('id') id: string, @Req() req: any): Promise<CardDto> {
     return this.cards.getById(id, req.user);
