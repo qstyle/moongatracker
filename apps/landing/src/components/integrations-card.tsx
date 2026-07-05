@@ -1,5 +1,5 @@
 import { Fragment, forwardRef, useRef } from 'react';
-import { Bot, Send, Wrench, Server, Workflow, Radio, KeyRound, GitMerge } from 'lucide-react';
+import { Bot, Send, Wrench, Server, Workflow, Radio, GitMerge } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AnimatedBeam } from '@/components/animated-beam';
 
@@ -76,9 +76,6 @@ export function IntegrationsCard() {
           );
         })}
       </div>
-
-      <div className="mt-8 flex items-center gap-2 text-xs text-muted-foreground">
-        <KeyRound className="size-3.5" /> API-токены со скоупом и отзывом · трейс и откат каждого действия
-      </div>    </div>
+    </div>
   );
 }
