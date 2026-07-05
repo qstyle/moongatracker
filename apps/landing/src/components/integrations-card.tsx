@@ -2,7 +2,6 @@ import { Fragment, forwardRef, useRef } from 'react';
 import { Bot, Send, Wrench, Server, Workflow, Radio, KeyRound, GitMerge } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AnimatedBeam } from '@/components/animated-beam';
-import { ScrollNav } from '@/components/scroll-nav';
 
 const Circle = forwardRef<HTMLDivElement, { className?: string; children?: React.ReactNode }>(
   ({ className, children }, ref) => (
@@ -36,9 +35,7 @@ export function IntegrationsCard() {
   const right = [rest, n8n, ws];
 
   return (
-    <div id="integrations" className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden bg-card/30 px-6 py-16">
-      <ScrollNav dir="up" label="Назад" className="absolute inset-x-0 top-24 z-20 mx-auto w-fit" />
-      <div data-fade-on-scroll className="mb-10 max-w-xl text-center">
+    <div id="integrations" className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden bg-card/30 px-6 py-16">      <div data-fade-on-scroll className="mb-10 max-w-xl text-center">
         <h2 className="text-balance font-heading text-3xl font-semibold tracking-tight md:text-4xl">
           Твой агент работает с доской откуда угодно
         </h2>
@@ -82,8 +79,6 @@ export function IntegrationsCard() {
 
       <div className="mt-8 flex items-center gap-2 text-xs text-muted-foreground">
         <KeyRound className="size-3.5" /> API-токены со скоупом и отзывом · трейс и откат каждого действия
-      </div>
-      <ScrollNav dir="down" label="Листайте вниз" className="absolute inset-x-0 bottom-6 z-20 mx-auto w-fit" />
-    </div>
+      </div>    </div>
   );
 }

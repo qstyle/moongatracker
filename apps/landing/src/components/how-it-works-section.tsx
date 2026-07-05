@@ -1,5 +1,4 @@
 import { Lightbulb, Search, GitBranch, CheckCircle2 } from 'lucide-react';
-import { ScrollNav } from '@/components/scroll-nav';
 
 const STEPS = [
   { icon: Lightbulb, title: 'Кидаешь идею', text: 'В чат агенту (Telegram / Claude) или прямо на доску.' },
@@ -10,9 +9,7 @@ const STEPS = [
 
 export function HowItWorksCard() {
   return (
-    <div id="how" className="relative flex h-full w-full items-center overflow-y-auto bg-card/30 px-6 py-16">
-      <ScrollNav dir="up" label="Назад" className="absolute inset-x-0 top-24 z-20 mx-auto w-fit" />
-      <div data-fade-on-scroll className="mx-auto w-full max-w-4xl">
+    <div id="how" className="relative flex h-full w-full items-center overflow-y-auto bg-card/30 px-6 py-16">      <div data-fade-on-scroll className="mx-auto w-full max-w-4xl">
         <div className="mx-auto mb-12 max-w-2xl text-center">
           <h2 className="text-balance font-heading text-3xl font-semibold tracking-tight md:text-4xl">
             От идеи до релиза — на одной карточке
@@ -34,8 +31,6 @@ export function HowItWorksCard() {
             </li>
           ))}
         </ol>
-      </div>
-      <ScrollNav dir="down" label="Листайте вниз" className="absolute inset-x-0 bottom-6 z-20 mx-auto w-fit" />
-    </div>
+      </div>    </div>
   );
 }

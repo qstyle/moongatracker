@@ -1,6 +1,5 @@
 import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ScrollNav } from '@/components/scroll-nav';
 import { APP_URL } from '@/lib/constants';
 
 const PLANS = [
@@ -11,9 +10,7 @@ const PLANS = [
 
 export function PricingCard() {
   return (
-    <div id="pricing" className="relative flex h-full w-full items-center overflow-y-auto bg-card/30 px-6 py-16">
-      <ScrollNav dir="up" label="Назад" className="absolute inset-x-0 top-24 z-20 mx-auto w-fit" />
-      <div data-fade-on-scroll className="mx-auto w-full max-w-4xl">
+    <div id="pricing" className="relative flex h-full w-full items-center overflow-y-auto bg-card/30 px-6 py-16">      <div data-fade-on-scroll className="mx-auto w-full max-w-4xl">
         <div className="mx-auto mb-10 max-w-xl text-center">
           <h2 className="text-balance font-heading text-3xl font-semibold tracking-tight md:text-4xl">Начни бесплатно</h2>
           <p className="mt-3 text-balance text-muted-foreground">Доска, где человек и агент работают вместе. Апгрейд — когда вырастешь.</p>

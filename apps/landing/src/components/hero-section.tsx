@@ -1,6 +1,5 @@
 import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ScrollNav } from '@/components/scroll-nav';
 import { APP_URL } from '@/lib/constants';
 
 export function HeroCard() {
@@ -27,9 +26,7 @@ export function HeroCard() {
           <Button asChild size="lg" variant="ghost" className="h-12 px-5 text-base">
             <a href="#demo"><span className="text-nowrap">Смотреть демо</span></a>
           </Button>
-        </div>
-        <ScrollNav dir="down" label="Листайте вниз" className="mt-12" />
-      </div>
+        </div>      </div>
     </div>
   );
 }
