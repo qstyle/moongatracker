@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   assertBoardAccess,
   assertCardAccess,
@@ -7,6 +8,11 @@ import {
 } from '@moongatracker/data-access';
 import { CardDto } from '@moongatracker/shared-types';
 import { ActivityService } from '../activity/activity.service';
+import {
+  CARD_ASSIGNED,
+  CARD_MOVED,
+  EventActor,
+} from '../telegram/telegram.events';
 import { toCardDto } from './card.mapper';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
@@ -16,7 +22,14 @@ export class CardsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly activity: ActivityService,
+    private readonly events: EventEmitter2,
   ) {}
+
+  private actorOf(user?: any): EventActor {
+    return user?.type === 'agent'
+      ? { type: 'agent', id: user.tokenId ?? null }
+      : { type: 'user', id: user?.sub ?? null };
+  }
 
   async create(dto: CreateCardDto, user?: any): Promise<CardDto> {
     await assertBoardAccess(this.prisma, user, dto.boardId);
@@ -98,11 +111,9 @@ export class CardsService {
   async update(id: string, dto: UpdateCardDto, user?: any): Promise<CardDto> {
     await assertCardAccess(this.prisma, user, id);
 
-    let existing: Awaited<ReturnType<typeof this.prisma.card.findUnique>> =
-      null;
-    if (user?.type === 'agent') {
-      existing = await this.prisma.card.findUnique({ where: { id } });
-    }
+    // Always load the prior state: needed both for the agent activity trace and
+    // to diff column/assignee changes for Telegram notifications.
+    const existing = await this.prisma.card.findUnique({ where: { id } });
 
     const card = await this.prisma.card.update({
       where: { id },
@@ -133,6 +144,34 @@ export class CardsService {
         },
         { ...dto },
       );
+    }
+
+    const actor = this.actorOf(user);
+    if (
+      dto.columnId !== undefined &&
+      existing &&
+      existing.columnId !== card.columnId
+    ) {
+      this.events.emit(CARD_MOVED, {
+        cardId: id,
+        actor,
+        fromColumnId: existing.columnId,
+        toColumnId: card.columnId,
+      });
+    }
+    if (
+      dto.assigneeId !== undefined &&
+      card.assigneeId &&
+      existing?.assigneeId !== card.assigneeId
+    ) {
+      this.events.emit(CARD_ASSIGNED, {
+        cardId: id,
+        actor,
+        assignee: {
+          type: (card.assigneeType as 'user' | 'agent') ?? 'user',
+          id: card.assigneeId,
+        },
+      });
     }
 
     return toCardDto(card);

@@ -46,7 +46,7 @@ describe('CardsService', () => {
       $transaction: async (fn: any) => fn(fakePrisma),
     } as any;
 
-    const service = new CardsService(fakePrisma);
+    const service = new CardsService(fakePrisma, undefined as any, { emit: jest.fn() } as any);
     const result = await service.create(
       {
         boardId: 'b1',
@@ -101,7 +101,7 @@ describe('CardsService', () => {
       $transaction: async (fn: any) => fn(fakePrisma),
     } as any;
 
-    const service = new CardsService(fakePrisma);
+    const service = new CardsService(fakePrisma, undefined as any, { emit: jest.fn() } as any);
     const result = await service.create(
       {
         boardId: 'b1',
@@ -129,7 +129,8 @@ describe('CardsService — project-scope authorization', () => {
       },
     } as any;
     const activity = { record: jest.fn() } as any;
-    return new CardsService(prisma, activity);
+    const events = { emit: jest.fn() } as any;
+    return new CardsService(prisma, activity, events);
   }
 
   it('rejects create from an agent scoped to another project', async () => {

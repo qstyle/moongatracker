@@ -6,7 +6,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '@moongatracker/data-access';
-import { AuthResponse } from '@moongatracker/shared-types';
+import { AuthResponse, MeResponse } from '@moongatracker/shared-types';
 
 interface UserRow {
   id: string;
@@ -65,5 +65,29 @@ export class AuthService {
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) throw new UnauthorizedException('Invalid credentials');
     return this.toResponse(user);
+  }
+
+  async getMe(userId: string): Promise<MeResponse> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { telegramLink: true },
+    });
+    if (!user) throw new UnauthorizedException('User not found');
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      telegram: user.telegramLink
+        ? { connected: true, chatId: user.telegramLink.chatId }
+        : { connected: false },
+    };
+  }
+
+  async updateMe(userId: string, name: string): Promise<MeResponse> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { name: name.trim() },
+    });
+    return this.getMe(userId);
   }
 }
