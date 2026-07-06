@@ -1,6 +1,21 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Link, useRoute } from 'wouter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  RiLightbulbLine,
+  RiSearchEyeLine,
+  RiPencilRuler2Line,
+  RiHammerLine,
+  RiRocketLine,
+  RiGlobalLine,
+  RiFlag2Line,
+  RiCheckLine,
+  RiArrowRightSLine,
+  RiKanbanView,
+  RiAddLine,
+  RiCloseLine,
+  type RemixiconComponentType,
+} from '@remixicon/react';
 import type { StageDto } from '@moongatracker/shared-types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +27,18 @@ import {
   seedDefaultStages,
 } from '../api/stages';
 import { createBoard } from '../api/boards';
+
+const STAGE_ICONS: Record<string, RemixiconComponentType> = {
+  idea: RiLightbulbLine,
+  validate: RiSearchEyeLine,
+  design: RiPencilRuler2Line,
+  build: RiHammerLine,
+  launch: RiRocketLine,
+  prod: RiGlobalLine,
+};
+function stageIcon(key: string | null): RemixiconComponentType {
+  return (key && STAGE_ICONS[key]) || RiFlag2Line;
+}
 
 export function RoadmapPage() {
   const [, params] = useRoute('/projects/:projectId/roadmap');
@@ -35,12 +62,19 @@ export function RoadmapPage() {
 
   if (stages.length === 0) {
     return (
-      <div className="p-6">
-        <div className="max-w-sm space-y-3 rounded border border-border/60 bg-muted/30 p-4">
-          <div className="text-sm text-muted-foreground">
-            У проекта пока нет роадмапа.
+      <div className="grid h-full place-items-center p-6">
+        <div className="max-w-sm space-y-4 rounded-2xl border border-border/60 bg-card/40 p-6 text-center">
+          <div className="mx-auto grid size-12 place-items-center rounded-full bg-primary/10 text-primary">
+            <RiRocketLine size={22} />
+          </div>
+          <div className="space-y-1">
+            <div className="font-semibold text-foreground">Роадмап пуст</div>
+            <div className="text-sm text-muted-foreground">
+              Соберите путь стартапа — от идеи до прода.
+            </div>
           </div>
           <Button
+            className="w-full"
             onClick={async () => {
               await seedDefaultStages(projectId);
               invalidate();
@@ -53,6 +87,12 @@ export function RoadmapPage() {
     );
   }
 
+  const total = stages.length;
+  const doneCount = stages.filter((s) => s.status === 'done').length;
+  const activeIdx = stages.findIndex((s) => s.status === 'active');
+  const totalBoards = stages.reduce((n, s) => n + s.boards.length, 0);
+  const pct = Math.round(((doneCount + (activeIdx >= 0 ? 0.5 : 0)) / total) * 100);
+
   async function advance(stageId: string) {
     const idx = stages.findIndex((s) => s.id === stageId);
     await updateStage(stageId, { status: 'done' });
@@ -60,8 +100,6 @@ export function RoadmapPage() {
     invalidate();
   }
 
-  // Board name is derived from the stage automatically; a numeric suffix keeps
-  // multiple boards of one stage unique.
   async function addBoard(stage: StageDto) {
     const n = stage.boards.length;
     const name = n === 0 ? stage.title : `${stage.title} ${n + 1}`;
@@ -77,84 +115,155 @@ export function RoadmapPage() {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden p-6">
-      <div className="mb-6 text-sm font-semibold uppercase tracking-wider">
-        Роадмап
+    <div className="flex h-full flex-col overflow-hidden">
+      <style>{`@keyframes rmIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}`}</style>
+
+      {/* Header with pipeline progress */}
+      <div className="flex items-end justify-between gap-4 border-b border-border/60 px-6 py-4">
+        <div>
+          <div className="text-sm font-semibold uppercase tracking-[0.16em] text-foreground">
+            Роадмап
+          </div>
+          <div className="mt-0.5 text-xs text-muted-foreground">
+            {activeIdx >= 0 ? `Стадия ${activeIdx + 1} из ${total}` : `${total} стадий`}
+            {' · '}
+            {totalBoards} {totalBoards === 1 ? 'доска' : 'досок'}
+          </div>
+        </div>
+        <div className="hidden w-56 items-center gap-3 sm:flex">
+          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-primary transition-all duration-500"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <div className="w-9 text-right text-xs tabular-nums text-muted-foreground">
+            {pct}%
+          </div>
+        </div>
       </div>
-      <div className="flex flex-1 items-start gap-3 overflow-x-auto pb-4">
-        {stages.map((s) => (
-          <div
-            key={s.id}
-            className={[
-              'flex w-64 shrink-0 flex-col gap-2 rounded border p-3',
-              s.status === 'active' ? 'border-primary' : 'border-border/60',
-            ].join(' ')}
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <div className="truncate font-medium text-foreground">{s.title}</div>
-                <div className="text-xs text-muted-foreground">
-                  {s.status === 'active'
-                    ? '● текущая'
-                    : s.status === 'done'
-                      ? '✓ пройдена'
-                      : 'не начата'}
-                </div>
-              </div>
-            </div>
 
-            <div className="flex flex-wrap gap-1.5">
-              {s.status === 'active' && (
-                <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => advance(s.id)}>
-                  Продвинуть
-                </Button>
-              )}
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-7 px-2 text-xs"
-                onClick={async () => {
-                  await deleteStage(s.id);
-                  invalidate();
-                }}
-              >
-                Удалить
-              </Button>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              {s.boards.map((b) => (
-                <Link
-                  key={b.id}
-                  href={`/boards/${b.id}`}
-                  className="truncate rounded border border-border bg-muted px-2 py-1 text-sm text-foreground hover:underline"
+      {/* The conveyor */}
+      <div className="flex-1 overflow-x-auto bg-[radial-gradient(120%_80%_at_0%_0%,var(--muted)_0%,transparent_55%)]">
+        <div className="flex min-w-max items-stretch gap-0 p-6">
+          {stages.map((s, i) => {
+            const Icon = stageIcon(s.key);
+            const done = s.status === 'done';
+            const active = s.status === 'active';
+            return (
+              <Fragment key={s.id}>
+                <div
+                  className={[
+                    'group relative flex w-64 shrink-0 flex-col gap-3 rounded-2xl border p-4 transition-transform duration-200 hover:-translate-y-0.5',
+                    active
+                      ? 'border-primary/50 bg-primary/[0.04] shadow-[0_10px_40px_-24px_var(--primary)] ring-1 ring-primary/25'
+                      : 'border-border/60 bg-card/40',
+                  ].join(' ')}
+                  style={{ animation: 'rmIn .4s ease both', animationDelay: `${i * 60}ms` }}
                 >
-                  {b.name}
-                </Link>
-              ))}
-              <Button size="sm" variant="ghost" className="justify-start" onClick={() => addBoard(s)}>
-                ＋ Создать доску
-              </Button>
-            </div>
-          </div>
-        ))}
+                  {/* header: medallion + title */}
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={[
+                        'grid size-10 shrink-0 place-items-center rounded-xl transition-colors',
+                        done
+                          ? 'bg-primary text-primary-foreground'
+                          : active
+                            ? 'bg-primary/10 text-primary ring-2 ring-primary/40'
+                            : 'bg-muted text-muted-foreground',
+                      ].join(' ')}
+                    >
+                      {done ? <RiCheckLine size={20} /> : <Icon size={18} />}
+                    </div>
+                    <div className="min-w-0 pt-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-semibold tabular-nums text-muted-foreground/70">
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <span className="truncate text-sm font-semibold text-foreground">
+                          {s.title}
+                        </span>
+                      </div>
+                      <div
+                        className={[
+                          'text-[11px] font-medium',
+                          active ? 'text-primary' : done ? 'text-muted-foreground' : 'text-muted-foreground/60',
+                        ].join(' ')}
+                      >
+                        {active ? '● текущая' : done ? '✓ пройдена' : 'не начата'}
+                      </div>
+                    </div>
+                    {/* remove stage — appears on hover */}
+                    <button
+                      type="button"
+                      aria-label="Удалить стадию"
+                      onClick={async () => { await deleteStage(s.id); invalidate(); }}
+                      className="ml-auto -mr-1 -mt-1 grid size-6 place-items-center rounded-md text-muted-foreground/40 opacity-0 transition hover:bg-muted hover:text-foreground group-hover:opacity-100"
+                    >
+                      <RiCloseLine size={15} />
+                    </button>
+                  </div>
 
-        <div className="flex w-56 shrink-0 flex-col gap-2 rounded border border-dashed border-border/60 p-3">
-          <div className="text-xs uppercase tracking-wider text-muted-foreground">
-            новая стадия
+                  {/* boards */}
+                  <div className="flex flex-col gap-1.5">
+                    {s.boards.map((b) => (
+                      <Link
+                        key={b.id}
+                        href={`/boards/${b.id}`}
+                        className="flex items-center gap-2 rounded-lg border border-border/70 bg-background/60 px-2.5 py-1.5 text-sm text-foreground transition hover:border-primary/40 hover:bg-muted"
+                      >
+                        <RiKanbanView size={13} className="shrink-0 text-muted-foreground" />
+                        <span className="truncate">{b.name}</span>
+                      </Link>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => addBoard(s)}
+                      className="flex items-center gap-1.5 rounded-lg border border-dashed border-border/60 px-2.5 py-1.5 text-sm text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
+                    >
+                      <RiAddLine size={14} /> Создать доску
+                    </button>
+                  </div>
+
+                  {active && (
+                    <Button size="sm" variant="outline" className="mt-1 h-8" onClick={() => advance(s.id)}>
+                      Продвинуть дальше
+                    </Button>
+                  )}
+                </div>
+
+                {/* connector */}
+                {i < stages.length - 1 && (
+                  <div className="flex shrink-0 items-center self-start pt-9">
+                    <div className={['h-px w-5', done ? 'bg-primary' : 'bg-border'].join(' ')} />
+                    <RiArrowRightSLine
+                      size={18}
+                      className={done ? 'text-primary' : 'text-muted-foreground/40'}
+                    />
+                  </div>
+                )}
+              </Fragment>
+            );
+          })}
+
+          {/* add-stage column */}
+          <div className="ml-4 flex w-52 shrink-0 flex-col justify-center gap-2 self-start rounded-2xl border border-dashed border-border/60 p-4">
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              новая стадия
+            </div>
+            <Input
+              value={newStage}
+              placeholder="Название"
+              className="h-8"
+              onChange={(e) => setNewStage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') addStage();
+              }}
+            />
+            <Button size="sm" disabled={!newStage.trim()} onClick={addStage}>
+              Добавить
+            </Button>
           </div>
-          <Input
-            value={newStage}
-            placeholder="Название"
-            className="h-8"
-            onChange={(e) => setNewStage(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') addStage();
-            }}
-          />
-          <Button size="sm" disabled={!newStage.trim()} onClick={addStage}>
-            Добавить
-          </Button>
         </div>
       </div>
     </div>
