@@ -5,8 +5,12 @@ interface DotGridCanvasProps {
   gap?: number;
 }
 
-// Фон Hero: сетка точек, которые «дышат» розовыми волнами и подсвечиваются
-// рядом с курсором (спотлайт следует за мышью). Цвет — из токена --primary.
+// Фон Hero: сетка точек, которые постоянно переливаются по цвету от ярко-красного
+// до белого (волна «дыхания») и дополнительно подсвечиваются к белому рядом с курсором.
+const RED = [255, 38, 58]; // ярко-красный
+const WHITE = [255, 255, 255];
+const lerp = (a: number, b: number, t: number) => Math.round(a + (b - a) * t);
+
 export function DotGridCanvas({ className, gap = 30 }: DotGridCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -16,9 +20,6 @@ export function DotGridCanvas({ className, gap = 30 }: DotGridCanvasProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return; // jsdom / нет canvas — тихо выходим
 
-    const primary =
-      getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() ||
-      '#c81e5a';
     const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
     let width = 0;
@@ -47,7 +48,6 @@ export function DotGridCanvas({ className, gap = 30 }: DotGridCanvasProps) {
     const draw = (now: number) => {
       const t = (now - start) * 0.001;
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = primary;
       const cx = width / 2;
       const cy = height * 0.42;
       for (let x = gap / 2; x < width; x += gap) {
@@ -65,14 +65,20 @@ export function DotGridCanvas({ className, gap = 30 }: DotGridCanvasProps) {
           const md = Math.sqrt(mdx * mdx + mdy * mdy);
           const infl = md < R ? (1 - md / R) ** 2 : 0;
 
-          ctx.globalAlpha = Math.min(1, 0.07 + m * 0.3 + infl * 0.55);
-          const r = 1 + m * 1.4 + infl * 2.4;
+          // цвет: от ярко-красного (t=0) к белому (t=1); курсор дотягивает к белому
+          const cf = Math.min(1, m + infl * 0.7);
+          const cr = lerp(RED[0], WHITE[0], cf);
+          const cg = lerp(RED[1], WHITE[1], cf);
+          const cb = lerp(RED[2], WHITE[2], cf);
+          const alpha = Math.min(1, 0.4 + m * 0.35 + infl * 0.5);
+
+          ctx.fillStyle = `rgba(${cr},${cg},${cb},${alpha})`;
+          const r = 0.8 + m * 1 + infl * 1.6;
           ctx.beginPath();
           ctx.arc(x, y, r, 0, Math.PI * 2);
           ctx.fill();
         }
       }
-      ctx.globalAlpha = 1;
       if (!reduce) raf = requestAnimationFrame(draw);
     };
 
