@@ -70,10 +70,10 @@ export function DotGridCanvas({ className, gap = 30 }: DotGridCanvasProps) {
           const cr = lerp(RED[0], WHITE[0], cf);
           const cg = lerp(RED[1], WHITE[1], cf);
           const cb = lerp(RED[2], WHITE[2], cf);
-          const alpha = Math.min(1, 0.4 + m * 0.35 + infl * 0.5);
+          const alpha = Math.min(1, 0.7 + m * 0.3 + infl * 0.4);
 
           ctx.fillStyle = `rgba(${cr},${cg},${cb},${alpha})`;
-          const r = 0.8 + m * 1 + infl * 1.6;
+          const r = 1.1 + m * 1.2 + infl * 1.8;
           ctx.beginPath();
           ctx.arc(x, y, r, 0, Math.PI * 2);
           ctx.fill();
