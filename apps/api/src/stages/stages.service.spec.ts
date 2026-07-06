@@ -36,6 +36,58 @@ function make(over: any = {}) {
   return { svc: new StagesService(prisma), prisma };
 }
 
+/** Build a prisma mock wired for scaffold tests. */
+function makeScaffold(stageOverride: any = {}, boardFindFirst: any = null) {
+  const txBoard = {
+    aggregate: jest.fn().mockResolvedValue({ _max: { seq: 0 } }),
+    create: jest.fn().mockResolvedValue({ id: 'b1' }),
+  };
+  const txColumn = { createMany: jest.fn().mockResolvedValue({ count: 4 }) };
+  const txCard = { createMany: jest.fn().mockResolvedValue({}) };
+  const txWikiSection = {
+    aggregate: jest.fn().mockResolvedValue({ _max: { order: -1 } }),
+    create: jest.fn().mockResolvedValue({ id: 'ws1' }),
+  };
+  const txWikiPage = { createMany: jest.fn().mockResolvedValue({}) };
+  const txColumn2 = { findFirst: jest.fn().mockResolvedValue({ id: 'col1' }) };
+
+  // Merge all tx sub-mocks
+  const tx: any = {
+    board: { ...txBoard },
+    column: { ...txColumn, findFirst: txColumn2.findFirst },
+    card: txCard,
+    wikiSection: txWikiSection,
+    wikiPage: txWikiPage,
+  };
+
+  const prisma: any = {
+    membership: { findUnique: jest.fn().mockResolvedValue({ id: 'm1' }) },
+    stage: {
+      findMany: jest.fn().mockResolvedValue([]),
+      findUnique: jest.fn().mockResolvedValue({
+        id: 'st1',
+        projectId: 'p1',
+        key: 'discovery',
+        title: 'Дискавери',
+        ...stageOverride,
+      }),
+      aggregate: jest.fn().mockResolvedValue({ _max: { order: 2 } }),
+      create: jest.fn(),
+      createMany: jest.fn(),
+      count: jest.fn(),
+      update: jest.fn(),
+      updateMany: jest.fn(),
+      delete: jest.fn(),
+    },
+    board: {
+      findFirst: jest.fn().mockResolvedValue(boardFindFirst),
+    },
+    $transaction: jest.fn().mockImplementation((fn: any) => fn(tx)),
+  };
+
+  return { svc: new StagesService(prisma), prisma, tx };
+}
+
 describe('StagesService', () => {
   it('create() appends after the max order', async () => {
     const { svc, prisma } = make();
@@ -74,6 +126,66 @@ describe('StagesService', () => {
     expect(prisma.stage.updateMany).toHaveBeenCalledWith({
       where: { id: 'b', projectId: 'p1' },
       data: { order: 1 },
+    });
+  });
+
+  describe('scaffold()', () => {
+    it('template stage: creates board+columns, seeds cards and wiki section with stageId; returns boardId', async () => {
+      const { svc, tx } = makeScaffold({ key: 'discovery' });
+      const result = await svc.scaffold('p1', 'st1', 'u1');
+
+      expect(result).toEqual({ boardId: 'b1' });
+
+      // Board created with stageId
+      expect(tx.board.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ stageId: 'st1', projectId: 'p1' }),
+        }),
+      );
+
+      // Cards seeded into column order=0
+      expect(tx.card.createMany).toHaveBeenCalled();
+      const cardArgs = tx.card.createMany.mock.calls[0][0];
+      expect(cardArgs.data.length).toBeGreaterThan(0);
+      // Each card has required fields
+      expect(cardArgs.data[0]).toMatchObject({
+        boardId: 'b1',
+        columnId: 'col1',
+        number: 1,
+        authorType: 'agent',
+      });
+
+      // WikiSection created with stageId
+      expect(tx.wikiSection.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ stageId: 'st1', projectId: 'p1' }),
+        }),
+      );
+
+      // WikiPages include the "Инструменты и ссылки" page
+      expect(tx.wikiPage.createMany).toHaveBeenCalled();
+      const pageArgs = tx.wikiPage.createMany.mock.calls[0][0];
+      const titles = pageArgs.data.map((p: any) => p.title);
+      expect(titles).toContain('Инструменты и ссылки');
+    });
+
+    it('idempotent: when board already exists, returns existing boardId without re-seeding', async () => {
+      const { svc, tx } = makeScaffold({ key: 'discovery' }, { id: 'existing-board' });
+      const result = await svc.scaffold('p1', 'st1', 'u1');
+
+      expect(result).toEqual({ boardId: 'existing-board' });
+      expect(tx.card.createMany).not.toHaveBeenCalled();
+    });
+
+    it('custom stage (null key): creates board+columns but does NOT seed cards or wiki', async () => {
+      const { svc, tx } = makeScaffold({ key: null, title: 'Custom' });
+      const result = await svc.scaffold('p1', 'st1', 'u1');
+
+      expect(result).toEqual({ boardId: 'b1' });
+      expect(tx.board.create).toHaveBeenCalled();
+      expect(tx.column.createMany).toHaveBeenCalled();
+      expect(tx.card.createMany).not.toHaveBeenCalled();
+      expect(tx.wikiSection.create).not.toHaveBeenCalled();
     });
   });
 });

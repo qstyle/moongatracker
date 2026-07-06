@@ -70,4 +70,13 @@ export class StagesController {
   ): Promise<void> {
     return this.stages.remove(id, req.user.sub);
   }
+
+  @Post('projects/:projectId/stages/:stageId/scaffold')
+  scaffold(
+    @Param('projectId') projectId: string,
+    @Param('stageId') stageId: string,
+    @Request() req: { user: { sub: string } },
+  ): Promise<{ boardId: string }> {
+    return this.stages.scaffold(projectId, stageId, req.user.sub);
+  }
 }
