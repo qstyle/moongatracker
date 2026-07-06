@@ -191,7 +191,7 @@ function StageCard({
           s.boards.length === 0 && s.key && TEMPLATE_KEYS.has(s.key) ? (
             <Button
               size="sm"
-              disabled={scaffoldingId === s.id}
+              disabled={!!scaffoldingId}
               onClick={onScaffold}
               className="h-8 w-full"
             >
