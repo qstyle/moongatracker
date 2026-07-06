@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useRoute } from 'wouter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type { StageDto } from '@moongatracker/shared-types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -23,8 +24,6 @@ export function RoadmapPage() {
   });
 
   const [newStage, setNewStage] = useState('');
-  const [addingBoardFor, setAddingBoardFor] = useState<string | null>(null);
-  const [boardName, setBoardName] = useState('');
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['stages', projectId] });
@@ -61,11 +60,12 @@ export function RoadmapPage() {
     invalidate();
   }
 
-  async function addBoard(stageId: string) {
-    if (!boardName.trim()) return;
-    await createBoard(projectId, boardName.trim(), stageId);
-    setBoardName('');
-    setAddingBoardFor(null);
+  // Board name is derived from the stage automatically; a numeric suffix keeps
+  // multiple boards of one stage unique.
+  async function addBoard(stage: StageDto) {
+    const n = stage.boards.length;
+    const name = n === 0 ? stage.title : `${stage.title} ${n + 1}`;
+    await createBoard(projectId, name, stage.id);
     invalidate();
   }
 
@@ -77,98 +77,83 @@ export function RoadmapPage() {
   }
 
   return (
-    <div className="h-full overflow-y-auto p-6">
+    <div className="flex h-full flex-col overflow-hidden p-6">
       <div className="mb-6 text-sm font-semibold uppercase tracking-wider">
         Роадмап
       </div>
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-1 items-start gap-3 overflow-x-auto pb-4">
         {stages.map((s) => (
           <div
             key={s.id}
             className={[
-              'rounded border p-4',
+              'flex w-64 shrink-0 flex-col gap-2 rounded border p-3',
               s.status === 'active' ? 'border-primary' : 'border-border/60',
             ].join(' ')}
           >
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <div className="font-medium text-foreground">{s.title}</div>
-                <span className="text-xs text-muted-foreground">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="truncate font-medium text-foreground">{s.title}</div>
+                <div className="text-xs text-muted-foreground">
                   {s.status === 'active'
                     ? '● текущая'
                     : s.status === 'done'
                       ? '✓ пройдена'
-                      : ''}
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {s.status === 'active' && (
-                  <Button size="sm" variant="outline" onClick={() => advance(s.id)}>
-                    Продвинуть
-                  </Button>
-                )}
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={async () => {
-                    await deleteStage(s.id);
-                    invalidate();
-                  }}
-                >
-                  Удалить
-                </Button>
+                      : 'не начата'}
+                </div>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+
+            <div className="flex flex-wrap gap-1.5">
+              {s.status === 'active' && (
+                <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => advance(s.id)}>
+                  Продвинуть
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 px-2 text-xs"
+                onClick={async () => {
+                  await deleteStage(s.id);
+                  invalidate();
+                }}
+              >
+                Удалить
+              </Button>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
               {s.boards.map((b) => (
                 <Link
                   key={b.id}
                   href={`/boards/${b.id}`}
-                  className="rounded border border-border bg-muted px-2 py-1 text-sm text-foreground hover:underline"
+                  className="truncate rounded border border-border bg-muted px-2 py-1 text-sm text-foreground hover:underline"
                 >
                   {b.name}
                 </Link>
               ))}
-              {addingBoardFor === s.id ? (
-                <Input
-                  autoFocus
-                  value={boardName}
-                  placeholder="Название доски"
-                  className="h-8 w-44"
-                  onChange={(e) => setBoardName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') addBoard(s.id);
-                    if (e.key === 'Escape') {
-                      setBoardName('');
-                      setAddingBoardFor(null);
-                    }
-                  }}
-                />
-              ) : (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setAddingBoardFor(s.id)}
-                >
-                  ＋ Создать доску
-                </Button>
-              )}
+              <Button size="sm" variant="ghost" className="justify-start" onClick={() => addBoard(s)}>
+                ＋ Создать доску
+              </Button>
             </div>
           </div>
         ))}
 
-        <div className="flex items-center gap-2 pt-1">
+        <div className="flex w-56 shrink-0 flex-col gap-2 rounded border border-dashed border-border/60 p-3">
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">
+            новая стадия
+          </div>
           <Input
             value={newStage}
-            placeholder="Новая стадия"
-            className="h-8 w-52"
+            placeholder="Название"
+            className="h-8"
             onChange={(e) => setNewStage(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') addStage();
             }}
           />
           <Button size="sm" disabled={!newStage.trim()} onClick={addStage}>
-            Добавить стадию
+            Добавить
           </Button>
         </div>
       </div>
