@@ -19,6 +19,7 @@ import {
 } from '@moongatracker/shared-types';
 import { buildOnboardingCards } from '../boards/onboarding';
 import { buildStarterWiki } from '../wiki/starter-wiki';
+import { buildDefaultStages } from '../stages/default-stages';
 
 @Injectable()
 export class ProjectsService {
@@ -67,6 +68,7 @@ export class ProjectsService {
       const created = await tx.project.create({
         data: { name, ownerId: userId },
       });
+      await tx.stage.createMany({ data: buildDefaultStages(created.id) });
       await tx.membership.create({
         data: { projectId: created.id, userId, color: MEMBER_COLOR_PALETTE[0] },
       });

@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '@moongatracker/data-access';
 import { AuthResponse, MeResponse } from '@moongatracker/shared-types';
+import { buildDefaultStages } from '../stages/default-stages';
 
 interface UserRow {
   id: string;
@@ -47,12 +48,13 @@ export class AuthService {
       const projectName = name
         ? `${name}'s project`
         : email.split('@')[0] + "'s project";
-      await tx.project.create({
+      const project = await tx.project.create({
         data: {
           name: projectName,
           memberships: { create: { userId: user.id } },
         },
       });
+      await tx.stage.createMany({ data: buildDefaultStages(project.id) });
       return { user };
     });
 
