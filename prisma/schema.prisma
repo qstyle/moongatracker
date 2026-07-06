@@ -141,15 +141,16 @@ model Board {
 // A board may belong to a stage (Board.stageId); deleting a stage detaches its
 // boards rather than deleting them (onDelete: SetNull).
 model Stage {
-  id        String   @id @default(cuid())
-  projectId String
-  key       String?
-  title     String
-  order     Int
-  status    String   @default("not_started") // not_started | active | done
-  createdAt DateTime @default(now())
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  boards    Board[]
+  id           String        @id @default(cuid())
+  projectId    String
+  key          String?
+  title        String
+  order        Int
+  status       String        @default("not_started") // not_started | active | done
+  createdAt    DateTime      @default(now())
+  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  boards       Board[]
+  wikiSections WikiSection[]
 
   @@index([projectId])
 }
@@ -229,8 +230,12 @@ model WikiSection {
   title     String
   order     Int
   createdAt DateTime   @default(now())
+  stageId   String?
   project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  stage     Stage?     @relation(fields: [stageId], references: [id], onDelete: SetNull)
   pages     WikiPage[]
+
+  @@index([stageId])
 }
 
 model WikiPage {
