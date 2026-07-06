@@ -5,7 +5,7 @@ import type { ProjectDto } from '@moonga-studio/shared-types';
 export const listProjectsTool: Tool = {
   name: 'list_projects',
   description:
-    'List the projects (workspaces) this token can access. Takes no arguments — the entry point for discovery: call it first to get a projectId, then list_boards.',
+    'List the projects (ventures) this token can access. Takes no arguments — the entry point for discovery: call it first to get a projectId, then list_boards. New here? Call get_started first for your role and the studio workflow.',
   inputSchema: {
     type: 'object',
     properties: {},

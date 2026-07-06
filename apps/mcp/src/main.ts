@@ -3,8 +3,12 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
   CallToolRequestSchema,
+  ListResourcesRequestSchema,
   ListToolsRequestSchema,
+  ReadResourceRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
+import { STUDIO_BRIEF } from './onboarding.js';
+import { getStartedTool, getStarted } from './tools/get-started.js';
 import { listProjectsTool, listProjects } from './tools/list-projects.js';
 import { listBoardsTool, listBoards } from './tools/list-boards.js';
 import { listCardsTool, listCards } from './tools/list-cards.js';
@@ -30,10 +34,17 @@ import { getCanvasTool, getCanvas } from './tools/get-canvas.js';
 
 const server = new Server(
   { name: 'moonga-studio', version: '0.3.0' },
-  { capabilities: { tools: {} } },
+  {
+    capabilities: { tools: {}, resources: {} },
+    // Shown to the client at handshake so every agent lands oriented.
+    instructions: STUDIO_BRIEF,
+  },
 );
 
+const ONBOARDING_URI = 'studio://onboarding';
+
 const tools = [
+  getStartedTool,
   listProjectsTool,
   listBoardsTool,
   listCardsTool,
@@ -62,6 +73,9 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
   try {
     let text: string;
     switch (name) {
+      case 'get_started':
+        text = await getStarted();
+        break;
       case 'list_projects':
         text = await listProjects();
         break;
@@ -160,6 +174,31 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       isError: true,
     };
   }
+});
+
+// Onboarding brief also offered as a readable resource for clients that
+// browse resources rather than surface `instructions`.
+server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+  resources: [
+    {
+      uri: ONBOARDING_URI,
+      name: 'Moonga Studio — agent onboarding',
+      description:
+        'Who you are, why you are here, and how the studio workflow works.',
+      mimeType: 'text/markdown',
+    },
+  ],
+}));
+
+server.setRequestHandler(ReadResourceRequestSchema, async (req) => {
+  if (req.params.uri !== ONBOARDING_URI) {
+    throw new Error(`Unknown resource: ${req.params.uri}`);
+  }
+  return {
+    contents: [
+      { uri: ONBOARDING_URI, mimeType: 'text/markdown', text: STUDIO_BRIEF },
+    ],
+  };
 });
 
 const transport = new StdioServerTransport();
