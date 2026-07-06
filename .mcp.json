@@ -6,11 +6,12 @@
     },
     "moongatracker": {
       "command": "node",
-      "args": ["--import", "tsx/esm", "apps/mcp/src/main.ts"],
-      "cwd": "/Users/dmitrijordin/checker_pro/moongatracker",
+      "args": [
+        "/Users/dmitrijordin/.moongatracker-mcp/node_modules/@moongatracker/mcp/src/main.js"
+      ],
       "env": {
-        "MOONGATRACKER_API_URL": "http://localhost:3020",
-        "MOONGATRACKER_API_TOKEN": "5e63fb5d3cc75664e8c1a3be5e9183e2ee2c784a9dc8850454b1f43c3bc5ca47"
+        "MOONGATRACKER_API_URL": "https://tracker.moonga.ru",
+        "MOONGATRACKER_API_TOKEN": "4d0d4c067366b47c20d728e18f604139ac27b8dc8d6ac63a2d5383e44cfbd457"
       }
     }
   }
