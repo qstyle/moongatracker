@@ -79,6 +79,36 @@ docker compose up -d --build   # api на :3020
 Контейнер при старте применяет миграции (`prisma migrate deploy`) и прогоняет
 идемпотентный сид (создаёт демо-доску с задачами, если данных нет).
 
+## Деплой на Dokploy
+
+Три части: **Postgres**, **приложение** (api+web, один образ) и **лендинг**
+(отдельный статический сайт). Лендинг НЕ входит в основной образ — у него свой
+`apps/landing/Dockerfile`.
+
+**1. Postgres** — Dokploy → *Databases* → PostgreSQL. Скопируй его внутренний
+`DATABASE_URL`.
+
+**2. Приложение (api + web)** — Dokploy → *Application*, репозиторий этот, Build Type
+= **Dockerfile** (корневой `Dockerfile`).
+- Env: `DATABASE_URL` = из шага 1; порт **3020**; опц. `TELEGRAM_BOT_TOKEN`,
+  `WEB_PUBLIC_URL=https://tracker.moonga.ru`.
+- Домен: `tracker.moonga.ru` → контейнерный порт **3020**, включить Let's Encrypt.
+- Миграции и сид накатываются при старте автоматически.
+
+**3. Лендинг** — Dokploy → *Application*, тот же репозиторий, Build Type =
+**Dockerfile**, **Dockerfile path = `apps/landing/Dockerfile`** (build context = корень репо).
+- Build Arg: `VITE_APP_URL=https://tracker.moonga.ru` — чтобы кнопки «Начать/Войти»
+  вели в приложение.
+- Домен: корневой, напр. `moonga.ru` (+ `www.moonga.ru`), контейнерный порт **80**,
+  Let's Encrypt.
+
+Локальная проверка образа лендинга:
+```bash
+docker build -f apps/landing/Dockerfile \
+  --build-arg VITE_APP_URL=https://tracker.moonga.ru -t moonga-landing .
+docker run --rm -p 8080:80 moonga-landing   # http://localhost:8080
+```
+
 ## Дальше
 
 Phase 0 готов → следующий шаг — Phase 1 (MVP-доска): CRUD карточек, drag&drop,
