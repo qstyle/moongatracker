@@ -29,7 +29,7 @@ import { updateWikiPageTool, updateWikiPage } from './tools/update-wiki-page.js'
 import { getCanvasTool, getCanvas } from './tools/get-canvas.js';
 
 const server = new Server(
-  { name: 'moongatracker', version: '0.3.0' },
+  { name: 'moonga-studio', version: '0.3.0' },
   { capabilities: { tools: {} } },
 );
 

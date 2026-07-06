@@ -37,11 +37,11 @@ export function IntegrationsCard() {
   return (
     <div id="integrations" className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden bg-card/30 px-6 py-16">      <div data-fade-on-scroll className="mb-10 max-w-xl text-center">
         <h2 className="text-balance font-heading text-3xl font-semibold tracking-tight md:text-4xl">
-          Твой агент работает с доской откуда угодно
+          Веди студию откуда угодно
         </h2>
         <p className="mt-3 text-balance text-muted-foreground">
-          MCP-тулы и REST — из Claude, Telegram или своих скриптов. Токены со скоупом, живое
-          обновление, каждый шаг в трейсе.
+          Агент работает с роадмапом и досками из Claude, Telegram или своих скриптов. Токены
+          со скоупом, живое обновление, каждый шаг в трейсе.
         </p>
       </div>
 
@@ -56,7 +56,7 @@ export function IntegrationsCard() {
           <div ref={center} className="z-10 flex size-20 flex-col items-center justify-center bg-primary text-primary-foreground shadow-xl">
             <GitMerge className="size-6" />
           </div>
-          <span className="mt-2 text-sm font-semibold">moongatracker</span>
+          <span className="mt-2 text-sm font-semibold">Moonga Studio</span>
         </div>
 
         <div className="flex flex-col justify-around py-4">

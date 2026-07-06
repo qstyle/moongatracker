@@ -1,5 +1,5 @@
-const BASE = process.env['MOONGATRACKER_API_URL'] ?? 'http://localhost:3020';
-const TOKEN = process.env['MOONGATRACKER_API_TOKEN'] ?? '';
+const BASE = process.env['MOONGA_STUDIO_API_URL'] ?? 'http://localhost:3020';
+const TOKEN = process.env['MOONGA_STUDIO_API_TOKEN'] ?? '';
 
 const headers = () => ({
   Authorization: `Bearer ${TOKEN}`,

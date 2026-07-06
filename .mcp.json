@@ -4,14 +4,14 @@
       "command": "npx",
       "args": ["shadcn@latest", "mcp"]
     },
-    "moongatracker": {
+    "moonga-studio": {
       "command": "node",
       "args": [
-        "/Users/dmitrijordin/.moongatracker-mcp/node_modules/@moongatracker/mcp/src/main.js"
+        "/Users/dmitrijordin/.moonga-studio-mcp/node_modules/@moonga-studio/mcp/src/main.js"
       ],
       "env": {
-        "MOONGATRACKER_API_URL": "https://tracker.moonga.ru",
-        "MOONGATRACKER_API_TOKEN": "4d0d4c067366b47c20d728e18f604139ac27b8dc8d6ac63a2d5383e44cfbd457"
+        "MOONGA_STUDIO_API_URL": "https://tracker.moonga.ru",
+        "MOONGA_STUDIO_API_TOKEN": "4d0d4c067366b47c20d728e18f604139ac27b8dc8d6ac63a2d5383e44cfbd457"
       }
     }
   }

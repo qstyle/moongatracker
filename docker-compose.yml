@@ -1,13 +1,13 @@
 services:
-  moongatracker:
+  moonga-studio:
     build: .
-    container_name: moongatracker
+    container_name: moonga-studio
     ports:
       - '3020:3020'
     environment:
       # Connects to an EXISTING Postgres on the host (not managed by this compose).
       # host.docker.internal resolves to the host; the host must publish Postgres on :5432.
-      - DATABASE_URL=postgresql://postgres:postgres@host.docker.internal:5432/moongatracker
+      - DATABASE_URL=postgresql://postgres:postgres@host.docker.internal:5432/moonga_studio
       # Telegram integration (optional). Without TELEGRAM_BOT_TOKEN the bot stays
       # dormant and the app runs normally. WEB_PUBLIC_URL is used to build card
       # links inside notifications (e.g. https://tracker.moonga.ru).

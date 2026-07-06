@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button';
 import { buildAgentRun, type AgentRun, type ColumnKey } from '@/lib/agent-demo';
 
 const EXAMPLES = [
-  'Тёмная тема для настроек',
-  'Экспорт доски в Markdown',
-  'Вебхук в Telegram на смену статуса',
+  'Собрать лендинг для валидации',
+  'Настроить оплату Stripe',
+  'Онбординг для первых юзеров',
 ];
 
 type Phase = 'idle' | 'thinking' | 'typing' | 'done';
@@ -58,7 +58,7 @@ export function DemoCard() {
     <div id="demo" className="relative flex h-full w-full items-center overflow-y-auto bg-card/30 px-6 py-16">      <div data-fade-on-scroll className="mx-auto w-full max-w-2xl">
         <div className="mx-auto mb-8 max-w-xl text-center">
           <h2 className="text-balance font-heading text-3xl font-semibold tracking-tight md:text-4xl">
-            Посмотри, как агент ведёт карточку
+            Посмотри, как агент двигает стартап
           </h2>
         </div>
 

@@ -6,7 +6,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 
 const url =
   process.env['DATABASE_URL'] ??
-  'postgresql://postgres:postgres@localhost:5432/moongatracker';
+  'postgresql://postgres:postgres@localhost:5432/moonga_studio';
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',

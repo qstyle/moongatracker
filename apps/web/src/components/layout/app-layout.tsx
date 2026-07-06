@@ -36,7 +36,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <div className="flex items-center gap-1.5">
             <LogoMark className="size-5" />
             <span className="text-xs font-semibold tracking-tight text-foreground">
-              <span className="text-primary">m</span>oonga tracker
+              <span className="text-primary">M</span>oonga Studio
             </span>
           </div>
         </div>

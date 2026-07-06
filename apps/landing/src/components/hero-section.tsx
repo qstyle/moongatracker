@@ -7,14 +7,14 @@ export function HeroCard() {
     <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-card/30">
       <div data-fade-on-scroll className="relative z-10 mx-auto flex max-w-4xl flex-col items-center px-6 text-center">
         <span className="mb-5 inline-flex items-center gap-2 border border-border px-3 py-1 text-xs text-muted-foreground">
-          канбан для человека и AI-агента
+          твоя студия стартапов
         </span>
         <h1 className="text-balance font-heading text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl">
-          Канбан, где AI-агент — полноправный участник
+          Место, где стартап рождается и доходит до запуска
         </h1>
         <p className="mt-5 max-w-xl text-balance text-lg text-muted-foreground">
-          Идея живёт на одной карточке — от наброска до релиза. Агент читает, создаёт и двигает
-          карточки через MCP, а ты видишь каждый его шаг и в один клик откатываешь.
+          Идея, роадмап, задачи, вики и агент — всё в одной студии. От первого наброска
+          до релиза — без хаоса в десятке вкладок.
         </p>
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
           <Button asChild size="lg" className="h-12 pl-5 pr-3 text-base">

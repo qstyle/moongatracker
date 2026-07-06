@@ -1,10 +1,10 @@
 import { Lightbulb, Search, GitBranch, CheckCircle2 } from 'lucide-react';
 
 const STEPS = [
-  { icon: Lightbulb, title: 'Кидаешь идею', text: 'В чат агенту (Telegram / Claude) или прямо на доску.' },
-  { icon: Search, title: 'Агент разбирает', text: 'Вопросы, ресёрч, оценка, лейблы → двигает в «Разбор».' },
-  { icon: GitBranch, title: '«Берём»', text: 'Карточка уходит в разработку, агент дописывает мини-спеку в тело.' },
-  { icon: CheckCircle2, title: 'Ведётся до «Готово»', text: 'Обсуждение и вся история остаются на карточке.' },
+  { icon: Lightbulb, title: 'Заводишь стартап', text: 'Одна идея → студия раскладывает её в роадмап стадий.' },
+  { icon: GitBranch, title: 'Стадии → доски', text: 'Каждый этап пути становится доской с задачами.' },
+  { icon: Search, title: 'Задачи в работе', text: 'Открыто, в работе, готово — прогресс виден по каждой стадии.' },
+  { icon: CheckCircle2, title: 'До запуска', text: 'Продвигаешь стадии, пока стартап не выйдет в прод.' },
 ];
 
 export function HowItWorksCard() {
@@ -12,11 +12,11 @@ export function HowItWorksCard() {
     <div id="how" className="relative flex h-full w-full items-center overflow-y-auto bg-card/30 px-6 py-16">      <div data-fade-on-scroll className="mx-auto w-full max-w-4xl">
         <div className="mx-auto mb-12 max-w-2xl text-center">
           <h2 className="text-balance font-heading text-3xl font-semibold tracking-tight md:text-4xl">
-            От идеи до релиза — на одной карточке
+            Стартап живёт как роадмап
           </h2>
           <p className="mt-3 text-balance text-muted-foreground">
-            Один путь <code className="text-foreground">idea → разбор → backlog → in dev → done</code>,
-            два вида: «Идеи» и «Разработка».
+            Одна дорога: <code className="text-foreground">идея → валидация → дизайн → сборка → запуск</code>.
+            Каждая стадия — доска, разбитая на задачи.
           </p>
         </div>
         <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

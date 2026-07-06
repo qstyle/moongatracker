@@ -1,6 +1,6 @@
 /**
  * Brand logo mark: a red square badge with a white crescent (a nod to the
- * "moon" in moonga). Used before the "moonga tracker" wordmark.
+ * "moon" in Moonga). Used before the "Moonga Studio" wordmark.
  */
 export function LogoMark({ className = 'size-6' }: { className?: string }) {
   return (

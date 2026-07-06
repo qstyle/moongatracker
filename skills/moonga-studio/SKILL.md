@@ -1,11 +1,11 @@
 ---
-name: moongatracker
-description: Use when driving a moongatracker board through its MCP server (list_projects/list_cards/create_card/move_card/comment_card/…). Enforces discovery-first ID resolution, the idea→triage→backlog→in_dev→done lifecycle, the human-gate for irreversible moves, and the Activity trace/rollback model.
+name: moonga-studio
+description: Use when driving a Moonga Studio board through its MCP server (list_projects/list_cards/create_card/move_card/comment_card/…). Enforces discovery-first ID resolution, the idea→triage→backlog→in_dev→done lifecycle, the human-gate for irreversible moves, and the Activity trace/rollback model.
 ---
 
-# Working the moongatracker board via MCP
+# Working the Moonga Studio board via MCP
 
-moongatracker is a shared human+agent kanban. You act through the MCP tools, never the DB directly. Every mutation you make is recorded in `Activity` as `actorType=agent` and can be rolled back by a human.
+Moonga Studio is a shared human+agent kanban. You act through the MCP tools, never the DB directly. Every mutation you make is recorded in `Activity` as `actorType=agent` and can be rolled back by a human.
 
 ## Golden rule: discovery-first, never hardcode IDs
 

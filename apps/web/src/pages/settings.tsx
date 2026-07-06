@@ -433,8 +433,8 @@ export function SettingsPage() {
             const hasActiveToken = tokens.some((t) => !t.revokedAt);
             const tokenValue = createdToken ?? '<ВАШ_ТОКЕН>';
             const connectionString = `npx -y @moonga-studio/mcp
-MOONGATRACKER_API_URL=${window.location.origin}
-MOONGATRACKER_API_TOKEN=${tokenValue}`;
+MOONGA_STUDIO_API_URL=${window.location.origin}
+MOONGA_STUDIO_API_TOKEN=${tokenValue}`;
             const showConnection = !!createdToken || hasActiveToken;
             return (
           <div className="max-w-lg space-y-6">

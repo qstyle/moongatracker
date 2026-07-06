@@ -24,8 +24,8 @@ MCP-сервер ставится из npm через `npx`, отдельная 
 
 ```bash
 claude mcp add moongatracker \
-  --env MOONGATRACKER_API_URL=https://board.example.com \
-  --env MOONGATRACKER_API_TOKEN=<ваш-токен> \
+  --env MOONGA_STUDIO_API_URL=https://board.example.com \
+  --env MOONGA_STUDIO_API_TOKEN=<ваш-токен> \
   -- npx -y @moongatracker/mcp
 ```
 
@@ -38,8 +38,8 @@ claude mcp add moongatracker \
       "command": "npx",
       "args": ["-y", "@moongatracker/mcp"],
       "env": {
-        "MOONGATRACKER_API_URL": "https://board.example.com",
-        "MOONGATRACKER_API_TOKEN": "<ваш-токен>"
+        "MOONGA_STUDIO_API_URL": "https://board.example.com",
+        "MOONGA_STUDIO_API_TOKEN": "<ваш-токен>"
       }
     }
   }
@@ -57,8 +57,8 @@ claude mcp add moongatracker \
       "command": "npx",
       "args": ["-y", "@moongatracker/mcp"],
       "env": {
-        "MOONGATRACKER_API_URL": "https://board.example.com",
-        "MOONGATRACKER_API_TOKEN": "<ваш-токен>"
+        "MOONGA_STUDIO_API_URL": "https://board.example.com",
+        "MOONGA_STUDIO_API_TOKEN": "<ваш-токен>"
       }
     }
   }
@@ -87,7 +87,7 @@ cp "$(npm root)/@moongatracker/mcp/SKILL.md" .claude/skills/moongatracker/SKILL.
 
 - **401 Unauthorized** — токен неверный/отозван или не хватает скоупа. Выпустите новый во
   вкладке «AI-агенты».
-- **ECONNREFUSED / таймаут** — неверный `MOONGATRACKER_API_URL` (проверьте origin, `https`,
+- **ECONNREFUSED / таймаут** — неверный `MOONGA_STUDIO_API_URL` (проверьте origin, `https`,
   отсутствие `/api` и хвостового слэша).
 - **Агент не видит инструменты** — убедитесь, что `npx -y @moongatracker/mcp` запускается
   (нужен Node ≥ 20) и что MCP включён в настройках агента.

@@ -31,7 +31,7 @@ export function Login() {
         <div className="flex items-center gap-2.5 border-b border-border px-4 py-3">
           <LogoMark className="size-6" />
           <span className="text-sm font-semibold tracking-tight">
-            <span className="text-primary">m</span>oonga tracker
+            <span className="text-primary">M</span>oonga Studio
           </span>
         </div>
 

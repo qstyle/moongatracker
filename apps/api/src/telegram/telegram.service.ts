@@ -41,7 +41,7 @@ export class TelegramService implements OnApplicationBootstrap, OnModuleDestroy 
         const chatId = String(ctx.chat.id);
         if (!code) {
           await ctx.reply(
-            'Откройте настройки MoonGaTracker и нажмите «Подключить Telegram».',
+            'Откройте настройки Moonga Studio и нажмите «Подключить Telegram».',
           );
           return;
         }

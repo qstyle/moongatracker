@@ -1,8 +1,9 @@
-# Moongatracker
+# Moonga Studio
 
-Self-hosted канбан, спроектированный под **совместную работу человека и AI-агента**.
-Доска «Идеи» + доска «Разработка», агент (OpenClaw / Claude) — полноправный участник,
-который читает, создаёт и двигает карточки через REST API и MCP.
+Студия для создания стартапов, спроектированная под **совместную работу человека и AI-агента**.
+Ведёшь стартап от идеи до запуска по роадмапу — каждая стадия разбита на доски и задачи,
+агент (OpenClaw / Claude) — полноправный участник, который читает, создаёт и двигает карточки
+через REST API и MCP.
 
 Не «ещё один Trello»: доска — это **общая память** человека и агента. Идея проходит
 путь от наброска до релиза на одной карточке, каждое действие агента трассируется и
@@ -53,13 +54,13 @@ moongatracker/
 
 ## Локальная разработка
 
-Нужен запущенный **PostgreSQL** и база `moongatracker`. Строка подключения — в `.env`
-(пример: `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/moongatracker"`).
+Нужен запущенный **PostgreSQL** и база `moonga_studio`. Строка подключения — в `.env`
+(пример: `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/moonga_studio"`).
 
 ```bash
 npm install
 # один раз: создать базу в своём Postgres
-#   psql -U postgres -c "CREATE DATABASE moongatracker;"
+#   psql -U postgres -c "CREATE DATABASE moonga_studio;"
 npx prisma migrate dev && npx prisma db seed   # схема + демо-доска с задачами (идемпотентно)
 npx nx serve api    # http://localhost:3020/api  (GET /api/boards)
 npx nx serve web    # http://localhost:4200      (проксирует /api на api)
@@ -68,7 +69,7 @@ npx nx serve web    # http://localhost:4200      (проксирует /api на
 ## Docker (self-hosted)
 
 Compose **не поднимает** Postgres — api подключается к уже работающему серверу БД
-(через `host.docker.internal:5432`, база `moongatracker`). Строка подключения задаётся
+(через `host.docker.internal:5432`, база `moonga_studio`). Строка подключения задаётся
 в `docker-compose.yml` (`DATABASE_URL`).
 
 ```bash

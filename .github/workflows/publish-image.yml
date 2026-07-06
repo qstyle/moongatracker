@@ -33,7 +33,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: cr.yandex/${{ secrets.YC_REGISTRY_ID }}/moongatracker
+          images: cr.yandex/${{ secrets.YC_REGISTRY_ID }}/moonga-studio
           tags: |
             type=sha,prefix=sha-,format=short
             type=raw,value=latest,enable={{is_default_branch}}

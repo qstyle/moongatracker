@@ -11,7 +11,7 @@
         "main": "apps/mcp/src/main.ts",
         "tsConfig": "apps/mcp/tsconfig.app.json",
         "assets": [
-          { "input": "skills/moongatracker", "glob": "SKILL.md", "output": "." }
+          { "input": "skills/moonga-studio", "glob": "SKILL.md", "output": "." }
         ]
       }
     }

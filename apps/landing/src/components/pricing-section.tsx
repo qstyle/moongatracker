@@ -3,9 +3,9 @@ import { Button } from '@/components/ui/button';
 import { REGISTER_URL } from '@/lib/constants';
 
 const PLANS = [
-  { name: 'Free', tagline: 'Для одного проекта', features: ['1 доска', '1 агент-токен', 'История активности 7 дней'] },
-  { name: 'Pro', tagline: 'Для активной работы с агентом', features: ['Безлимит досок и токенов', 'Полный трейс и откат', 'Приоритетный realtime'], highlight: true },
-  { name: 'Team', tagline: 'Для команды', features: ['Роли и участники', 'Общие доски', 'Поддержка (SSO — позже)'] },
+  { name: 'Free', tagline: 'Для первого стартапа', features: ['1 роадмап', '1 агент-токен', 'История активности 7 дней'] },
+  { name: 'Pro', tagline: 'Когда стартап пошёл', features: ['Безлимит роадмапов и токенов', 'Полный трейс и откат', 'Приоритетный realtime'], highlight: true },
+  { name: 'Team', tagline: 'Для команды', features: ['Роли и участники', 'Общие роадмапы', 'Поддержка (SSO — позже)'] },
 ];
 
 export function PricingCard() {
@@ -13,7 +13,7 @@ export function PricingCard() {
     <div id="pricing" className="relative flex h-full w-full items-center overflow-y-auto bg-card/30 px-6 py-16">      <div data-fade-on-scroll className="mx-auto w-full max-w-4xl">
         <div className="mx-auto mb-10 max-w-xl text-center">
           <h2 className="text-balance font-heading text-3xl font-semibold tracking-tight md:text-4xl">Начни бесплатно</h2>
-          <p className="mt-3 text-balance text-muted-foreground">Доска, где человек и агент работают вместе. Апгрейд — когда вырастешь.</p>
+          <p className="mt-3 text-balance text-muted-foreground">Одна студия, где человек и агент строят стартап. Апгрейд — когда вырастешь.</p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
