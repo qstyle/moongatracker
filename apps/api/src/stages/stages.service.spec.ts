@@ -170,11 +170,31 @@ describe('StagesService', () => {
     });
 
     it('idempotent: when board already exists, returns existing boardId without re-seeding', async () => {
-      const { svc, tx } = makeScaffold({ key: 'discovery' }, { id: 'existing-board' });
+      const { svc, tx, prisma } = makeScaffold({ key: 'discovery' }, { id: 'existing-board' });
       const result = await svc.scaffold('p1', 'st1', 'u1');
 
       expect(result).toEqual({ boardId: 'existing-board' });
       expect(tx.card.createMany).not.toHaveBeenCalled();
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException when stage does not exist', async () => {
+      // stage.findUnique returns null → service must throw
+      const { svc } = makeScaffold();
+      svc['prisma'].stage.findUnique.mockResolvedValue(null);
+
+      await expect(svc.scaffold('p1', 'st1', 'u1')).rejects.toThrow(
+        'Stage not found in project',
+      );
+    });
+
+    it('throws NotFoundException when stage belongs to a different project', async () => {
+      // Stage exists but projectId is 'other-project', not the requested 'p1'
+      const { svc } = makeScaffold({ projectId: 'other-project' });
+
+      await expect(svc.scaffold('p1', 'st1', 'u1')).rejects.toThrow(
+        'Stage not found in project',
+      );
     });
 
     it('custom stage (null key): creates board+columns but does NOT seed cards or wiki', async () => {
