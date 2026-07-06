@@ -155,12 +155,15 @@ model Stage {
 }
 
 model Column {
-  id      String @id @default(cuid())
-  boardId String
-  title   String
-  order   Int
-  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  cards   Card[]
+  id       String  @id @default(cuid())
+  boardId  String
+  title    String
+  order    Int
+  // Status bucket for roadmap dashboards: open | in_progress | done (null for
+  // legacy / custom columns). Default board columns are seeded with a category.
+  category String?
+  board    Board   @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards    Card[]
 }
 
 model Card {

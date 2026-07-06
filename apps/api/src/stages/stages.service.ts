@@ -13,14 +13,49 @@ export class StagesService {
     const stages = await this.prisma.stage.findMany({
       where: { projectId },
       orderBy: { order: 'asc' },
-      include: {
-        boards: {
-          orderBy: { createdAt: 'asc' },
-          include: { _count: { select: { cards: true } } },
-        },
-      },
+      include: { boards: { orderBy: { createdAt: 'asc' } } },
     });
-    return stages.map(toStageDto);
+
+    // Tally cards per board by column category, then roll up to each stage.
+    const boardIds = stages.flatMap((s) => s.boards.map((b) => b.id));
+    const columns = boardIds.length
+      ? await this.prisma.column.findMany({
+          where: { boardId: { in: boardIds } },
+          select: {
+            boardId: true,
+            category: true,
+            _count: { select: { cards: true } },
+          },
+        })
+      : [];
+    const perBoard = new Map<
+      string,
+      { open: number; inProgress: number; done: number }
+    >();
+    for (const c of columns) {
+      const t = perBoard.get(c.boardId) ?? { open: 0, inProgress: 0, done: 0 };
+      const n = c._count.cards;
+      if (c.category === 'open') t.open += n;
+      else if (c.category === 'in_progress') t.inProgress += n;
+      else if (c.category === 'done') t.done += n;
+      perBoard.set(c.boardId, t);
+    }
+
+    return stages.map((s) => {
+      const counts = s.boards.reduce(
+        (acc, b) => {
+          const t = perBoard.get(b.id);
+          if (t) {
+            acc.open += t.open;
+            acc.inProgress += t.inProgress;
+            acc.done += t.done;
+          }
+          return acc;
+        },
+        { open: 0, inProgress: 0, done: 0 },
+      );
+      return toStageDto(s, counts);
+    });
   }
 
   async create(
@@ -80,12 +115,7 @@ export class StagesService {
         ...(input.title !== undefined && { title: input.title }),
         ...(input.status !== undefined && { status: input.status }),
       },
-      include: {
-        boards: {
-          orderBy: { createdAt: 'asc' },
-          include: { _count: { select: { cards: true } } },
-        },
-      },
+      include: { boards: { orderBy: { createdAt: 'asc' } } },
     });
     return toStageDto(updated);
   }

@@ -4,7 +4,7 @@ import {
   PrismaService,
   RequestActor,
 } from '@moongatracker/data-access';
-import { buildOnboardingCards } from './onboarding';
+import { buildDefaultColumns } from '../columns/default-columns';
 import {
   ActorDto,
   BoardDto,
@@ -102,7 +102,6 @@ export class BoardsService {
       });
       if (!stage) throw new NotFoundException('Stage not found in project');
     }
-    const authorId = actor.type === 'agent' ? null : actor.sub;
     const board = await this.prisma.$transaction(async (tx) => {
       const seqAgg = await tx.board.aggregate({
         where: { projectId },
@@ -116,12 +115,7 @@ export class BoardsService {
           stageId: stageId ?? null,
         },
       });
-      const column = await tx.column.create({
-        data: { boardId: created.id, title: 'С чего начать', order: 0 },
-      });
-      await tx.card.createMany({
-        data: buildOnboardingCards(created.id, column.id, authorId),
-      });
+      await tx.column.createMany({ data: buildDefaultColumns(created.id) });
       return created;
     });
     return {

@@ -2,6 +2,7 @@ import {
   BoardSummaryDto,
   StageDto,
   StageStatus,
+  StageTaskCounts,
 } from '@moongatracker/shared-types';
 
 type BoardRow = {
@@ -11,7 +12,6 @@ type BoardRow = {
   seq: number;
   stageId: string | null;
   createdAt: Date;
-  _count?: { cards: number };
 };
 
 type StageRow = {
@@ -24,6 +24,8 @@ type StageRow = {
   boards?: BoardRow[];
 };
 
+const ZERO: StageTaskCounts = { open: 0, inProgress: 0, done: 0 };
+
 export function toBoardSummary(b: BoardRow): BoardSummaryDto {
   return {
     id: b.id,
@@ -35,8 +37,10 @@ export function toBoardSummary(b: BoardRow): BoardSummaryDto {
   };
 }
 
-export function toStageDto(s: StageRow): StageDto {
-  const boards = s.boards ?? [];
+export function toStageDto(
+  s: StageRow,
+  taskCounts: StageTaskCounts = ZERO,
+): StageDto {
   return {
     id: s.id,
     projectId: s.projectId,
@@ -44,7 +48,7 @@ export function toStageDto(s: StageRow): StageDto {
     title: s.title,
     order: s.order,
     status: s.status as StageStatus,
-    boards: boards.map(toBoardSummary),
-    cardCount: boards.reduce((n, b) => n + (b._count?.cards ?? 0), 0),
+    boards: (s.boards ?? []).map(toBoardSummary),
+    taskCounts,
   };
 }

@@ -17,7 +17,7 @@ import {
   pickNextMemberColor,
   ProjectDto,
 } from '@moongatracker/shared-types';
-import { buildOnboardingCards } from '../boards/onboarding';
+import { buildDefaultColumns } from '../columns/default-columns';
 import { buildStarterWiki } from '../wiki/starter-wiki';
 import { buildDefaultStages } from '../stages/default-stages';
 
@@ -75,12 +75,7 @@ export class ProjectsService {
       const board = await tx.board.create({
         data: { projectId: created.id, name, seq: 1 },
       });
-      const column = await tx.column.create({
-        data: { boardId: board.id, title: 'С чего начать', order: 0 },
-      });
-      await tx.card.createMany({
-        data: buildOnboardingCards(board.id, column.id, userId),
-      });
+      await tx.column.createMany({ data: buildDefaultColumns(board.id) });
       await buildStarterWiki(tx, created.id);
       return created;
     });

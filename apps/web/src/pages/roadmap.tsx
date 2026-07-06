@@ -214,7 +214,7 @@ export function RoadmapPage() {
                   </div>
 
                   {/* mini dashboard */}
-                  <div className="grid grid-cols-2 gap-1.5">
+                  <div className="flex flex-col gap-1.5">
                     <div className="rounded-lg bg-muted/50 px-2.5 py-1.5">
                       <div className="text-lg font-semibold leading-none tabular-nums text-foreground">
                         {s.boards.length}
@@ -223,13 +223,21 @@ export function RoadmapPage() {
                         доски
                       </div>
                     </div>
-                    <div className="rounded-lg bg-muted/50 px-2.5 py-1.5">
-                      <div className="text-lg font-semibold leading-none tabular-nums text-foreground">
-                        {s.cardCount}
-                      </div>
-                      <div className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">
-                        карточки
-                      </div>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {([
+                        ['открыто', s.taskCounts.open, 'text-foreground'],
+                        ['в работе', s.taskCounts.inProgress, 'text-primary'],
+                        ['готово', s.taskCounts.done, 'text-emerald-500'],
+                      ] as const).map(([label, n, color]) => (
+                        <div key={label} className="rounded-lg bg-muted/50 px-2 py-1.5">
+                          <div className={['text-base font-semibold leading-none tabular-nums', color].join(' ')}>
+                            {n}
+                          </div>
+                          <div className="mt-1 text-[9px] uppercase tracking-wider text-muted-foreground">
+                            {label}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
