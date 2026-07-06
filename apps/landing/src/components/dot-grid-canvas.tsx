@@ -6,9 +6,9 @@ interface DotGridCanvasProps {
 }
 
 // Фон Hero: сетка точек, которые постоянно переливаются по цвету от ярко-красного
-// до белого (волна «дыхания») и дополнительно подсвечиваются к белому рядом с курсором.
+// до розового (волна «дыхания») и дополнительно подсвечиваются рядом с курсором.
 const RED = [255, 38, 58]; // ярко-красный
-const WHITE = [255, 255, 255];
+const PINK = [255, 143, 178]; // розовый (светлый конец перелива)
 const lerp = (a: number, b: number, t: number) => Math.round(a + (b - a) * t);
 
 export function DotGridCanvas({ className, gap = 22 }: DotGridCanvasProps) {
@@ -65,11 +65,11 @@ export function DotGridCanvas({ className, gap = 22 }: DotGridCanvasProps) {
           const md = Math.sqrt(mdx * mdx + mdy * mdy);
           const infl = md < R ? (1 - md / R) ** 2 : 0;
 
-          // цвет: от ярко-красного (t=0) к белому (t=1); курсор дотягивает к белому
+          // цвет: от ярко-красного (t=0) к розовому (t=1); курсор дотягивает к розовому
           const cf = Math.min(1, m + infl * 0.7);
-          const cr = lerp(RED[0], WHITE[0], cf);
-          const cg = lerp(RED[1], WHITE[1], cf);
-          const cb = lerp(RED[2], WHITE[2], cf);
+          const cr = lerp(RED[0], PINK[0], cf);
+          const cg = lerp(RED[1], PINK[1], cf);
+          const cb = lerp(RED[2], PINK[2], cf);
           const alpha = Math.min(1, 0.82 + m * 0.18 + infl * 0.35);
 
           ctx.fillStyle = `rgba(${cr},${cg},${cb},${alpha})`;
