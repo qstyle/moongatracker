@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useRoute, useLocation } from 'wouter';
-import { RiFolderOpenLine, RiKanbanView, RiBookOpenLine, RiLayoutMasonryLine, RiSunLine, RiMoonLine } from '@remixicon/react';
+import { RiFolderOpenLine, RiKanbanView, RiBookOpenLine, RiLayoutMasonryLine, RiRouteLine, RiSunLine, RiMoonLine } from '@remixicon/react';
 import { LogoMark } from '@/components/brand/logo';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/lib/use-theme';
@@ -21,6 +21,7 @@ function ProjectSection({ project, activeBoardId }: { project: ProjectDto; activ
   const [addingBoard, setAddingBoard] = useState(false);
   const [boardName, setBoardName] = useState('');
   const queryClient = useQueryClient();
+  const [roadmapActive] = useRoute(`/projects/${project.id}/roadmap`);
   const [wikiActive] = useRoute(`/projects/${project.id}/wiki`);
   const [canvasActive] = useRoute(`/projects/${project.id}/canvas`);
 
@@ -40,6 +41,18 @@ function ProjectSection({ project, activeBoardId }: { project: ProjectDto; activ
         <div className="truncate text-sm font-semibold text-foreground">{project.name}</div>
       </div>
       <div className="ml-3 border-l border-border/40 pl-2">
+        <Link
+          href={`/projects/${project.id}/roadmap`}
+          className={[
+            'flex items-center gap-1.5 rounded px-2 py-1 text-sm transition-colors',
+            roadmapActive
+              ? 'bg-muted text-foreground'
+              : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
+          ].join(' ')}
+        >
+          <RiRouteLine size={11} className="shrink-0" />
+          <div className="truncate">Роадмап</div>
+        </Link>
         <Link
           href={`/projects/${project.id}/wiki`}
           className={[

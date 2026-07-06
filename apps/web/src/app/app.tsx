@@ -8,6 +8,7 @@ import { BoardSelectPage } from '../pages/board-select';
 import { SettingsPage } from '../pages/settings';
 import { WikiPage } from '../pages/wiki';
 import { CanvasPage } from '../pages/canvas';
+import { RoadmapPage } from '../pages/roadmap';
 import { AppLayout } from '../components/layout/app-layout';
 // NOTE: CanvasPage rebuilt in V2-6; route kept below.
 
@@ -32,6 +33,7 @@ export function App() {
         <Route path="/boards/select" component={BoardSelectPage} />
         <Route path="/boards/:boardId/cards/:cardKey" component={BoardPage} />
         <Route path="/boards/:boardId" component={BoardPage} />
+        <Route path="/projects/:projectId/roadmap" component={RoadmapPage} />
         <Route path="/projects/:projectId/wiki" component={WikiPage} />
         <Route path="/projects/:projectId/canvas" component={CanvasPage} />
         <Route path="/settings" component={SettingsPage} />
