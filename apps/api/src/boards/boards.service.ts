@@ -82,6 +82,7 @@ export class BoardsService {
     return boards.map((b) => ({
       id: b.id,
       projectId: b.projectId,
+      stageId: b.stageId,
       name: b.name,
       seq: b.seq,
       createdAt: b.createdAt.toISOString(),
@@ -92,8 +93,15 @@ export class BoardsService {
     projectId: string,
     name: string,
     actor: RequestActor,
+    stageId?: string | null,
   ): Promise<BoardSummaryDto> {
     await assertProjectAccess(this.prisma, actor, projectId);
+    if (stageId) {
+      const stage = await this.prisma.stage.findFirst({
+        where: { id: stageId, projectId },
+      });
+      if (!stage) throw new NotFoundException('Stage not found in project');
+    }
     const authorId = actor.type === 'agent' ? null : actor.sub;
     const board = await this.prisma.$transaction(async (tx) => {
       const seqAgg = await tx.board.aggregate({
@@ -101,7 +109,12 @@ export class BoardsService {
         _max: { seq: true },
       });
       const created = await tx.board.create({
-        data: { projectId, name, seq: (seqAgg._max.seq ?? 0) + 1 },
+        data: {
+          projectId,
+          name,
+          seq: (seqAgg._max.seq ?? 0) + 1,
+          stageId: stageId ?? null,
+        },
       });
       const column = await tx.column.create({
         data: { boardId: created.id, title: 'С чего начать', order: 0 },
@@ -114,6 +127,7 @@ export class BoardsService {
     return {
       id: board.id,
       projectId: board.projectId,
+      stageId: board.stageId,
       name: board.name,
       seq: board.seq,
       createdAt: board.createdAt.toISOString(),
@@ -183,6 +197,7 @@ export class BoardsService {
     return {
       id: updated.id,
       projectId: updated.projectId,
+      stageId: updated.stageId,
       name: updated.name,
       seq: updated.seq,
       createdAt: updated.createdAt.toISOString(),
