@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ColumnDto } from '@moongatracker/shared-types';
+import { ColumnDto } from '@moonga-studio/shared-types';
 
 export interface FilterState {
   search: string;

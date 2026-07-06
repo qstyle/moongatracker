@@ -8,7 +8,7 @@ import {
   Post,
   Request,
 } from '@nestjs/common';
-import { ColumnDto } from '@moongatracker/shared-types';
+import { ColumnDto } from '@moonga-studio/shared-types';
 import { ColumnsService } from './columns.service';
 import { CreateColumnDto } from './dto/create-column.dto';
 import { ReorderColumnsDto } from './dto/reorder-columns.dto';

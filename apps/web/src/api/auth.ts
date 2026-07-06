@@ -1,4 +1,4 @@
-import { AuthResponse } from '@moongatracker/shared-types';
+import { AuthResponse } from '@moonga-studio/shared-types';
 import { apiFetch, asJson, setToken } from './client';
 
 export async function login(

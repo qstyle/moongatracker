@@ -7,7 +7,7 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
-import { AuthResponse, MeResponse } from '@moongatracker/shared-types';
+import { AuthResponse, MeResponse } from '@moonga-studio/shared-types';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto, UpdateMeDto } from './dto/auth.dto';
 import { Public } from './public.decorator';

@@ -1,4 +1,4 @@
-import { PRIORITIES, type CardPriority } from '@moongatracker/shared-types';
+import { PRIORITIES, type CardPriority } from '@moonga-studio/shared-types';
 import { Badge } from '@/components/ui/badge';
 
 interface PriorityChipProps {

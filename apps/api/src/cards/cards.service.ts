@@ -5,8 +5,8 @@ import {
   assertCardAccess,
   PrismaService,
   RequestActor,
-} from '@moongatracker/data-access';
-import { CardDto } from '@moongatracker/shared-types';
+} from '@moonga-studio/data-access';
+import { CardDto } from '@moonga-studio/shared-types';
 import { ActivityService } from '../activity/activity.service';
 import {
   CARD_ASSIGNED,

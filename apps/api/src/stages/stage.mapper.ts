@@ -3,7 +3,7 @@ import {
   StageDto,
   StageStatus,
   StageTaskCounts,
-} from '@moongatracker/shared-types';
+} from '@moonga-studio/shared-types';
 
 type BoardRow = {
   id: string;

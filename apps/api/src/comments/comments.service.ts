@@ -4,8 +4,8 @@ import {
   assertCardAccess,
   PrismaService,
   RequestActor,
-} from '@moongatracker/data-access';
-import { CommentDto } from '@moongatracker/shared-types';
+} from '@moonga-studio/data-access';
+import { CommentDto } from '@moonga-studio/shared-types';
 import { ActivityService } from '../activity/activity.service';
 import { CARD_COMMENTED } from '../telegram/telegram.events';
 import { toCommentDto } from './comment.mapper';

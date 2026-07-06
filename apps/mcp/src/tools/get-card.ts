@@ -4,7 +4,7 @@ import type {
   BoardSummaryDto,
   CardDto,
   CommentDto,
-} from '@moongatracker/shared-types';
+} from '@moonga-studio/shared-types';
 import { apiGet } from '../api-client.js';
 
 // Inlined from libs/shared-types/src/lib/card-key.ts — keep in sync manually.

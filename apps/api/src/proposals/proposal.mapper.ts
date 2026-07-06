@@ -2,7 +2,7 @@ import {
   ProposalAction,
   ProposalDto,
   ProposalStatus,
-} from '@moongatracker/shared-types';
+} from '@moonga-studio/shared-types';
 
 type ProposalRow = {
   id: string;

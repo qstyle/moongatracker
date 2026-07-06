@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post, Put, Req } from '@nestjs/common';
-import { CanvasDoc, LinkedCardDto } from '@moongatracker/shared-types';
+import { CanvasDoc, LinkedCardDto } from '@moonga-studio/shared-types';
 import { CanvasService } from './canvas.service';
 import { SaveCanvasDto } from './dto/save-canvas.dto';
 import { CreateTaskDto } from './dto/create-task.dto';

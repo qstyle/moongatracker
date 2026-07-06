@@ -1,7 +1,7 @@
 import { randomBytes } from 'crypto';
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@moongatracker/data-access';
-import { TelegramLinkStatus } from '@moongatracker/shared-types';
+import { PrismaService } from '@moonga-studio/data-access';
+import { TelegramLinkStatus } from '@moonga-studio/shared-types';
 
 /** Onboarding codes are valid for 10 minutes. */
 const CODE_TTL_MS = 10 * 60 * 1000;

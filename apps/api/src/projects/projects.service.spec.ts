@@ -1,5 +1,5 @@
 import { ForbiddenException } from '@nestjs/common';
-import { MEMBER_COLOR_PALETTE, pickNextMemberColor } from '@moongatracker/shared-types';
+import { MEMBER_COLOR_PALETTE, pickNextMemberColor } from '@moonga-studio/shared-types';
 import { ProjectsService } from './projects.service';
 
 const NOW = new Date('2025-01-01T00:00:00.000Z');

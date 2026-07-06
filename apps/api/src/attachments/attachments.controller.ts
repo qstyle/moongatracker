@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { AttachmentsService } from './attachments.service';
 import { PresignUploadDto } from './dto/presign-upload.dto';
-import { AttachmentDto } from '@moongatracker/shared-types';
+import { AttachmentDto } from '@moonga-studio/shared-types';
 
 @Controller()
 export class AttachmentsController {

@@ -16,7 +16,7 @@ import {
   RiCloseLine,
   type RemixiconComponentType,
 } from '@remixicon/react';
-import type { StageDto } from '@moongatracker/shared-types';
+import type { StageDto } from '@moonga-studio/shared-types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {

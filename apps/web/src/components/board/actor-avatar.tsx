@@ -1,4 +1,4 @@
-import { ActorDto } from '@moongatracker/shared-types';
+import { ActorDto } from '@moonga-studio/shared-types';
 import { RiRobot2Line } from '@remixicon/react';
 
 const SIZES = {

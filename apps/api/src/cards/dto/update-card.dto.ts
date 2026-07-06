@@ -7,7 +7,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { UpdateCardInput, CardPriority } from '@moongatracker/shared-types';
+import { UpdateCardInput, CardPriority } from '@moonga-studio/shared-types';
 
 export class UpdateCardDto implements UpdateCardInput {
   @IsOptional()

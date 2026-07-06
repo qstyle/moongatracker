@@ -1,4 +1,4 @@
-import { CardDto, CardPriority } from '@moongatracker/shared-types';
+import { CardDto, CardPriority } from '@moonga-studio/shared-types';
 
 export interface PrismaCardLike {
   id: string;

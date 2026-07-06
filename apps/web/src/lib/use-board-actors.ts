@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { ActorDto } from '@moongatracker/shared-types';
+import { ActorDto } from '@moonga-studio/shared-types';
 import { fetchBoardActors } from '../api/boards';
 
 const AGENT_COLOR = '#f59e0b';

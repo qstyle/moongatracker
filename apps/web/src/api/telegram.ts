@@ -4,7 +4,7 @@ import type {
   NotificationPreferencesUpdate,
   TelegramLinkCodeResponse,
   TelegramLinkStatus,
-} from '@moongatracker/shared-types';
+} from '@moonga-studio/shared-types';
 
 export function fetchTelegramStatus(): Promise<TelegramLinkStatus> {
   return apiFetch('/api/telegram/link').then((r) =>

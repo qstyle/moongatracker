@@ -1,4 +1,4 @@
-import { ActorDto, CardDto } from '@moongatracker/shared-types';
+import { ActorDto, CardDto } from '@moonga-studio/shared-types';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { RiAttachment2, RiDraggable } from '@remixicon/react';

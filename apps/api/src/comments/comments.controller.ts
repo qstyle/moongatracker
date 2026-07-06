@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
-import { CommentDto } from '@moongatracker/shared-types';
+import { CommentDto } from '@moonga-studio/shared-types';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 

@@ -1,5 +1,5 @@
 import { IsString, MinLength, MaxLength } from 'class-validator';
-import { CreateWikiSectionInput } from '@moongatracker/shared-types';
+import { CreateWikiSectionInput } from '@moonga-studio/shared-types';
 
 export class CreateWikiSectionDto implements CreateWikiSectionInput {
   @IsString()

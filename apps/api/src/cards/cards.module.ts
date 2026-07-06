@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { PrismaService } from '@moongatracker/data-access';
+import { PrismaService } from '@moonga-studio/data-access';
 import { ActivityModule } from '../activity/activity.module';
 import { CardsController } from './cards.controller';
 import { CardsService } from './cards.service';

@@ -1,4 +1,4 @@
-import { CommentDto } from '@moongatracker/shared-types';
+import { CommentDto } from '@moonga-studio/shared-types';
 
 export interface PrismaCommentLike {
   id: string;

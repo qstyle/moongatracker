@@ -1,5 +1,5 @@
 import { apiFetch, asJson } from './client';
-import type { ProjectDto, MemberDto } from '@moongatracker/shared-types';
+import type { ProjectDto, MemberDto } from '@moonga-studio/shared-types';
 
 export function fetchProjects(): Promise<ProjectDto[]> {
   return apiFetch('/api/projects').then((r) => asJson<ProjectDto[]>(r));

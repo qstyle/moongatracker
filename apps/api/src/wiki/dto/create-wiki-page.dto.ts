@@ -1,5 +1,5 @@
 import { IsString, IsOptional, MinLength, MaxLength } from 'class-validator';
-import { CreateWikiPageInput } from '@moongatracker/shared-types';
+import { CreateWikiPageInput } from '@moonga-studio/shared-types';
 
 export class CreateWikiPageDto implements CreateWikiPageInput {
   @IsString()

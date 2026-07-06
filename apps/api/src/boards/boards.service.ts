@@ -3,7 +3,7 @@ import {
   assertProjectAccess,
   PrismaService,
   RequestActor,
-} from '@moongatracker/data-access';
+} from '@moonga-studio/data-access';
 import { buildDefaultColumns } from '../columns/default-columns';
 import {
   ActorDto,
@@ -12,7 +12,7 @@ import {
   CardDto,
   CardPriority,
   ColumnDto,
-} from '@moongatracker/shared-types';
+} from '@moonga-studio/shared-types';
 
 const priorityWeight = { urgent: 3, normal: 2, low: 1 } as Record<
   string,

@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { PrismaService } from '@moongatracker/data-access';
+import { PrismaService } from '@moonga-studio/data-access';
 import {
   formatCardKey,
   NotificationPreferences,
-} from '@moongatracker/shared-types';
+} from '@moonga-studio/shared-types';
 import { TelegramService } from './telegram.service';
 import {
   CARD_ASSIGNED,

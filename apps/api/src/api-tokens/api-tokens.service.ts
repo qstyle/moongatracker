@@ -1,10 +1,10 @@
 import * as crypto from 'crypto';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@moongatracker/data-access';
+import { PrismaService } from '@moonga-studio/data-access';
 import {
   ApiTokenDto,
   CreateApiTokenResponse,
-} from '@moongatracker/shared-types';
+} from '@moonga-studio/shared-types';
 
 function toDto(row: {
   id: string;

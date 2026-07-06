@@ -9,14 +9,14 @@ import {
   assertMembership,
   PrismaService,
   RequestActor,
-} from '@moongatracker/data-access';
+} from '@moonga-studio/data-access';
 import {
   isValidHexColor,
   MEMBER_COLOR_PALETTE,
   MemberDto,
   pickNextMemberColor,
   ProjectDto,
-} from '@moongatracker/shared-types';
+} from '@moonga-studio/shared-types';
 import { buildDefaultColumns } from '../columns/default-columns';
 import { buildStarterWiki } from '../wiki/starter-wiki';
 import { buildDefaultStages } from '../stages/default-stages';

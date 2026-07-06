@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Param, Req, HttpCode } from '@nestjs/common';
 import { ActivityService } from './activity.service';
-import { ActivityDto } from '@moongatracker/shared-types';
+import { ActivityDto } from '@moonga-studio/shared-types';
 
 @Controller()
 export class ActivityController {

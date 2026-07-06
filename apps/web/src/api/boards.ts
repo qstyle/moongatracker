@@ -3,7 +3,7 @@ import type {
   ActorDto,
   BoardDto,
   BoardSummaryDto,
-} from '@moongatracker/shared-types';
+} from '@moonga-studio/shared-types';
 
 export function fetchBoards(projectId: string): Promise<BoardSummaryDto[]> {
   return apiFetch(`/api/projects/${projectId}/boards`).then((r) =>

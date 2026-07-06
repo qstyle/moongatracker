@@ -1,5 +1,5 @@
 import { IsString, IsOptional, IsInt, Min, MinLength, MaxLength } from 'class-validator';
-import { UpdateWikiPageInput } from '@moongatracker/shared-types';
+import { UpdateWikiPageInput } from '@moonga-studio/shared-types';
 
 export class UpdateWikiPageDto implements UpdateWikiPageInput {
   @IsOptional()

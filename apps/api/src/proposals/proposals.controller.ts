@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
-import { ProposalDto } from '@moongatracker/shared-types';
+import { ProposalDto } from '@moonga-studio/shared-types';
 import { CreateDeletionProposalDto } from './dto/create-deletion-proposal.dto';
 import { ProposalsService } from './proposals.service';
 

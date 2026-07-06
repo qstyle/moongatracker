@@ -13,7 +13,7 @@ import {
   WikiPageDto,
   WikiSectionDto,
   WikiTreeDto,
-} from '@moongatracker/shared-types';
+} from '@moonga-studio/shared-types';
 import { WikiService } from './wiki.service';
 import { CreateWikiSectionDto } from './dto/create-wiki-section.dto';
 import { UpdateWikiSectionDto } from './dto/update-wiki-section.dto';

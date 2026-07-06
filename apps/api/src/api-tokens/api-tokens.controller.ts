@@ -12,7 +12,7 @@ import {
 import {
   ApiTokenDto,
   CreateApiTokenResponse,
-} from '@moongatracker/shared-types';
+} from '@moonga-studio/shared-types';
 import { ApiTokensService } from './api-tokens.service';
 import { CreateApiTokenDto } from './dto/create-api-token.dto';
 

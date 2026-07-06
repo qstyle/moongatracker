@@ -20,7 +20,7 @@ import { useLocation } from 'wouter';
 import type {
   CanvasNodeData,
   LinkedCardDto,
-} from '@moongatracker/shared-types';
+} from '@moonga-studio/shared-types';
 
 import { fetchCanvas, saveCanvas, createTaskFromNode } from '../../api/canvas';
 import { fetchProjectMembers } from '../../api/projects';

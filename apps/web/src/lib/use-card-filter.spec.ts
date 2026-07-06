@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ColumnDto, CardDto } from '@moongatracker/shared-types';
+import { ColumnDto, CardDto } from '@moonga-studio/shared-types';
 import { filterColumns, FilterState } from './use-card-filter';
 
 const card = (id: string, title: string, body?: string): CardDto => ({

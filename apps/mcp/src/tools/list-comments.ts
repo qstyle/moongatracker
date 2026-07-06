@@ -1,6 +1,6 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { apiGet } from '../api-client.js';
-import type { CommentDto } from '@moongatracker/shared-types';
+import type { CommentDto } from '@moonga-studio/shared-types';
 
 export const listCommentsTool: Tool = {
   name: 'list_comments',

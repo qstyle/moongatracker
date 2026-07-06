@@ -1,5 +1,5 @@
 import { apiFetch, asJson } from './client';
-import type { CanvasDoc, LinkedCardDto } from '@moongatracker/shared-types';
+import type { CanvasDoc, LinkedCardDto } from '@moonga-studio/shared-types';
 
 const json = { 'Content-Type': 'application/json' };
 

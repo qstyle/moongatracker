@@ -1,5 +1,5 @@
 import { apiFetch, asJson } from './client';
-import type { ColumnDto } from '@moongatracker/shared-types';
+import type { ColumnDto } from '@moonga-studio/shared-types';
 
 export function createColumn(
   boardId: string,

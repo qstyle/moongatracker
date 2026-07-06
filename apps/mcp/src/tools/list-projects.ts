@@ -1,6 +1,6 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { apiGet } from '../api-client.js';
-import type { ProjectDto } from '@moongatracker/shared-types';
+import type { ProjectDto } from '@moonga-studio/shared-types';
 
 export const listProjectsTool: Tool = {
   name: 'list_projects',

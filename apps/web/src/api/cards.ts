@@ -2,7 +2,7 @@ import {
   CardDto,
   CreateCardInput,
   UpdateCardInput,
-} from '@moongatracker/shared-types';
+} from '@moonga-studio/shared-types';
 import { apiFetch, asJson } from './client';
 
 export function fetchCard(id: string): Promise<CardDto> {

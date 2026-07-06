@@ -7,12 +7,12 @@ import {
   assertMembership,
   assertProjectAccess,
   PrismaService,
-} from '@moongatracker/data-access';
+} from '@moonga-studio/data-access';
 import {
   CanvasDoc,
   CanvasNode,
   LinkedCardDto,
-} from '@moongatracker/shared-types';
+} from '@moonga-studio/shared-types';
 
 function starterDoc(): CanvasDoc {
   return {

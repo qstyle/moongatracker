@@ -2,7 +2,7 @@ import { apiFetch, asJson } from './client';
 import type {
   ApiTokenDto,
   CreateApiTokenResponse,
-} from '@moongatracker/shared-types';
+} from '@moonga-studio/shared-types';
 
 // Tokens are user-scoped: one token grants access to all of the owner's projects.
 export function fetchTokens(): Promise<ApiTokenDto[]> {

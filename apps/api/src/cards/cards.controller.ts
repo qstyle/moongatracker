@@ -9,7 +9,7 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
-import { CardDto } from '@moongatracker/shared-types';
+import { CardDto } from '@moonga-studio/shared-types';
 import { CardsService } from './cards.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';

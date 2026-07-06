@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@moongatracker/data-access';
-import { assertMembership } from '@moongatracker/data-access';
+import { PrismaService } from '@moonga-studio/data-access';
+import { assertMembership } from '@moonga-studio/data-access';
 import { S3Service } from './s3.service';
-import { AttachmentDto } from '@moongatracker/shared-types';
+import { AttachmentDto } from '@moonga-studio/shared-types';
 import { randomUUID } from 'crypto';
 
 @Injectable()

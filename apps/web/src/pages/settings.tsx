@@ -17,8 +17,8 @@ import { fetchMe, updateMyName } from '../api/users';
 import { fetchTelegramStatus, createTelegramLinkCode, unlinkTelegram, fetchNotificationPrefs, updateNotificationPrefs } from '../api/telegram';
 import { fetchPendingProposals, approveProposal, rejectProposal } from '../api/proposals';
 import { getCurrentUserId } from '../api/client';
-import { MEMBER_COLOR_PALETTE } from '@moongatracker/shared-types';
-import type { ApiTokenDto, NotificationPreferences } from '@moongatracker/shared-types';
+import { MEMBER_COLOR_PALETTE } from '@moonga-studio/shared-types';
+import type { ApiTokenDto, NotificationPreferences } from '@moonga-studio/shared-types';
 import { cn } from '../lib/utils';
 
 type DeleteTarget = { kind: 'board'; id: string; name: string } | { kind: 'project'; id: string; name: string } | null;
@@ -432,7 +432,7 @@ export function SettingsPage() {
           {(() => {
             const hasActiveToken = tokens.some((t) => !t.revokedAt);
             const tokenValue = createdToken ?? '<ВАШ_ТОКЕН>';
-            const connectionString = `npx -y @moongatracker/mcp
+            const connectionString = `npx -y @moonga-studio/mcp
 MOONGATRACKER_API_URL=${window.location.origin}
 MOONGATRACKER_API_TOKEN=${tokenValue}`;
             const showConnection = !!createdToken || hasActiveToken;

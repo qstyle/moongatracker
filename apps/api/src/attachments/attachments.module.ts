@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { PrismaService } from '@moongatracker/data-access';
+import { PrismaService } from '@moonga-studio/data-access';
 import { S3Service } from './s3.service';
 import { AttachmentsService } from './attachments.service';
 import { AttachmentsController } from './attachments.controller';

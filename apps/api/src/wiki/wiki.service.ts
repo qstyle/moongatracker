@@ -3,13 +3,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { assertProjectAccess, PrismaService } from '@moongatracker/data-access';
+import { assertProjectAccess, PrismaService } from '@moonga-studio/data-access';
 import {
   WikiPageDto,
   WikiPageSummaryDto,
   WikiSectionDto,
   WikiTreeDto,
-} from '@moongatracker/shared-types';
+} from '@moonga-studio/shared-types';
 import { CreateWikiSectionDto } from './dto/create-wiki-section.dto';
 import { UpdateWikiSectionDto } from './dto/update-wiki-section.dto';
 import { CreateWikiPageDto } from './dto/create-wiki-page.dto';

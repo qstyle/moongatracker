@@ -10,8 +10,8 @@ import {
   Req,
   Request,
 } from '@nestjs/common';
-import { MemberDto, ProjectDto } from '@moongatracker/shared-types';
-import { RequestActor } from '@moongatracker/data-access';
+import { MemberDto, ProjectDto } from '@moonga-studio/shared-types';
+import { RequestActor } from '@moonga-studio/data-access';
 import { ProjectsService } from './projects.service';
 import { AddMemberDto } from './dto/add-member.dto';
 import { CreateProjectDto } from './dto/create-project.dto';

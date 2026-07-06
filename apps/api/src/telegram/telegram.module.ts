@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { PrismaService } from '@moongatracker/data-access';
+import { PrismaService } from '@moonga-studio/data-access';
 import { ProposalsModule } from '../proposals/proposals.module';
 import { TelegramController } from './telegram.controller';
 import { TelegramLinkService } from './telegram-link.service';

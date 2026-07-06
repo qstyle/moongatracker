@@ -14,8 +14,8 @@ import {
   ActorDto,
   BoardDto,
   BoardSummaryDto,
-} from '@moongatracker/shared-types';
-import { RequestActor } from '@moongatracker/data-access';
+} from '@moonga-studio/shared-types';
+import { RequestActor } from '@moonga-studio/data-access';
 import { BoardsService } from './boards.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';

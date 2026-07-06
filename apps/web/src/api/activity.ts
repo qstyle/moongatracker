@@ -1,4 +1,4 @@
-import { ActivityDto } from '@moongatracker/shared-types';
+import { ActivityDto } from '@moonga-studio/shared-types';
 import { apiFetch, asJson } from './client';
 
 export function fetchActivity(cardId: string): Promise<ActivityDto[]> {

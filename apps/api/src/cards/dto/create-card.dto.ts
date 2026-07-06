@@ -5,7 +5,7 @@ import {
   MinLength,
   MaxLength,
 } from 'class-validator';
-import { CardPriority, CreateCardInput } from '@moongatracker/shared-types';
+import { CardPriority, CreateCardInput } from '@moonga-studio/shared-types';
 
 export class CreateCardDto implements CreateCardInput {
   @IsString()

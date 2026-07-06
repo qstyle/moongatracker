@@ -1,6 +1,6 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { apiPost } from '../api-client.js';
-import type { WikiPageDto } from '@moongatracker/shared-types';
+import type { WikiPageDto } from '@moonga-studio/shared-types';
 
 export const createWikiPageTool: Tool = {
   name: 'create_wiki_page',

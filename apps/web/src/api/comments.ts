@@ -1,4 +1,4 @@
-import { CommentDto } from '@moongatracker/shared-types';
+import { CommentDto } from '@moonga-studio/shared-types';
 import { apiFetch, asJson } from './client';
 
 export function listComments(cardId: string): Promise<CommentDto[]> {

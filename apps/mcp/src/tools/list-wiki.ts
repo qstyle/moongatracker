@@ -1,6 +1,6 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { apiGet } from '../api-client.js';
-import type { WikiTreeDto } from '@moongatracker/shared-types';
+import type { WikiTreeDto } from '@moonga-studio/shared-types';
 
 export const listWikiTool: Tool = {
   name: 'list_wiki',

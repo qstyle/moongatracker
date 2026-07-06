@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { assertMembership, PrismaService } from '@moongatracker/data-access';
-import { StageDto } from '@moongatracker/shared-types';
+import { assertMembership, PrismaService } from '@moonga-studio/data-access';
+import { StageDto } from '@moonga-studio/shared-types';
 import { buildDefaultStages } from './default-stages';
 import { toStageDto } from './stage.mapper';
 

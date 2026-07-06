@@ -14,7 +14,7 @@ import {
   NotificationPreferences,
   TelegramLinkCodeResponse,
   TelegramLinkStatus,
-} from '@moongatracker/shared-types';
+} from '@moonga-studio/shared-types';
 import { TelegramLinkService } from './telegram-link.service';
 import { TelegramService } from './telegram.service';
 import { NotificationPrefsService } from './notification-prefs.service';

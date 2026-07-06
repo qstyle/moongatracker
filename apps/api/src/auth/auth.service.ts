@@ -5,8 +5,8 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
-import { PrismaService } from '@moongatracker/data-access';
-import { AuthResponse, MeResponse } from '@moongatracker/shared-types';
+import { PrismaService } from '@moonga-studio/data-access';
+import { AuthResponse, MeResponse } from '@moonga-studio/shared-types';
 import { buildDefaultStages } from '../stages/default-stages';
 
 interface UserRow {

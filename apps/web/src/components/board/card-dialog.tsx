@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { CardDto, CardPriority, PRIORITIES } from '@moongatracker/shared-types';
+import { CardDto, CardPriority, PRIORITIES } from '@moonga-studio/shared-types';
 import { RiAttachment2, RiCheckLine, RiDeleteBin6Line, RiFileCopyLine } from '@remixicon/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

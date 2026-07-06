@@ -9,7 +9,7 @@ import {
 } from '@xyflow/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import type { CanvasNodeData } from '@moongatracker/shared-types';
+import type { CanvasNodeData } from '@moonga-studio/shared-types';
 
 /** Колбэки, которые FlowCanvas прокидывает в node.data. */
 export interface NodeCallbacks {

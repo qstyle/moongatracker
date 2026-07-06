@@ -9,7 +9,7 @@ import {
   Post,
   Request,
 } from '@nestjs/common';
-import { StageDto } from '@moongatracker/shared-types';
+import { StageDto } from '@moonga-studio/shared-types';
 import { StagesService } from './stages.service';
 import { CreateStageDto } from './dto/create-stage.dto';
 import { UpdateStageDto } from './dto/update-stage.dto';

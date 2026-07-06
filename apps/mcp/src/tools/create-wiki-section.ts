@@ -1,6 +1,6 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { apiPost } from '../api-client.js';
-import type { WikiSectionDto } from '@moongatracker/shared-types';
+import type { WikiSectionDto } from '@moonga-studio/shared-types';
 
 export const createWikiSectionTool: Tool = {
   name: 'create_wiki_section',

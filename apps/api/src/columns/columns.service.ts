@@ -3,8 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { assertMembership, PrismaService } from '@moongatracker/data-access';
-import { ColumnDto } from '@moongatracker/shared-types';
+import { assertMembership, PrismaService } from '@moonga-studio/data-access';
+import { ColumnDto } from '@moonga-studio/shared-types';
 
 @Injectable()
 export class ColumnsService {

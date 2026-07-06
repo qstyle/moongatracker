@@ -3,8 +3,8 @@ import {
   assertProjectAccess,
   PrismaService,
   RequestActor,
-} from '@moongatracker/data-access';
-import { ActivityDto } from '@moongatracker/shared-types';
+} from '@moonga-studio/data-access';
+import { ActivityDto } from '@moonga-studio/shared-types';
 
 @Injectable()
 export class ActivityService {

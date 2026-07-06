@@ -1,6 +1,6 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { apiPost } from '../api-client.js';
-import type { ProposalDto } from '@moongatracker/shared-types';
+import type { ProposalDto } from '@moonga-studio/shared-types';
 
 export const proposeCardDeletionTool: Tool = {
   name: 'propose_card_deletion',

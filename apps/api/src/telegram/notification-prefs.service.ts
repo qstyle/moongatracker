@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@moongatracker/data-access';
+import { PrismaService } from '@moonga-studio/data-access';
 import {
   NotificationPreferences,
   NotificationPreferencesUpdate,
-} from '@moongatracker/shared-types';
+} from '@moonga-studio/shared-types';
 
 /** Defaults when a user has no preferences row — everything enabled. */
 const DEFAULTS: NotificationPreferences = {

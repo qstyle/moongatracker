@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { fetchProjects, createProject } from '../../api/projects';
 import { fetchBoards, createBoard } from '../../api/boards';
 import { logout } from '../../api/auth';
-import type { ProjectDto } from '@moongatracker/shared-types';
+import type { ProjectDto } from '@moonga-studio/shared-types';
 
 function ProjectSection({ project, activeBoardId }: { project: ProjectDto; activeBoardId?: string }) {
   const { data: boards = [] } = useQuery({

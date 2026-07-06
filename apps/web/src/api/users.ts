@@ -1,5 +1,5 @@
 import { apiFetch, asJson } from './client';
-import type { MeResponse } from '@moongatracker/shared-types';
+import type { MeResponse } from '@moonga-studio/shared-types';
 
 export function fetchMe(): Promise<MeResponse> {
   return apiFetch('/api/auth/me').then((r) => asJson<MeResponse>(r));

@@ -1,6 +1,6 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { apiPost } from '../api-client.js';
-import type { CardDto } from '@moongatracker/shared-types';
+import type { CardDto } from '@moonga-studio/shared-types';
 
 export const createCardTool: Tool = {
   name: 'create_card',

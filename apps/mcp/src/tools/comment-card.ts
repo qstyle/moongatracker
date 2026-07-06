@@ -1,6 +1,6 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { apiPost } from '../api-client.js';
-import type { CommentDto } from '@moongatracker/shared-types';
+import type { CommentDto } from '@moonga-studio/shared-types';
 
 export const commentCardTool: Tool = {
   name: 'comment_card',

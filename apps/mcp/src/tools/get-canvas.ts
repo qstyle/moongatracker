@@ -1,6 +1,6 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { apiGet } from '../api-client.js';
-import type { CanvasDoc } from '@moongatracker/shared-types';
+import type { CanvasDoc } from '@moonga-studio/shared-types';
 
 export const getCanvasTool: Tool = {
   name: 'get_canvas',

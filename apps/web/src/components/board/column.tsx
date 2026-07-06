@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActorDto, CardDto, ColumnDto } from '@moongatracker/shared-types';
+import { ActorDto, CardDto, ColumnDto } from '@moonga-studio/shared-types';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { RiCheckboxBlankCircleLine, RiMoreLine } from '@remixicon/react';

@@ -1,6 +1,6 @@
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { apiGet } from '../api-client.js';
-import type { BoardSummaryDto } from '@moongatracker/shared-types';
+import type { BoardSummaryDto } from '@moonga-studio/shared-types';
 
 export const listBoardsTool: Tool = {
   name: 'list_boards',

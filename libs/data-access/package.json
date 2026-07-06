@@ -1,5 +1,5 @@
 {
-  "name": "@moongatracker/data-access",
+  "name": "@moonga-studio/data-access",
   "version": "0.0.1",
   "private": true,
   "type": "module",

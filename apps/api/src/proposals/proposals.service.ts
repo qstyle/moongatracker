@@ -10,8 +10,8 @@ import {
   assertProjectAccess,
   PrismaService,
   RequestActor,
-} from '@moongatracker/data-access';
-import { formatCardKey, ProposalDto } from '@moongatracker/shared-types';
+} from '@moonga-studio/data-access';
+import { formatCardKey, ProposalDto } from '@moonga-studio/shared-types';
 import { PROPOSAL_CREATED } from '../telegram/telegram.events';
 import { toProposalDto } from './proposal.mapper';
 

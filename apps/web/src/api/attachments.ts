@@ -1,4 +1,4 @@
-import { AttachmentDto } from '@moongatracker/shared-types';
+import { AttachmentDto } from '@moonga-studio/shared-types';
 import { apiFetch, asJson } from './client';
 
 export function listAttachments(cardId: string): Promise<AttachmentDto[]> {

@@ -3,7 +3,7 @@ import type {
   WikiTreeDto,
   WikiSectionDto,
   WikiPageDto,
-} from '@moongatracker/shared-types';
+} from '@moonga-studio/shared-types';
 
 const json = { 'Content-Type': 'application/json' };
 

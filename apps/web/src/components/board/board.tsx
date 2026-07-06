@@ -7,7 +7,7 @@ import {
   ColumnDto,
   formatCardKey,
   parseCardNumber,
-} from '@moongatracker/shared-types';
+} from '@moonga-studio/shared-types';
 import {
   DndContext, DragEndEvent, DragOverlay, DragStartEvent,
   PointerSensor, closestCorners, useSensor, useSensors,
