@@ -5,6 +5,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { ProjectsModule } from '../projects/projects.module';
 import { BoardsModule } from '../boards/boards.module';
 import { ColumnsModule } from '../columns/columns.module';
+import { StagesModule } from '../stages/stages.module';
 import { AuthModule } from '../auth/auth.module';
 import { ApiTokensModule } from '../api-tokens/api-tokens.module';
 import { ActivityModule } from '../activity/activity.module';
@@ -43,6 +44,7 @@ const staticModules: DynamicModule[] =
     ProjectsModule,
     BoardsModule,
     ColumnsModule,
+    StagesModule,
     AuthModule,
     ApiTokensModule,
     ActivityModule,
