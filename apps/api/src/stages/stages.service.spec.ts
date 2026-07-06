@@ -16,7 +16,7 @@ function make(over: any = {}) {
           boards: [],
           ...data,
         })),
-      createMany: jest.fn().mockResolvedValue({ count: 6 }),
+      createMany: jest.fn().mockResolvedValue({ count: 5 }),
       count: jest.fn().mockResolvedValue(0),
       update: jest.fn().mockImplementation(({ data }: any) => ({
         id: 's1',
@@ -50,7 +50,7 @@ describe('StagesService', () => {
 
   it('seedDefaults() is a no-op when stages already exist', async () => {
     const { svc, prisma } = make();
-    prisma.stage.count.mockResolvedValue(6);
+    prisma.stage.count.mockResolvedValue(5);
     await svc.seedDefaults('p1', 'u1');
     expect(prisma.stage.createMany).not.toHaveBeenCalled();
   });

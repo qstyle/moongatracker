@@ -75,7 +75,7 @@ export class StagesService {
     return toStageDto(stage);
   }
 
-  /** Seed the 6 default stages if the project has none yet (idempotent). */
+  /** Seed the 5 default stages if the project has none yet (idempotent). */
   async seedDefaults(projectId: string, userId: string): Promise<StageDto[]> {
     await assertMembership(this.prisma, userId, projectId);
     const count = await this.prisma.stage.count({ where: { projectId } });

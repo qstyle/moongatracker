@@ -2,7 +2,6 @@ import { Fragment, useState, type CSSProperties } from 'react';
 import { Link, useRoute } from 'wouter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  RiLightbulbLine,
   RiSearchEyeLine,
   RiPencilRuler2Line,
   RiHammerLine,
@@ -38,12 +37,11 @@ const GRID_BG: CSSProperties = {
 };
 
 const STAGE_ICONS: Record<string, RemixiconComponentType> = {
-  idea: RiLightbulbLine,
-  validate: RiSearchEyeLine,
+  discovery: RiSearchEyeLine,
   design: RiPencilRuler2Line,
   build: RiHammerLine,
-  launch: RiRocketLine,
-  prod: RiGlobalLine,
+  release: RiRocketLine,
+  operate: RiGlobalLine,
 };
 function stageIcon(key: string | null): RemixiconComponentType {
   return (key && STAGE_ICONS[key]) || RiFlag2Line;

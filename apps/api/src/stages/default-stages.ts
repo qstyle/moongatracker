@@ -1,10 +1,9 @@
 const DEFAULT_STAGES = [
-  { key: 'idea', title: 'Идея' },
-  { key: 'validate', title: 'Валидация' },
-  { key: 'design', title: 'Дизайн' },
-  { key: 'build', title: 'Разработка' },
-  { key: 'launch', title: 'Запуск' },
-  { key: 'prod', title: 'Прод' },
+  { key: 'discovery', title: 'Открытие' },
+  { key: 'design', title: 'Дизайн и план' },
+  { key: 'build', title: 'Сборка MVP' },
+  { key: 'release', title: 'Релиз' },
+  { key: 'operate', title: 'Эксплуатация' },
 ];
 
 /** Rows for prisma.stage.createMany — the first stage starts active. */
