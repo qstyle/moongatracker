@@ -38,7 +38,7 @@ export class BoardsController {
     @Body() dto: CreateBoardDto,
     @Request() req: { user: RequestActor },
   ): Promise<BoardSummaryDto> {
-    return this.boards.create(projectId, dto.name, req.user);
+    return this.boards.create(projectId, dto.name, req.user, dto.stageId);
   }
 
   @Get('boards/:boardId')

@@ -17,6 +17,7 @@ model Project {
   wikiSections WikiSection[]
   canvas       Canvas?
   proposals    Proposal[]
+  stages       Stage[]
 }
 
 // A pending, human-gated request from an agent (or user) to perform an
@@ -123,14 +124,34 @@ model ApiToken {
 model Board {
   id        String   @id @default(cuid())
   projectId String
+  stageId   String?
   name      String
   seq       Int
   createdAt DateTime @default(now())
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  stage     Stage?   @relation(fields: [stageId], references: [id], onDelete: SetNull)
   columns   Column[]
   cards     Card[]
 
   @@unique([projectId, seq])
+}
+
+// Roadmap stage of a project's venture pipeline (Idea→Prod). Editable per
+// project (rename / add / remove / reorder), 6 defaults seeded on creation.
+// A board may belong to a stage (Board.stageId); deleting a stage detaches its
+// boards rather than deleting them (onDelete: SetNull).
+model Stage {
+  id        String   @id @default(cuid())
+  projectId String
+  key       String?
+  title     String
+  order     Int
+  status    String   @default("not_started") // not_started | active | done
+  createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  boards    Board[]
+
+  @@index([projectId])
 }
 
 model Column {

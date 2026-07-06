@@ -18,11 +18,12 @@ export function fetchBoard(boardId: string): Promise<BoardDto> {
 export function createBoard(
   projectId: string,
   name: string,
+  stageId?: string,
 ): Promise<BoardSummaryDto> {
   return apiFetch(`/api/projects/${projectId}/boards`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name }),
+    body: JSON.stringify(stageId ? { name, stageId } : { name }),
   }).then((r) => asJson<BoardSummaryDto>(r));
 }
 
