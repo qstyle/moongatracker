@@ -1,4 +1,4 @@
-import { Fragment, useState, type CSSProperties } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { Link, useRoute } from 'wouter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -10,7 +10,6 @@ import {
   RiGlobalLine,
   RiFlag2Line,
   RiCheckLine,
-  RiArrowRightSLine,
   RiKanbanView,
   RiAddLine,
   RiCloseLine,
@@ -152,16 +151,16 @@ export function RoadmapPage() {
         </div>
       </div>
 
-      {/* The conveyor — the only scroll surface on the page */}
+      {/* Stages wrap onto new rows; the track is the only scroll surface. */}
       <div className="h-full flex-1 overflow-auto p-6" style={GRID_BG}>
-        <div className="flex min-w-max items-start gap-0">
+        <div className="flex flex-wrap items-start gap-4">
           {stages.map((s, i) => {
             const Icon = stageIcon(s.key);
             const done = s.status === 'done';
             const active = s.status === 'active';
             return (
-              <Fragment key={s.id}>
                 <div
+                  key={s.id}
                   className={[
                     'group relative flex w-64 shrink-0 flex-col gap-3 rounded-2xl border p-4 transition-transform duration-200 hover:-translate-y-0.5',
                     active
@@ -260,23 +259,11 @@ export function RoadmapPage() {
                     </Button>
                   )}
                 </div>
-
-                {/* connector */}
-                {i < stages.length - 1 && (
-                  <div className="flex shrink-0 items-center self-start pt-9">
-                    <div className={['h-px w-5', done ? 'bg-primary' : 'bg-border'].join(' ')} />
-                    <RiArrowRightSLine
-                      size={18}
-                      className={done ? 'text-primary' : 'text-muted-foreground/40'}
-                    />
-                  </div>
-                )}
-              </Fragment>
             );
           })}
 
           {/* add-stage column */}
-          <div className="ml-4 flex w-52 shrink-0 flex-col justify-center gap-2 self-start rounded-2xl border border-dashed border-border/60 p-4">
+          <div className="flex w-52 shrink-0 flex-col justify-center gap-2 self-start rounded-2xl border border-dashed border-border/60 p-4">
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
               новая стадия
             </div>
