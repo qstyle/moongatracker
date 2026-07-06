@@ -11,7 +11,7 @@ const RED = [255, 38, 58]; // ярко-красный
 const WHITE = [255, 255, 255];
 const lerp = (a: number, b: number, t: number) => Math.round(a + (b - a) * t);
 
-export function DotGridCanvas({ className, gap = 30 }: DotGridCanvasProps) {
+export function DotGridCanvas({ className, gap = 22 }: DotGridCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -70,7 +70,7 @@ export function DotGridCanvas({ className, gap = 30 }: DotGridCanvasProps) {
           const cr = lerp(RED[0], WHITE[0], cf);
           const cg = lerp(RED[1], WHITE[1], cf);
           const cb = lerp(RED[2], WHITE[2], cf);
-          const alpha = Math.min(1, 0.7 + m * 0.3 + infl * 0.4);
+          const alpha = Math.min(1, 0.82 + m * 0.18 + infl * 0.35);
 
           ctx.fillStyle = `rgba(${cr},${cg},${cb},${alpha})`;
           const r = 1.1 + m * 1.2 + infl * 1.8;
