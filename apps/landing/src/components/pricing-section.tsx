@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { APP_URL } from '@/lib/constants';
+import { REGISTER_URL } from '@/lib/constants';
 
 const PLANS = [
   { name: 'Free', tagline: 'Для одного проекта', features: ['1 доска', '1 агент-токен', 'История активности 7 дней'] },
@@ -29,7 +29,7 @@ export function PricingCard() {
                 ))}
               </ul>
               <Button asChild variant={p.highlight ? 'default' : 'outline'} className="mt-6">
-                <a href={APP_URL}>Начать</a>
+                <a href={REGISTER_URL}>Начать</a>
               </Button>
             </div>
           ))}
@@ -37,7 +37,7 @@ export function PricingCard() {
 
         <div className="mt-10 text-center">
           <Button asChild size="lg" className="h-12 px-6 text-base">
-            <a href={APP_URL}>Создать аккаунт</a>
+            <a href={REGISTER_URL}>Создать аккаунт</a>
           </Button>
         </div>
       </div>

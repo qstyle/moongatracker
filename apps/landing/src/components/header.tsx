@@ -5,7 +5,7 @@ import { Menu, X } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { APP_URL } from '@/lib/constants';
+import { REGISTER_URL, LOGIN_URL } from '@/lib/constants';
 
 // index — номер экрана в стеке, к которому ведёт пункт (Hero = 0).
 const menuItems = [
@@ -86,10 +86,10 @@ export function Header() {
               </div>
               <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
                 <Button asChild variant="outline" size="sm">
-                  <a href={APP_URL}>Войти</a>
+                  <a href={LOGIN_URL}>Войти</a>
                 </Button>
                 <Button asChild size="sm">
-                  <a href={APP_URL}>Начать бесплатно</a>
+                  <a href={REGISTER_URL}>Начать бесплатно</a>
                 </Button>
               </div>
             </div>

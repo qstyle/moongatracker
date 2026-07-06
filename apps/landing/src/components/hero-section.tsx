@@ -1,6 +1,6 @@
 import { ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { APP_URL } from '@/lib/constants';
+import { REGISTER_URL } from '@/lib/constants';
 
 export function HeroCard() {
   return (
@@ -18,7 +18,7 @@ export function HeroCard() {
         </p>
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
           <Button asChild size="lg" className="h-12 pl-5 pr-3 text-base">
-            <a href={APP_URL}>
+            <a href={REGISTER_URL}>
               <span className="text-nowrap">Начать бесплатно</span>
               <ChevronRight className="ml-1" />
             </a>
