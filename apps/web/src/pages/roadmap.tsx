@@ -137,7 +137,7 @@ function StageCard({
         {onDelete && (
           <button
             type="button"
-            aria-label="Удалить стадию"
+            aria-label="Удалить этап"
             onClick={onDelete}
             className="ml-auto -mr-1 -mt-1 grid size-6 place-items-center rounded-md text-muted-foreground/40 opacity-0 transition hover:bg-muted hover:text-foreground group-hover:opacity-100"
           >
@@ -271,7 +271,7 @@ export function RoadmapPage() {
               invalidate();
             }}
           >
-            Создать стадии по умолчанию
+            Создать этапы по умолчанию
           </Button>
         </div>
       </div>
@@ -334,7 +334,7 @@ export function RoadmapPage() {
             Роадмап
           </div>
           <div className="mt-0.5 text-xs text-muted-foreground">
-            {activeIdx >= 0 ? `Стадия ${activeIdx + 1} из ${total}` : `${total} стадий`}
+            {activeIdx >= 0 ? `Этап ${activeIdx + 1} из ${total}` : `${total} этапов`}
             {' · '}
             {totalBoards} {totalBoards === 1 ? 'доска' : 'досок'}
           </div>
@@ -380,7 +380,7 @@ export function RoadmapPage() {
           {/* add-stage column */}
           <div className="flex w-52 shrink-0 flex-col justify-center gap-2 self-start rounded-2xl border border-dashed border-border/60 p-4">
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              новая стадия
+              новый этап
             </div>
             <Input
               value={newStage}

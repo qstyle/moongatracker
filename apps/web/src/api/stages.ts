@@ -39,5 +39,5 @@ export async function deleteStage(stageId: string): Promise<void> {
 
 export const scaffoldStage = (projectId: string, stageId: string) =>
   apiFetch(`/api/projects/${projectId}/stages/${stageId}/scaffold`, { method: 'POST' }).then((r) =>
-    asJson<StageDto>(r),
+    asJson<{ boardId: string }>(r),
   );
