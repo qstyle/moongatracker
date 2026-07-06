@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react';
+import { Fragment, useState, type CSSProperties } from 'react';
 import { Link, useRoute } from 'wouter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -10,6 +10,7 @@ import {
   RiGlobalLine,
   RiFlag2Line,
   RiCheckLine,
+  RiArrowRightSLine,
   RiKanbanView,
   RiAddLine,
   RiCloseLine,
@@ -153,14 +154,14 @@ export function RoadmapPage() {
 
       {/* Stages wrap onto new rows; the track is the only scroll surface. */}
       <div className="h-full flex-1 overflow-auto p-6" style={GRID_BG}>
-        <div className="flex flex-wrap items-start gap-4">
+        <div className="flex flex-wrap items-start gap-x-2 gap-y-4">
           {stages.map((s, i) => {
             const Icon = stageIcon(s.key);
             const done = s.status === 'done';
             const active = s.status === 'active';
             return (
+              <Fragment key={s.id}>
                 <div
-                  key={s.id}
                   className={[
                     'group relative flex w-64 shrink-0 flex-col gap-3 rounded-2xl border p-4 transition-transform duration-200 hover:-translate-y-0.5',
                     active
@@ -259,6 +260,17 @@ export function RoadmapPage() {
                     </Button>
                   )}
                 </div>
+
+                {i < stages.length - 1 && (
+                  <div className="flex shrink-0 items-center self-center">
+                    <div className={['h-px w-3', done ? 'bg-primary' : 'bg-border'].join(' ')} />
+                    <RiArrowRightSLine
+                      size={18}
+                      className={done ? 'text-primary' : 'text-muted-foreground/40'}
+                    />
+                  </div>
+                )}
+              </Fragment>
             );
           })}
 
