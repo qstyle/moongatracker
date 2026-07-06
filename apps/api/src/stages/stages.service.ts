@@ -13,7 +13,12 @@ export class StagesService {
     const stages = await this.prisma.stage.findMany({
       where: { projectId },
       orderBy: { order: 'asc' },
-      include: { boards: { orderBy: { createdAt: 'asc' } } },
+      include: {
+        boards: {
+          orderBy: { createdAt: 'asc' },
+          include: { _count: { select: { cards: true } } },
+        },
+      },
     });
     return stages.map(toStageDto);
   }
@@ -75,7 +80,12 @@ export class StagesService {
         ...(input.title !== undefined && { title: input.title }),
         ...(input.status !== undefined && { status: input.status }),
       },
-      include: { boards: { orderBy: { createdAt: 'asc' } } },
+      include: {
+        boards: {
+          orderBy: { createdAt: 'asc' },
+          include: { _count: { select: { cards: true } } },
+        },
+      },
     });
     return toStageDto(updated);
   }

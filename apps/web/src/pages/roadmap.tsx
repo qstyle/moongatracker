@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useState, type CSSProperties } from 'react';
 import { Link, useRoute } from 'wouter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -27,6 +27,15 @@ import {
   seedDefaultStages,
 } from '../api/stages';
 import { createBoard } from '../api/boards';
+
+// Same dotted grid backdrop as the kanban board.
+const GRID_BG: CSSProperties = {
+  backgroundImage:
+    'linear-gradient(color-mix(in oklab, var(--border) 55%, transparent) 1px, transparent 1px),' +
+    'linear-gradient(90deg, color-mix(in oklab, var(--border) 55%, transparent) 1px, transparent 1px)',
+  backgroundSize: '28px 28px',
+  backgroundPosition: '-1px -1px',
+};
 
 const STAGE_ICONS: Record<string, RemixiconComponentType> = {
   idea: RiLightbulbLine,
@@ -115,11 +124,11 @@ export function RoadmapPage() {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden">
+    <div className="flex h-full flex-col bg-background text-foreground">
       <style>{`@keyframes rmIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}`}</style>
 
       {/* Header with pipeline progress */}
-      <div className="flex items-end justify-between gap-4 border-b border-border/60 px-6 py-4">
+      <div className="flex items-end justify-between gap-4 border-b border-border px-6 py-4">
         <div>
           <div className="text-sm font-semibold uppercase tracking-[0.16em] text-foreground">
             Роадмап
@@ -143,9 +152,9 @@ export function RoadmapPage() {
         </div>
       </div>
 
-      {/* The conveyor */}
-      <div className="flex-1 overflow-x-auto bg-[radial-gradient(120%_80%_at_0%_0%,var(--muted)_0%,transparent_55%)]">
-        <div className="flex min-w-max items-stretch gap-0 p-6">
+      {/* The conveyor — the only scroll surface on the page */}
+      <div className="h-full flex-1 overflow-auto p-6" style={GRID_BG}>
+        <div className="flex min-w-max items-start gap-0">
           {stages.map((s, i) => {
             const Icon = stageIcon(s.key);
             const done = s.status === 'done';
@@ -202,6 +211,26 @@ export function RoadmapPage() {
                     >
                       <RiCloseLine size={15} />
                     </button>
+                  </div>
+
+                  {/* mini dashboard */}
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <div className="rounded-lg bg-muted/50 px-2.5 py-1.5">
+                      <div className="text-lg font-semibold leading-none tabular-nums text-foreground">
+                        {s.boards.length}
+                      </div>
+                      <div className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+                        доски
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-muted/50 px-2.5 py-1.5">
+                      <div className="text-lg font-semibold leading-none tabular-nums text-foreground">
+                        {s.cardCount}
+                      </div>
+                      <div className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+                        карточки
+                      </div>
+                    </div>
                   </div>
 
                   {/* boards */}

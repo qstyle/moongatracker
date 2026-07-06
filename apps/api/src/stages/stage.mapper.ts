@@ -11,6 +11,7 @@ type BoardRow = {
   seq: number;
   stageId: string | null;
   createdAt: Date;
+  _count?: { cards: number };
 };
 
 type StageRow = {
@@ -35,6 +36,7 @@ export function toBoardSummary(b: BoardRow): BoardSummaryDto {
 }
 
 export function toStageDto(s: StageRow): StageDto {
+  const boards = s.boards ?? [];
   return {
     id: s.id,
     projectId: s.projectId,
@@ -42,6 +44,7 @@ export function toStageDto(s: StageRow): StageDto {
     title: s.title,
     order: s.order,
     status: s.status as StageStatus,
-    boards: (s.boards ?? []).map(toBoardSummary),
+    boards: boards.map(toBoardSummary),
+    cardCount: boards.reduce((n, b) => n + (b._count?.cards ?? 0), 0),
   };
 }

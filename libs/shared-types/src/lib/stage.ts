@@ -11,4 +11,6 @@ export interface StageDto {
   status: StageStatus;
   /** Boards that belong to this stage. */
   boards: BoardSummaryDto[];
+  /** Total cards across this stage's boards (for the stage dashboard). */
+  cardCount: number;
 }
