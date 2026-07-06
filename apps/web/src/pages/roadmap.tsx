@@ -24,6 +24,7 @@ import {
   updateStage,
   deleteStage,
   seedDefaultStages,
+  scaffoldStage,
 } from '../api/stages';
 import { createBoard } from '../api/boards';
 
@@ -47,6 +48,16 @@ function stageIcon(key: string | null): RemixiconComponentType {
   return (key && STAGE_ICONS[key]) || RiFlag2Line;
 }
 
+const TEMPLATE_KEYS = new Set(['discovery', 'design', 'build', 'release', 'operate']);
+
+const STAGE_EXIT_CRITERIA: Record<string, string> = {
+  discovery: 'Одни и те же боли повторяются в 3+ интервью; принято решение GO / PIVOT / KILL.',
+  design: 'Выбран один вариант решения, задача «concrete enough», задан таймбокс (аппетит) и scope MVP.',
+  build: 'Feature-freeze: MVP feature-complete, критичные пути покрыты тестами.',
+  release: 'Пройдены alpha→beta→GA, нет showstopper-багов, чеклист релиза закрыт.',
+  operate: 'Финального гейта нет — этап конечный (мониторинг, поддержка, итерации).',
+};
+
 export function RoadmapPage() {
   const [, params] = useRoute('/projects/:projectId/roadmap');
   const projectId = params?.projectId ?? '';
@@ -58,6 +69,7 @@ export function RoadmapPage() {
   });
 
   const [newStage, setNewStage] = useState('');
+  const [scaffoldingId, setScaffoldingId] = useState<string | null>(null);
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['stages', projectId] });
@@ -112,6 +124,17 @@ export function RoadmapPage() {
     const name = n === 0 ? stage.title : `${stage.title} ${n + 1}`;
     await createBoard(projectId, name, stage.id);
     invalidate();
+  }
+
+  async function handleScaffold(stageId: string) {
+    if (scaffoldingId) return;
+    setScaffoldingId(stageId);
+    try {
+      await scaffoldStage(projectId, stageId);
+      invalidate();
+    } finally {
+      setScaffoldingId(null);
+    }
   }
 
   async function addStage() {
@@ -251,19 +274,37 @@ export function RoadmapPage() {
                         <span className="truncate">{b.name}</span>
                       </Link>
                     ))}
-                    <button
-                      type="button"
-                      onClick={() => addBoard(s)}
-                      className="flex items-center gap-1.5 rounded-lg border border-dashed border-border/60 px-2.5 py-1.5 text-sm text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
-                    >
-                      <RiAddLine size={14} /> Создать доску
-                    </button>
+                    {s.boards.length === 0 && s.key && TEMPLATE_KEYS.has(s.key) ? (
+                      <Button
+                        size="sm"
+                        disabled={scaffoldingId === s.id}
+                        onClick={() => handleScaffold(s.id)}
+                        className="h-8 w-full"
+                      >
+                        {scaffoldingId === s.id ? 'Разворачиваю…' : 'Развернуть этап'}
+                      </Button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => addBoard(s)}
+                        className="flex items-center gap-1.5 rounded-lg border border-dashed border-border/60 px-2.5 py-1.5 text-sm text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
+                      >
+                        <RiAddLine size={14} /> Создать доску
+                      </button>
+                    )}
                   </div>
 
                   {active && (
-                    <Button size="sm" variant="outline" className="mt-1 h-8" onClick={() => advance(s.id)}>
-                      Продвинуть дальше
-                    </Button>
+                    <div className="mt-1 flex flex-col gap-1.5">
+                      {s.key && STAGE_EXIT_CRITERIA[s.key] && (
+                        <p className="text-[11px] leading-snug text-muted-foreground/70">
+                          {STAGE_EXIT_CRITERIA[s.key]}
+                        </p>
+                      )}
+                      <Button size="sm" variant="outline" className="h-8" onClick={() => advance(s.id)}>
+                        Продвинуть дальше
+                      </Button>
+                    </div>
                   )}
                 </div>
 

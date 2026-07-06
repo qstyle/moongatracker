@@ -36,3 +36,8 @@ export async function deleteStage(stageId: string): Promise<void> {
   const r = await apiFetch(`/api/stages/${stageId}`, { method: 'DELETE' });
   if (!r.ok) throw new Error(`${r.status} ${await r.text()}`);
 }
+
+export const scaffoldStage = (projectId: string, stageId: string) =>
+  apiFetch(`/api/projects/${projectId}/stages/${stageId}/scaffold`, { method: 'POST' }).then((r) =>
+    asJson<StageDto>(r),
+  );
