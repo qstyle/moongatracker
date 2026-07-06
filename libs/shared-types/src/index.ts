@@ -8,3 +8,4 @@ export * from './lib/canvas.js';
 export * from './lib/telegram.js';
 export * from './lib/notifications.js';
 export * from './lib/proposal.js';
+export * from './lib/stage.js';

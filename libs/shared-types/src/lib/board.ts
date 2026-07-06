@@ -68,6 +68,7 @@ export interface BoardDto {
 export interface BoardSummaryDto {
   id: string;
   projectId: string;
+  stageId: string | null;
   name: string;
   seq: number;
   createdAt: string;
