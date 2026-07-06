@@ -9,7 +9,7 @@ import { UnifiedAuthGuard } from './unified-auth.guard';
 @Module({
   imports: [
     JwtModule.register({
-      secret: process.env.JWT_SECRET ?? 'dev-secret-moongatracker',
+      secret: process.env.JWT_SECRET ?? 'dev-secret-moonga-studio',
       signOptions: { expiresIn: '7d' },
     }),
   ],

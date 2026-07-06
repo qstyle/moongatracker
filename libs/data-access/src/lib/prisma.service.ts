@@ -11,7 +11,7 @@ export class PrismaService
   constructor() {
     const url =
       process.env.DATABASE_URL ??
-      'postgresql://postgres:postgres@localhost:5432/moongatracker';
+      'postgresql://postgres:postgres@localhost:5432/moonga_studio';
     super({ adapter: new PrismaPg({ connectionString: url }) });
   }
 

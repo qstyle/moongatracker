@@ -19,9 +19,9 @@ module.exports = {
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: 'test-output/jest/coverage',
   moduleNameMapper: {
-    '^@moongatracker/shared-types$':
+    '^@moonga-studio/shared-types$':
       '<rootDir>/../../libs/shared-types/src/index.ts',
-    '^@moongatracker/data-access$':
+    '^@moonga-studio/data-access$':
       '<rootDir>/../../libs/data-access/src/index.ts',
   },
 };
